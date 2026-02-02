@@ -1,0 +1,115 @@
+///|
+pub enum Keyword {
+  Let
+  Const
+  Var
+  Function
+  Return
+  If
+  Else
+  While
+  For
+  Do
+  Switch
+  Case
+  Type
+  Typeof
+  Interface
+  Enum
+  True
+  False
+  Null
+  Undefined
+  This
+  Delete
+  Void
+  Await
+  Yield
+  New
+  Class
+  Extends
+  Implements
+  Export
+  Import
+  From
+  As
+  Default
+  Abstract
+  Public
+  Private
+  Protected
+  Readonly
+  Static
+  Get
+  Set
+  Break
+  Continue
+  Try
+  Catch
+  Finally
+  Throw
+} derive(Eq, Show, ToJson)
+
+///|
+pub enum TokenKind {
+  Ident(String)
+  Number(String)
+  String(String)
+  Keyword(Keyword)
+  LParen
+  RParen
+  LBrace
+  RBrace
+  LBracket
+  RBracket
+  Comma
+  Semicolon
+  Colon
+  Dot
+  At
+  Question
+  QuestionDot
+  Nullish
+  Arrow
+  Plus
+  PlusPlus
+  PlusEq
+  Minus
+  MinusMinus
+  MinusEq
+  Star
+  StarStar
+  StarEq
+  Slash
+  SlashEq
+  Percent
+  PercentEq
+  Ellipsis
+  TemplateStart
+  TemplateChunk(String)
+  TemplateExprStart
+  TemplateEnd
+  Eq
+  EqEq
+  EqEqEq
+  NotEq
+  NotEqEq
+  Lt
+  Lte
+  Gt
+  Gte
+  AndAnd
+  OrOr
+  Ampersand
+  Pipe
+  Caret
+  Bang
+  Tilde
+  Eof
+} derive(Eq, Show, ToJson)
+
+///|
+pub struct Token {
+  kind : TokenKind
+  span : Span
+} derive(Eq, Show, ToJson)

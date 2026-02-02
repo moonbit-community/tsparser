@@ -1,0 +1,858 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/tsparser"
+
+// Values
+pub fn parse_program(String) -> Program raise ParseError
+
+pub fn parse_program_bytes(Bytes) -> Program raise ParseError
+
+pub fn parse_program_bytes_with_jsx(Bytes, Bool) -> Program raise ParseError
+
+pub fn parse_program_with_jsx(String, Bool) -> Program raise ParseError
+
+// Errors
+pub(all) suberror ParseError {
+  UnexpectedEof(pos~ : Position)
+  UnexpectedToken(pos~ : Position, String)
+  Expected(pos~ : Position, String)
+  InvalidChar(pos~ : Position, Byte)
+  UnterminatedString(pos~ : Position)
+  UnterminatedComment(pos~ : Position)
+  InvalidNumber(pos~ : Position, String)
+}
+pub impl Eq for ParseError
+pub impl Show for ParseError
+pub impl ToJson for ParseError
+
+// Types and methods
+pub enum AccessModifier {
+  Public
+  Private
+  Protected
+}
+pub impl Show for AccessModifier
+pub impl ToJson for AccessModifier
+
+pub enum ArrayElement {
+  Expr(Expr)
+  Spread(Expr)
+  Hole
+}
+pub impl Show for ArrayElement
+pub impl ToJson for ArrayElement
+
+pub struct ArrayPattern {
+  elems : Array[ArrayPatternElem]
+}
+pub impl Show for ArrayPattern
+pub impl ToJson for ArrayPattern
+
+pub enum ArrayPatternElem {
+  Elem(BindingElement)
+  Rest(BindingPattern)
+  Hole
+}
+pub impl Show for ArrayPatternElem
+pub impl ToJson for ArrayPatternElem
+
+pub struct ArrowFunction {
+  type_params : Array[TypeParam]
+  params : Array[Param]
+  return_type : TypeNode?
+  body : FunctionBody
+}
+pub impl Show for ArrowFunction
+pub impl ToJson for ArrowFunction
+
+pub struct AssignExpr {
+  op : AssignOp
+  target : Expr
+  value : Expr
+}
+pub impl Show for AssignExpr
+pub impl ToJson for AssignExpr
+
+pub enum AssignOp {
+  Assign
+  AddAssign
+  SubAssign
+  MulAssign
+  DivAssign
+  ModAssign
+  BitAndAssign
+  BitOrAssign
+  BitXorAssign
+  ShlAssign
+  ShrAssign
+  UShrAssign
+}
+pub impl Show for AssignOp
+pub impl ToJson for AssignOp
+
+pub struct BinaryExpr {
+  op : BinaryOp
+  left : Expr
+  right : Expr
+}
+pub impl Show for BinaryExpr
+pub impl ToJson for BinaryExpr
+
+pub enum BinaryOp {
+  Add
+  Sub
+  Mul
+  Div
+  Mod
+  Eq
+  Neq
+  StrictEq
+  StrictNeq
+  Lt
+  Lte
+  Gt
+  Gte
+  Instanceof
+  In
+  And
+  Or
+  Nullish
+  BitAnd
+  BitOr
+  BitXor
+  Shl
+  Shr
+  UShr
+  Comma
+  Pow
+}
+pub impl Show for BinaryOp
+pub impl ToJson for BinaryOp
+
+pub struct BindingElement {
+  pattern : BindingPattern
+  default_value : Expr?
+  span : Span
+}
+pub impl Show for BindingElement
+pub impl ToJson for BindingElement
+
+pub struct BindingPattern {
+  kind : BindingPatternKind
+  span : Span
+}
+pub impl Show for BindingPattern
+pub impl ToJson for BindingPattern
+
+pub enum BindingPatternKind {
+  Ident(String)
+  Object(ObjectPattern)
+  Array(ArrayPattern)
+}
+pub impl Show for BindingPatternKind
+pub impl ToJson for BindingPatternKind
+
+pub struct Block {
+  stmts : Array[Stmt]
+  span : Span
+}
+pub impl Show for Block
+pub impl ToJson for Block
+
+pub struct CallExpr {
+  callee : Expr
+  args : Array[Expr]
+  optional : Bool
+}
+pub impl Show for CallExpr
+pub impl ToJson for CallExpr
+
+pub struct CatchClause {
+  param : CatchParam?
+  body : Block
+}
+pub impl Show for CatchClause
+pub impl ToJson for CatchClause
+
+pub struct CatchParam {
+  name : String
+  type_ann : TypeNode?
+  span : Span
+}
+pub impl Show for CatchParam
+pub impl ToJson for CatchParam
+
+pub struct ClassDecl {
+  name : String?
+  type_params : Array[TypeParam]
+  extends : Expr?
+  implements : Array[TypeNode]
+  members : Array[ClassMember]
+  span : Span
+}
+pub impl Show for ClassDecl
+pub impl ToJson for ClassDecl
+
+pub struct ClassMember {
+  kind : ClassMemberKind
+  is_static : Bool
+  access : AccessModifier?
+  is_readonly : Bool
+  span : Span
+}
+pub impl Show for ClassMember
+pub impl ToJson for ClassMember
+
+pub enum ClassMemberKind {
+  Constructor(Array[Param], Block)
+  Method(String, Array[Param], TypeNode?, Block)
+  Getter(String, TypeNode?, Block)
+  Setter(String, Param, Block)
+  Field(String, TypeNode?, Expr?)
+}
+pub impl Show for ClassMemberKind
+pub impl ToJson for ClassMemberKind
+
+pub struct ConditionalExpr {
+  condition : Expr
+  consequent : Expr
+  alternate : Expr
+}
+pub impl Show for ConditionalExpr
+pub impl ToJson for ConditionalExpr
+
+pub struct DoWhileStmt {
+  body : Stmt
+  condition : Expr
+}
+pub impl Show for DoWhileStmt
+pub impl ToJson for DoWhileStmt
+
+pub struct EnumDecl {
+  name : String
+  members : Array[EnumMember]
+  is_const : Bool
+  span : Span
+}
+pub impl Show for EnumDecl
+pub impl ToJson for EnumDecl
+
+pub struct EnumMember {
+  name : String
+  init : Expr?
+  span : Span
+}
+pub impl Show for EnumMember
+pub impl ToJson for EnumMember
+
+pub enum ExportDecl {
+  Named(ExportNamed)
+  Default(ExportDefault)
+  Declaration(Stmt)
+  Assign(Expr)
+}
+pub impl Show for ExportDecl
+pub impl ToJson for ExportDecl
+
+pub enum ExportDefault {
+  Expr(Expr)
+  Function(FunctionDecl)
+  Class(ClassDecl)
+}
+pub impl Show for ExportDefault
+pub impl ToJson for ExportDefault
+
+pub struct ExportNamed {
+  is_type_only : Bool
+  specs : Array[ExportSpec]
+  from : String?
+}
+pub impl Show for ExportNamed
+pub impl ToJson for ExportNamed
+
+pub struct ExportSpec {
+  is_type_only : Bool
+  name : String
+  as_name : String?
+  span : Span
+}
+pub impl Show for ExportSpec
+pub impl ToJson for ExportSpec
+
+pub struct Expr {
+  kind : ExprKind
+  span : Span
+}
+pub impl Show for Expr
+pub impl ToJson for Expr
+
+pub enum ExprKind {
+  Ident(String)
+  Number(String)
+  String(String)
+  Bool(Bool)
+  Null
+  Undefined
+  This
+  Array(Array[ArrayElement])
+  Object(ObjectLiteral)
+  Function(FunctionDecl)
+  Class(ClassDecl)
+  Arrow(ArrowFunction)
+  New(NewExpr)
+  TypeAssert(TypeAssert)
+  Template(TemplateLiteral)
+  Unary(UnaryExpr)
+  Update(UpdateExpr)
+  NonNull(Expr)
+  Binary(BinaryExpr)
+  Conditional(ConditionalExpr)
+  Assign(AssignExpr)
+  Call(CallExpr)
+  Member(MemberExpr)
+}
+pub impl Show for ExprKind
+pub impl ToJson for ExprKind
+
+pub enum ForInLeft {
+  Var(VarDecl)
+  Expr(Expr)
+}
+pub impl Show for ForInLeft
+pub impl ToJson for ForInLeft
+
+pub struct ForInStmt {
+  left : ForInLeft
+  right : Expr
+  body : Stmt
+}
+pub impl Show for ForInStmt
+pub impl ToJson for ForInStmt
+
+pub enum ForInit {
+  Var(VarDecl)
+  Expr(Expr)
+}
+pub impl Show for ForInit
+pub impl ToJson for ForInit
+
+pub struct ForOfStmt {
+  left : ForInLeft
+  right : Expr
+  body : Stmt
+}
+pub impl Show for ForOfStmt
+pub impl ToJson for ForOfStmt
+
+pub struct ForStmt {
+  init : ForInit?
+  condition : Expr?
+  update : Expr?
+  body : Stmt
+}
+pub impl Show for ForStmt
+pub impl ToJson for ForStmt
+
+pub enum FunctionBody {
+  Block(Block)
+  Expr(Expr)
+}
+pub impl Show for FunctionBody
+pub impl ToJson for FunctionBody
+
+pub struct FunctionDecl {
+  name : String?
+  type_params : Array[TypeParam]
+  params : Array[Param]
+  return_type : TypeNode?
+  body : Block
+}
+pub impl Show for FunctionDecl
+pub impl ToJson for FunctionDecl
+
+pub struct ImportAssignDecl {
+  name : String
+  value : Expr
+  span : Span
+}
+pub impl Show for ImportAssignDecl
+pub impl ToJson for ImportAssignDecl
+
+pub struct ImportDecl {
+  is_type_only : Bool
+  default_name : String?
+  ns_name : String?
+  named : Array[ImportSpec]
+  from : String
+  span : Span
+}
+pub impl Show for ImportDecl
+pub impl ToJson for ImportDecl
+
+pub struct ImportSpec {
+  is_type_only : Bool
+  name : String
+  as_name : String?
+  span : Span
+}
+pub impl Show for ImportSpec
+pub impl ToJson for ImportSpec
+
+pub struct InterfaceDecl {
+  name : String
+  type_params : Array[TypeParam]
+  extends : Array[TypeNode]
+  members : Array[InterfaceMember]
+  span : Span
+}
+pub impl Show for InterfaceDecl
+pub impl ToJson for InterfaceDecl
+
+pub struct InterfaceMember {
+  name : String
+  optional : Bool
+  type_ann : TypeNode
+  span : Span
+}
+pub impl Show for InterfaceMember
+pub impl ToJson for InterfaceMember
+
+pub enum Keyword {
+  Let
+  Const
+  Var
+  Function
+  Return
+  If
+  Else
+  While
+  For
+  Do
+  Switch
+  Case
+  Type
+  Typeof
+  Interface
+  Enum
+  True
+  False
+  Null
+  Undefined
+  This
+  Delete
+  Void
+  Await
+  Yield
+  New
+  Class
+  Extends
+  Implements
+  Export
+  Import
+  From
+  As
+  Default
+  Abstract
+  Public
+  Private
+  Protected
+  Readonly
+  Static
+  Get
+  Set
+  Break
+  Continue
+  Try
+  Catch
+  Finally
+  Throw
+}
+pub impl Eq for Keyword
+pub impl Show for Keyword
+pub impl ToJson for Keyword
+
+pub struct LabeledStmt {
+  label : String
+  stmt : Stmt
+}
+pub impl Show for LabeledStmt
+pub impl ToJson for LabeledStmt
+
+pub struct MemberExpr {
+  object : Expr
+  property : MemberProp
+  computed : Bool
+  optional : Bool
+}
+pub impl Show for MemberExpr
+pub impl ToJson for MemberExpr
+
+pub enum MemberProp {
+  Ident(String)
+  Expr(Expr)
+}
+pub impl Show for MemberProp
+pub impl ToJson for MemberProp
+
+pub struct NamespaceDecl {
+  name : String
+  body : Block
+  span : Span
+}
+pub impl Show for NamespaceDecl
+pub impl ToJson for NamespaceDecl
+
+pub struct NewExpr {
+  callee : Expr
+  args : Array[Expr]
+}
+pub impl Show for NewExpr
+pub impl ToJson for NewExpr
+
+pub struct ObjectLiteral {
+  props : Array[ObjectProp]
+}
+pub impl Show for ObjectLiteral
+pub impl ToJson for ObjectLiteral
+
+pub struct ObjectPattern {
+  props : Array[ObjectPatternProp]
+}
+pub impl Show for ObjectPattern
+pub impl ToJson for ObjectPattern
+
+pub enum ObjectPatternProp {
+  Property(ObjectPatternProperty)
+  Rest(BindingPattern)
+}
+pub impl Show for ObjectPatternProp
+pub impl ToJson for ObjectPatternProp
+
+pub struct ObjectPatternProperty {
+  key : String
+  binding : BindingElement
+  shorthand : Bool
+  span : Span
+}
+pub impl Show for ObjectPatternProperty
+pub impl ToJson for ObjectPatternProperty
+
+pub enum ObjectProp {
+  Property(ObjectPropEntry)
+  Spread(Expr)
+}
+pub impl Show for ObjectProp
+pub impl ToJson for ObjectProp
+
+pub struct ObjectPropEntry {
+  name : String
+  value : Expr
+  shorthand : Bool
+  span : Span
+}
+pub impl Show for ObjectPropEntry
+pub impl ToJson for ObjectPropEntry
+
+pub struct Param {
+  pattern : BindingPattern
+  optional : Bool
+  type_ann : TypeNode?
+  default_value : Expr?
+  is_rest : Bool
+  span : Span
+}
+pub impl Show for Param
+pub impl ToJson for Param
+
+pub struct Position {
+  offset : Int
+  line : Int
+  column : Int
+}
+pub impl Eq for Position
+pub impl Show for Position
+pub impl ToJson for Position
+
+pub struct Program {
+  stmts : Array[Stmt]
+  span : Span
+}
+pub impl Show for Program
+pub impl ToJson for Program
+
+pub struct Span {
+  start : Position
+  end : Position
+}
+pub fn Span::merge(Self, Self) -> Self
+pub impl Eq for Span
+pub impl Show for Span
+pub impl ToJson for Span
+
+pub struct Stmt {
+  kind : StmtKind
+  span : Span
+}
+pub impl Show for Stmt
+pub impl ToJson for Stmt
+
+pub enum StmtKind {
+  ImportDecl(ImportDecl)
+  ImportAssign(ImportAssignDecl)
+  ExportDecl(ExportDecl)
+  VarDecl(VarDecl)
+  FunctionDecl(FunctionDecl)
+  ClassDecl(ClassDecl)
+  NamespaceDecl(NamespaceDecl)
+  TypeAliasDecl(TypeAliasDecl)
+  InterfaceDecl(InterfaceDecl)
+  EnumDecl(EnumDecl)
+  Return(Expr?)
+  If(Expr, Stmt, Stmt?)
+  While(Expr, Stmt)
+  For(ForStmt)
+  ForIn(ForInStmt)
+  ForOf(ForOfStmt)
+  DoWhile(DoWhileStmt)
+  Switch(SwitchStmt)
+  Break(String?)
+  Continue(String?)
+  Throw(Expr)
+  Try(TryStmt)
+  Labeled(LabeledStmt)
+  ExprStmt(Expr)
+  Block(Block)
+  Empty
+}
+pub impl Show for StmtKind
+pub impl ToJson for StmtKind
+
+pub struct SwitchCase {
+  case_expr : Expr?
+  consequent : Array[Stmt]
+}
+pub impl Show for SwitchCase
+pub impl ToJson for SwitchCase
+
+pub struct SwitchStmt {
+  discriminant : Expr
+  cases : Array[SwitchCase]
+}
+pub impl Show for SwitchStmt
+pub impl ToJson for SwitchStmt
+
+pub struct TemplateLiteral {
+  quasis : Array[String]
+  exprs : Array[Expr]
+}
+pub impl Show for TemplateLiteral
+pub impl ToJson for TemplateLiteral
+
+pub struct Token {
+  kind : TokenKind
+  span : Span
+}
+pub impl Eq for Token
+pub impl Show for Token
+pub impl ToJson for Token
+
+pub enum TokenKind {
+  Ident(String)
+  Number(String)
+  String(String)
+  Keyword(Keyword)
+  LParen
+  RParen
+  LBrace
+  RBrace
+  LBracket
+  RBracket
+  Comma
+  Semicolon
+  Colon
+  Dot
+  At
+  Question
+  QuestionDot
+  Nullish
+  Arrow
+  Plus
+  PlusPlus
+  PlusEq
+  Minus
+  MinusMinus
+  MinusEq
+  Star
+  StarStar
+  StarEq
+  Slash
+  SlashEq
+  Percent
+  PercentEq
+  Ellipsis
+  TemplateStart
+  TemplateChunk(String)
+  TemplateExprStart
+  TemplateEnd
+  Eq
+  EqEq
+  EqEqEq
+  NotEq
+  NotEqEq
+  Lt
+  Lte
+  Gt
+  Gte
+  AndAnd
+  OrOr
+  Ampersand
+  Pipe
+  Caret
+  Bang
+  Tilde
+  Eof
+}
+pub impl Eq for TokenKind
+pub impl Show for TokenKind
+pub impl ToJson for TokenKind
+
+pub struct TryStmt {
+  block : Block
+  handler : CatchClause?
+  finalizer : Block?
+}
+pub impl Show for TryStmt
+pub impl ToJson for TryStmt
+
+pub struct TypeAliasDecl {
+  name : String
+  type_params : Array[TypeParam]
+  value : TypeNode
+  span : Span
+}
+pub impl Show for TypeAliasDecl
+pub impl ToJson for TypeAliasDecl
+
+pub struct TypeAssert {
+  expr : Expr
+  type_ann : TypeNode
+}
+pub impl Show for TypeAssert
+pub impl ToJson for TypeAssert
+
+pub enum TypeKind {
+  Ident(String)
+  TypeQuery(String)
+  Literal(TypeLiteral)
+  Tuple(Array[TypeNode])
+  Object(Array[TypeMember])
+  Union(Array[TypeNode])
+  Intersection(Array[TypeNode])
+  Conditional(TypeNode, TypeNode, TypeNode, TypeNode)
+  TypeOperator(String, TypeNode)
+  TypePredicate(String, TypeNode)
+  Array(TypeNode)
+  IndexAccess(TypeNode, TypeNode)
+  Generic(TypeNode, Array[TypeNode])
+  Function(Array[TypeNode], TypeNode)
+}
+pub impl Show for TypeKind
+pub impl ToJson for TypeKind
+
+pub enum TypeLiteral {
+  String(String)
+  Number(String)
+  Bool(Bool)
+  Null
+}
+pub impl Show for TypeLiteral
+pub impl ToJson for TypeLiteral
+
+pub struct TypeMember {
+  name : String
+  optional : Bool
+  type_ann : TypeNode
+  span : Span
+}
+pub impl Show for TypeMember
+pub impl ToJson for TypeMember
+
+pub struct TypeNode {
+  kind : TypeKind
+  span : Span
+}
+pub impl Show for TypeNode
+pub impl ToJson for TypeNode
+
+pub struct TypeParam {
+  name : String
+  constraint : TypeNode?
+  default_type : TypeNode?
+  span : Span
+}
+pub impl Show for TypeParam
+pub impl ToJson for TypeParam
+
+pub struct UnaryExpr {
+  op : UnaryOp
+  expr : Expr
+}
+pub impl Show for UnaryExpr
+pub impl ToJson for UnaryExpr
+
+pub enum UnaryOp {
+  Plus
+  Minus
+  Not
+  BitNot
+  Typeof
+  Delete
+  Void
+  Await
+  Yield
+}
+pub impl Show for UnaryOp
+pub impl ToJson for UnaryOp
+
+pub struct UpdateExpr {
+  op : UpdateOp
+  prefix : Bool
+  expr : Expr
+}
+pub impl Show for UpdateExpr
+pub impl ToJson for UpdateExpr
+
+pub enum UpdateOp {
+  Increment
+  Decrement
+}
+pub impl Show for UpdateOp
+pub impl ToJson for UpdateOp
+
+pub struct VarDecl {
+  kind : VarKind
+  decls : Array[VarDeclarator]
+}
+pub impl Show for VarDecl
+pub impl ToJson for VarDecl
+
+pub struct VarDeclarator {
+  pattern : BindingPattern
+  type_ann : TypeNode?
+  init : Expr?
+  span : Span
+}
+pub impl Show for VarDeclarator
+pub impl ToJson for VarDeclarator
+
+pub enum VarKind {
+  Let
+  Const
+  Var
+}
+pub impl Show for VarKind
+pub impl ToJson for VarKind
+
+// Type aliases
+
+// Traits
+

@@ -1,0 +1,3 @@
+index.ts(3,22): error TS1471: Module './index.js' cannot be imported using this construct. The specifier only resolves to an ES module, which cannot be imported with 'require'. Use an ECMAScript import instead.
+subfolder/index.ts(2,17): error TS1479: The current file is a CommonJS module whose imports will produce 'require' calls; however, the referenced file is an ECMAScript module and cannot be imported with 'require'. Consider writing a dynamic 'import("../index.js")' call instead.
+subfolder/index.ts(3,22): error TS1471: Module '../index.js' cannot be imported using this construct. The specifier only resolves to an ES module, which cannot be imported with 'require'. Use an ECMAScript import instead.
