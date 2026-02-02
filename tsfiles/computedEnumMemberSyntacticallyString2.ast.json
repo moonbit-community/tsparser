@@ -1,0 +1,1141 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 444,
+    "line": 28,
+    "column": 26
+  },
+  "children": [
+    {
+      "kind": "ImportDeclaration",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 131,
+        "line": 6,
+        "column": 29
+      },
+      "children": [
+        {
+          "kind": "ImportClause",
+          "pos": {
+            "offset": 109,
+            "line": 6,
+            "column": 7
+          },
+          "end": {
+            "offset": 117,
+            "line": 6,
+            "column": 15
+          },
+          "children": [
+            {
+              "kind": "NamedImports",
+              "pos": {
+                "offset": 109,
+                "line": 6,
+                "column": 7
+              },
+              "end": {
+                "offset": 117,
+                "line": 6,
+                "column": 15
+              },
+              "children": [
+                {
+                  "kind": "ImportSpecifier",
+                  "pos": {
+                    "offset": 111,
+                    "line": 6,
+                    "column": 9
+                  },
+                  "end": {
+                    "offset": 115,
+                    "line": 6,
+                    "column": 13
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 111,
+                        "line": 6,
+                        "column": 9
+                      },
+                      "end": {
+                        "offset": 115,
+                        "line": 6,
+                        "column": 13
+                      },
+                      "text": "BAR"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "StringLiteral",
+          "pos": {
+            "offset": 122,
+            "line": 6,
+            "column": 20
+          },
+          "end": {
+            "offset": 130,
+            "line": 6,
+            "column": 28
+          },
+          "text": "./bar"
+        }
+      ]
+    },
+    {
+      "kind": "FirstStatement",
+      "pos": {
+        "offset": 131,
+        "line": 6,
+        "column": 29
+      },
+      "end": {
+        "offset": 154,
+        "line": 7,
+        "column": 23
+      },
+      "children": [
+        {
+          "kind": "VariableDeclarationList",
+          "pos": {
+            "offset": 131,
+            "line": 6,
+            "column": 29
+          },
+          "end": {
+            "offset": 153,
+            "line": 7,
+            "column": 22
+          },
+          "children": [
+            {
+              "kind": "VariableDeclaration",
+              "pos": {
+                "offset": 137,
+                "line": 7,
+                "column": 6
+              },
+              "end": {
+                "offset": 153,
+                "line": 7,
+                "column": 22
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 137,
+                    "line": 7,
+                    "column": 6
+                  },
+                  "end": {
+                    "offset": 143,
+                    "line": 7,
+                    "column": 12
+                  },
+                  "text": "LOCAL"
+                },
+                {
+                  "kind": "StringLiteral",
+                  "pos": {
+                    "offset": 145,
+                    "line": 7,
+                    "column": 14
+                  },
+                  "end": {
+                    "offset": 153,
+                    "line": 7,
+                    "column": 22
+                  },
+                  "text": "LOCAL"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EnumDeclaration",
+      "pos": {
+        "offset": 154,
+        "line": 7,
+        "column": 23
+      },
+      "end": {
+        "offset": 394,
+        "line": 25,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 160,
+            "line": 9,
+            "column": 5
+          },
+          "end": {
+            "offset": 164,
+            "line": 9,
+            "column": 9
+          },
+          "text": "Foo"
+        },
+        {
+          "kind": "EnumMember",
+          "pos": {
+            "offset": 166,
+            "line": 9,
+            "column": 11
+          },
+          "end": {
+            "offset": 181,
+            "line": 10,
+            "column": 15
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 166,
+                "line": 9,
+                "column": 11
+              },
+              "end": {
+                "offset": 170,
+                "line": 10,
+                "column": 4
+              },
+              "text": "A"
+            },
+            {
+              "kind": "TemplateExpression",
+              "pos": {
+                "offset": 172,
+                "line": 10,
+                "column": 6
+              },
+              "end": {
+                "offset": 181,
+                "line": 10,
+                "column": 15
+              },
+              "children": [
+                {
+                  "kind": "TemplateHead",
+                  "pos": {
+                    "offset": 172,
+                    "line": 10,
+                    "column": 6
+                  },
+                  "end": {
+                    "offset": 176,
+                    "line": 10,
+                    "column": 10
+                  },
+                  "text": "`${"
+                },
+                {
+                  "kind": "TemplateSpan",
+                  "pos": {
+                    "offset": 176,
+                    "line": 10,
+                    "column": 10
+                  },
+                  "end": {
+                    "offset": 181,
+                    "line": 10,
+                    "column": 15
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 176,
+                        "line": 10,
+                        "column": 10
+                      },
+                      "end": {
+                        "offset": 179,
+                        "line": 10,
+                        "column": 13
+                      },
+                      "text": "BAR"
+                    },
+                    {
+                      "kind": "LastTemplateToken",
+                      "pos": {
+                        "offset": 179,
+                        "line": 10,
+                        "column": 13
+                      },
+                      "end": {
+                        "offset": 181,
+                        "line": 10,
+                        "column": 15
+                      },
+                      "text": "}`"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "EnumMember",
+          "pos": {
+            "offset": 182,
+            "line": 10,
+            "column": 16
+          },
+          "end": {
+            "offset": 195,
+            "line": 12,
+            "column": 12
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 182,
+                "line": 10,
+                "column": 16
+              },
+              "end": {
+                "offset": 187,
+                "line": 12,
+                "column": 4
+              },
+              "text": "B"
+            },
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 189,
+                "line": 12,
+                "column": 6
+              },
+              "end": {
+                "offset": 195,
+                "line": 12,
+                "column": 12
+              },
+              "text": "LOCAL"
+            }
+          ]
+        },
+        {
+          "kind": "EnumMember",
+          "pos": {
+            "offset": 196,
+            "line": 12,
+            "column": 13
+          },
+          "end": {
+            "offset": 204,
+            "line": 13,
+            "column": 8
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 196,
+                "line": 12,
+                "column": 13
+              },
+              "end": {
+                "offset": 200,
+                "line": 13,
+                "column": 4
+              },
+              "text": "C"
+            },
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 202,
+                "line": 13,
+                "column": 6
+              },
+              "end": {
+                "offset": 204,
+                "line": 13,
+                "column": 8
+              },
+              "text": "B"
+            }
+          ]
+        },
+        {
+          "kind": "EnumMember",
+          "pos": {
+            "offset": 205,
+            "line": 13,
+            "column": 9
+          },
+          "end": {
+            "offset": 221,
+            "line": 14,
+            "column": 16
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 205,
+                "line": 13,
+                "column": 9
+              },
+              "end": {
+                "offset": 209,
+                "line": 14,
+                "column": 4
+              },
+              "text": "D"
+            },
+            {
+              "kind": "BinaryExpression",
+              "pos": {
+                "offset": 211,
+                "line": 14,
+                "column": 6
+              },
+              "end": {
+                "offset": 221,
+                "line": 14,
+                "column": 16
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 211,
+                    "line": 14,
+                    "column": 6
+                  },
+                  "end": {
+                    "offset": 213,
+                    "line": 14,
+                    "column": 8
+                  },
+                  "text": "C"
+                },
+                {
+                  "kind": "PlusToken",
+                  "pos": {
+                    "offset": 213,
+                    "line": 14,
+                    "column": 8
+                  },
+                  "end": {
+                    "offset": 215,
+                    "line": 14,
+                    "column": 10
+                  },
+                  "text": "+"
+                },
+                {
+                  "kind": "StringLiteral",
+                  "pos": {
+                    "offset": 215,
+                    "line": 14,
+                    "column": 10
+                  },
+                  "end": {
+                    "offset": 221,
+                    "line": 14,
+                    "column": 16
+                  },
+                  "text": "BAR"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "EnumMember",
+          "pos": {
+            "offset": 222,
+            "line": 14,
+            "column": 17
+          },
+          "end": {
+            "offset": 251,
+            "line": 16,
+            "column": 28
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 222,
+                "line": 14,
+                "column": 17
+              },
+              "end": {
+                "offset": 228,
+                "line": 16,
+                "column": 5
+              },
+              "text": "E1"
+            },
+            {
+              "kind": "AsExpression",
+              "pos": {
+                "offset": 230,
+                "line": 16,
+                "column": 7
+              },
+              "end": {
+                "offset": 251,
+                "line": 16,
+                "column": 28
+              },
+              "children": [
+                {
+                  "kind": "ParenthesizedExpression",
+                  "pos": {
+                    "offset": 230,
+                    "line": 16,
+                    "column": 7
+                  },
+                  "end": {
+                    "offset": 241,
+                    "line": 16,
+                    "column": 18
+                  },
+                  "children": [
+                    {
+                      "kind": "TemplateExpression",
+                      "pos": {
+                        "offset": 232,
+                        "line": 16,
+                        "column": 9
+                      },
+                      "end": {
+                        "offset": 240,
+                        "line": 16,
+                        "column": 17
+                      },
+                      "children": [
+                        {
+                          "kind": "TemplateHead",
+                          "pos": {
+                            "offset": 232,
+                            "line": 16,
+                            "column": 9
+                          },
+                          "end": {
+                            "offset": 235,
+                            "line": 16,
+                            "column": 12
+                          },
+                          "text": "`${"
+                        },
+                        {
+                          "kind": "TemplateSpan",
+                          "pos": {
+                            "offset": 235,
+                            "line": 16,
+                            "column": 12
+                          },
+                          "end": {
+                            "offset": 240,
+                            "line": 16,
+                            "column": 17
+                          },
+                          "children": [
+                            {
+                              "kind": "Identifier",
+                              "pos": {
+                                "offset": 235,
+                                "line": 16,
+                                "column": 12
+                              },
+                              "end": {
+                                "offset": 238,
+                                "line": 16,
+                                "column": 15
+                              },
+                              "text": "BAR"
+                            },
+                            {
+                              "kind": "LastTemplateToken",
+                              "pos": {
+                                "offset": 238,
+                                "line": 16,
+                                "column": 15
+                              },
+                              "end": {
+                                "offset": 240,
+                                "line": 16,
+                                "column": 17
+                              },
+                              "text": "}`"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "StringKeyword",
+                  "pos": {
+                    "offset": 244,
+                    "line": 16,
+                    "column": 21
+                  },
+                  "end": {
+                    "offset": 251,
+                    "line": 16,
+                    "column": 28
+                  },
+                  "text": "string"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "EnumMember",
+          "pos": {
+            "offset": 252,
+            "line": 16,
+            "column": 29
+          },
+          "end": {
+            "offset": 298,
+            "line": 17,
+            "column": 17
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 252,
+                "line": 16,
+                "column": 29
+              },
+              "end": {
+                "offset": 286,
+                "line": 17,
+                "column": 5
+              },
+              "text": "E2"
+            },
+            {
+              "kind": "NonNullExpression",
+              "pos": {
+                "offset": 288,
+                "line": 17,
+                "column": 7
+              },
+              "end": {
+                "offset": 298,
+                "line": 17,
+                "column": 17
+              },
+              "children": [
+                {
+                  "kind": "TemplateExpression",
+                  "pos": {
+                    "offset": 288,
+                    "line": 17,
+                    "column": 7
+                  },
+                  "end": {
+                    "offset": 297,
+                    "line": 17,
+                    "column": 16
+                  },
+                  "children": [
+                    {
+                      "kind": "TemplateHead",
+                      "pos": {
+                        "offset": 288,
+                        "line": 17,
+                        "column": 7
+                      },
+                      "end": {
+                        "offset": 292,
+                        "line": 17,
+                        "column": 11
+                      },
+                      "text": "`${"
+                    },
+                    {
+                      "kind": "TemplateSpan",
+                      "pos": {
+                        "offset": 292,
+                        "line": 17,
+                        "column": 11
+                      },
+                      "end": {
+                        "offset": 297,
+                        "line": 17,
+                        "column": 16
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 292,
+                            "line": 17,
+                            "column": 11
+                          },
+                          "end": {
+                            "offset": 295,
+                            "line": 17,
+                            "column": 14
+                          },
+                          "text": "BAR"
+                        },
+                        {
+                          "kind": "LastTemplateToken",
+                          "pos": {
+                            "offset": 295,
+                            "line": 17,
+                            "column": 14
+                          },
+                          "end": {
+                            "offset": 297,
+                            "line": 17,
+                            "column": 16
+                          },
+                          "text": "}`"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "EnumMember",
+          "pos": {
+            "offset": 299,
+            "line": 17,
+            "column": 18
+          },
+          "end": {
+            "offset": 343,
+            "line": 19,
+            "column": 10
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 299,
+                "line": 17,
+                "column": 18
+              },
+              "end": {
+                "offset": 337,
+                "line": 19,
+                "column": 4
+              },
+              "text": "F"
+            },
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 339,
+                "line": 19,
+                "column": 6
+              },
+              "end": {
+                "offset": 343,
+                "line": 19,
+                "column": 10
+              },
+              "text": "BAR"
+            }
+          ]
+        },
+        {
+          "kind": "EnumMember",
+          "pos": {
+            "offset": 344,
+            "line": 19,
+            "column": 11
+          },
+          "end": {
+            "offset": 358,
+            "line": 20,
+            "column": 14
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 344,
+                "line": 19,
+                "column": 11
+              },
+              "end": {
+                "offset": 348,
+                "line": 20,
+                "column": 4
+              },
+              "text": "G"
+            },
+            {
+              "kind": "BinaryExpression",
+              "pos": {
+                "offset": 350,
+                "line": 20,
+                "column": 6
+              },
+              "end": {
+                "offset": 358,
+                "line": 20,
+                "column": 14
+              },
+              "children": [
+                {
+                  "kind": "FirstLiteralToken",
+                  "pos": {
+                    "offset": 350,
+                    "line": 20,
+                    "column": 6
+                  },
+                  "end": {
+                    "offset": 352,
+                    "line": 20,
+                    "column": 8
+                  },
+                  "text": "2"
+                },
+                {
+                  "kind": "PlusToken",
+                  "pos": {
+                    "offset": 352,
+                    "line": 20,
+                    "column": 8
+                  },
+                  "end": {
+                    "offset": 354,
+                    "line": 20,
+                    "column": 10
+                  },
+                  "text": "+"
+                },
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 354,
+                    "line": 20,
+                    "column": 10
+                  },
+                  "end": {
+                    "offset": 358,
+                    "line": 20,
+                    "column": 14
+                  },
+                  "text": "BAR"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "EnumMember",
+          "pos": {
+            "offset": 359,
+            "line": 20,
+            "column": 15
+          },
+          "end": {
+            "offset": 368,
+            "line": 22,
+            "column": 8
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 359,
+                "line": 20,
+                "column": 15
+              },
+              "end": {
+                "offset": 364,
+                "line": 22,
+                "column": 4
+              },
+              "text": "H"
+            },
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 366,
+                "line": 22,
+                "column": 6
+              },
+              "end": {
+                "offset": 368,
+                "line": 22,
+                "column": 8
+              },
+              "text": "A"
+            }
+          ]
+        },
+        {
+          "kind": "EnumMember",
+          "pos": {
+            "offset": 369,
+            "line": 22,
+            "column": 9
+          },
+          "end": {
+            "offset": 383,
+            "line": 23,
+            "column": 14
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 369,
+                "line": 22,
+                "column": 9
+              },
+              "end": {
+                "offset": 373,
+                "line": 23,
+                "column": 4
+              },
+              "text": "I"
+            },
+            {
+              "kind": "BinaryExpression",
+              "pos": {
+                "offset": 375,
+                "line": 23,
+                "column": 6
+              },
+              "end": {
+                "offset": 383,
+                "line": 23,
+                "column": 14
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 375,
+                    "line": 23,
+                    "column": 6
+                  },
+                  "end": {
+                    "offset": 377,
+                    "line": 23,
+                    "column": 8
+                  },
+                  "text": "H"
+                },
+                {
+                  "kind": "PlusToken",
+                  "pos": {
+                    "offset": 377,
+                    "line": 23,
+                    "column": 8
+                  },
+                  "end": {
+                    "offset": 379,
+                    "line": 23,
+                    "column": 10
+                  },
+                  "text": "+"
+                },
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 379,
+                    "line": 23,
+                    "column": 10
+                  },
+                  "end": {
+                    "offset": 383,
+                    "line": 23,
+                    "column": 14
+                  },
+                  "text": "BAR"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "EnumMember",
+          "pos": {
+            "offset": 384,
+            "line": 23,
+            "column": 15
+          },
+          "end": {
+            "offset": 392,
+            "line": 24,
+            "column": 8
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 384,
+                "line": 23,
+                "column": 15
+              },
+              "end": {
+                "offset": 388,
+                "line": 24,
+                "column": 4
+              },
+              "text": "J"
+            },
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 390,
+                "line": 24,
+                "column": 6
+              },
+              "end": {
+                "offset": 392,
+                "line": 24,
+                "column": 8
+              },
+              "text": "H"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "FirstStatement",
+      "pos": {
+        "offset": 394,
+        "line": 25,
+        "column": 2
+      },
+      "end": {
+        "offset": 444,
+        "line": 28,
+        "column": 26
+      },
+      "children": [
+        {
+          "kind": "ExportKeyword",
+          "pos": {
+            "offset": 394,
+            "line": 25,
+            "column": 2
+          },
+          "end": {
+            "offset": 425,
+            "line": 28,
+            "column": 7
+          },
+          "text": "export"
+        },
+        {
+          "kind": "VariableDeclarationList",
+          "pos": {
+            "offset": 425,
+            "line": 28,
+            "column": 7
+          },
+          "end": {
+            "offset": 443,
+            "line": 28,
+            "column": 25
+          },
+          "children": [
+            {
+              "kind": "VariableDeclaration",
+              "pos": {
+                "offset": 431,
+                "line": 28,
+                "column": 13
+              },
+              "end": {
+                "offset": 443,
+                "line": 28,
+                "column": 25
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 431,
+                    "line": 28,
+                    "column": 13
+                  },
+                  "end": {
+                    "offset": 435,
+                    "line": 28,
+                    "column": 17
+                  },
+                  "text": "BAR"
+                },
+                {
+                  "kind": "StringLiteral",
+                  "pos": {
+                    "offset": 437,
+                    "line": 28,
+                    "column": 19
+                  },
+                  "end": {
+                    "offset": 443,
+                    "line": 28,
+                    "column": 25
+                  },
+                  "text": "bar"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 444,
+        "line": 28,
+        "column": 26
+      },
+      "end": {
+        "offset": 444,
+        "line": 28,
+        "column": 26
+      },
+      "text": ""
+    }
+  ]
+}

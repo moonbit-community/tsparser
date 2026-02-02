@@ -1,0 +1,653 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 263,
+    "line": 17,
+    "column": 4
+  },
+  "children": [
+    {
+      "kind": "InterfaceDeclaration",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 61,
+        "line": 4,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 29,
+            "line": 2,
+            "column": 10
+          },
+          "end": {
+            "offset": 33,
+            "line": 2,
+            "column": 14
+          },
+          "text": "Foo"
+        },
+        {
+          "kind": "PropertySignature",
+          "pos": {
+            "offset": 35,
+            "line": 2,
+            "column": 16
+          },
+          "end": {
+            "offset": 58,
+            "line": 3,
+            "column": 22
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 35,
+                "line": 2,
+                "column": 16
+              },
+              "end": {
+                "offset": 48,
+                "line": 3,
+                "column": 12
+              },
+              "text": "fooProp"
+            },
+            {
+              "kind": "BooleanKeyword",
+              "pos": {
+                "offset": 49,
+                "line": 3,
+                "column": 13
+              },
+              "end": {
+                "offset": 57,
+                "line": 3,
+                "column": 21
+              },
+              "text": "boolean"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "InterfaceDeclaration",
+      "pos": {
+        "offset": 61,
+        "line": 4,
+        "column": 2
+      },
+      "end": {
+        "offset": 105,
+        "line": 8,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 74,
+            "line": 6,
+            "column": 10
+          },
+          "end": {
+            "offset": 78,
+            "line": 6,
+            "column": 14
+          },
+          "text": "Bar"
+        },
+        {
+          "kind": "PropertySignature",
+          "pos": {
+            "offset": 80,
+            "line": 6,
+            "column": 16
+          },
+          "end": {
+            "offset": 102,
+            "line": 7,
+            "column": 21
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 80,
+                "line": 6,
+                "column": 16
+              },
+              "end": {
+                "offset": 93,
+                "line": 7,
+                "column": 12
+              },
+              "text": "barProp"
+            },
+            {
+              "kind": "StringKeyword",
+              "pos": {
+                "offset": 94,
+                "line": 7,
+                "column": 13
+              },
+              "end": {
+                "offset": 101,
+                "line": 7,
+                "column": 20
+              },
+              "text": "string"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "InterfaceDeclaration",
+      "pos": {
+        "offset": 105,
+        "line": 8,
+        "column": 2
+      },
+      "end": {
+        "offset": 147,
+        "line": 11,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 118,
+            "line": 10,
+            "column": 10
+          },
+          "end": {
+            "offset": 125,
+            "line": 10,
+            "column": 17
+          },
+          "text": "FooBar"
+        },
+        {
+          "kind": "HeritageClause",
+          "pos": {
+            "offset": 125,
+            "line": 10,
+            "column": 17
+          },
+          "end": {
+            "offset": 142,
+            "line": 10,
+            "column": 34
+          },
+          "children": [
+            {
+              "kind": "ExpressionWithTypeArguments",
+              "pos": {
+                "offset": 133,
+                "line": 10,
+                "column": 25
+              },
+              "end": {
+                "offset": 137,
+                "line": 10,
+                "column": 29
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 133,
+                    "line": 10,
+                    "column": 25
+                  },
+                  "end": {
+                    "offset": 137,
+                    "line": 10,
+                    "column": 29
+                  },
+                  "text": "Foo"
+                }
+              ]
+            },
+            {
+              "kind": "ExpressionWithTypeArguments",
+              "pos": {
+                "offset": 138,
+                "line": 10,
+                "column": 30
+              },
+              "end": {
+                "offset": 142,
+                "line": 10,
+                "column": 34
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 138,
+                    "line": 10,
+                    "column": 30
+                  },
+                  "end": {
+                    "offset": 142,
+                    "line": 10,
+                    "column": 34
+                  },
+                  "text": "Bar"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "FunctionDeclaration",
+      "pos": {
+        "offset": 147,
+        "line": 11,
+        "column": 2
+      },
+      "end": {
+        "offset": 195,
+        "line": 13,
+        "column": 45
+      },
+      "children": [
+        {
+          "kind": "DeclareKeyword",
+          "pos": {
+            "offset": 147,
+            "line": 11,
+            "column": 2
+          },
+          "end": {
+            "offset": 158,
+            "line": 13,
+            "column": 8
+          },
+          "text": "declare"
+        },
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 167,
+            "line": 13,
+            "column": 17
+          },
+          "end": {
+            "offset": 174,
+            "line": 13,
+            "column": 24
+          },
+          "text": "mixBar"
+        },
+        {
+          "kind": "TypeParameter",
+          "pos": {
+            "offset": 175,
+            "line": 13,
+            "column": 25
+          },
+          "end": {
+            "offset": 176,
+            "line": 13,
+            "column": 26
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 175,
+                "line": 13,
+                "column": 25
+              },
+              "end": {
+                "offset": 176,
+                "line": 13,
+                "column": 26
+              },
+              "text": "T"
+            }
+          ]
+        },
+        {
+          "kind": "Parameter",
+          "pos": {
+            "offset": 178,
+            "line": 13,
+            "column": 28
+          },
+          "end": {
+            "offset": 184,
+            "line": 13,
+            "column": 34
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 178,
+                "line": 13,
+                "column": 28
+              },
+              "end": {
+                "offset": 181,
+                "line": 13,
+                "column": 31
+              },
+              "text": "obj"
+            },
+            {
+              "kind": "TypeReference",
+              "pos": {
+                "offset": 182,
+                "line": 13,
+                "column": 32
+              },
+              "end": {
+                "offset": 184,
+                "line": 13,
+                "column": 34
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 182,
+                    "line": 13,
+                    "column": 32
+                  },
+                  "end": {
+                    "offset": 184,
+                    "line": 13,
+                    "column": 34
+                  },
+                  "text": "T"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "IntersectionType",
+          "pos": {
+            "offset": 186,
+            "line": 13,
+            "column": 36
+          },
+          "end": {
+            "offset": 194,
+            "line": 13,
+            "column": 44
+          },
+          "children": [
+            {
+              "kind": "TypeReference",
+              "pos": {
+                "offset": 186,
+                "line": 13,
+                "column": 36
+              },
+              "end": {
+                "offset": 188,
+                "line": 13,
+                "column": 38
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 186,
+                    "line": 13,
+                    "column": 36
+                  },
+                  "end": {
+                    "offset": 188,
+                    "line": 13,
+                    "column": 38
+                  },
+                  "text": "T"
+                }
+              ]
+            },
+            {
+              "kind": "TypeReference",
+              "pos": {
+                "offset": 190,
+                "line": 13,
+                "column": 40
+              },
+              "end": {
+                "offset": 194,
+                "line": 13,
+                "column": 44
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 190,
+                    "line": 13,
+                    "column": 40
+                  },
+                  "end": {
+                    "offset": 194,
+                    "line": 13,
+                    "column": 44
+                  },
+                  "text": "Bar"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "FirstStatement",
+      "pos": {
+        "offset": 195,
+        "line": 13,
+        "column": 45
+      },
+      "end": {
+        "offset": 263,
+        "line": 17,
+        "column": 4
+      },
+      "children": [
+        {
+          "kind": "VariableDeclarationList",
+          "pos": {
+            "offset": 195,
+            "line": 13,
+            "column": 45
+          },
+          "end": {
+            "offset": 262,
+            "line": 17,
+            "column": 3
+          },
+          "children": [
+            {
+              "kind": "VariableDeclaration",
+              "pos": {
+                "offset": 202,
+                "line": 15,
+                "column": 4
+              },
+              "end": {
+                "offset": 262,
+                "line": 17,
+                "column": 3
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 202,
+                    "line": 15,
+                    "column": 4
+                  },
+                  "end": {
+                    "offset": 209,
+                    "line": 15,
+                    "column": 11
+                  },
+                  "text": "fooBar"
+                },
+                {
+                  "kind": "TypeReference",
+                  "pos": {
+                    "offset": 210,
+                    "line": 15,
+                    "column": 12
+                  },
+                  "end": {
+                    "offset": 217,
+                    "line": 15,
+                    "column": 19
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 210,
+                        "line": 15,
+                        "column": 12
+                      },
+                      "end": {
+                        "offset": 217,
+                        "line": 15,
+                        "column": 19
+                      },
+                      "text": "FooBar"
+                    }
+                  ]
+                },
+                {
+                  "kind": "CallExpression",
+                  "pos": {
+                    "offset": 219,
+                    "line": 15,
+                    "column": 21
+                  },
+                  "end": {
+                    "offset": 262,
+                    "line": 17,
+                    "column": 3
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 219,
+                        "line": 15,
+                        "column": 21
+                      },
+                      "end": {
+                        "offset": 226,
+                        "line": 15,
+                        "column": 28
+                      },
+                      "text": "mixBar"
+                    },
+                    {
+                      "kind": "ObjectLiteralExpression",
+                      "pos": {
+                        "offset": 227,
+                        "line": 15,
+                        "column": 29
+                      },
+                      "end": {
+                        "offset": 261,
+                        "line": 17,
+                        "column": 2
+                      },
+                      "children": [
+                        {
+                          "kind": "PropertyAssignment",
+                          "pos": {
+                            "offset": 228,
+                            "line": 15,
+                            "column": 30
+                          },
+                          "end": {
+                            "offset": 258,
+                            "line": 16,
+                            "column": 29
+                          },
+                          "children": [
+                            {
+                              "kind": "Identifier",
+                              "pos": {
+                                "offset": 228,
+                                "line": 15,
+                                "column": 30
+                              },
+                              "end": {
+                                "offset": 241,
+                                "line": 16,
+                                "column": 12
+                              },
+                              "text": "fooProp"
+                            },
+                            {
+                              "kind": "StringLiteral",
+                              "pos": {
+                                "offset": 242,
+                                "line": 16,
+                                "column": 13
+                              },
+                              "end": {
+                                "offset": 258,
+                                "line": 16,
+                                "column": 29
+                              },
+                              "text": "frizzlebizzle"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 263,
+        "line": 17,
+        "column": 4
+      },
+      "end": {
+        "offset": 263,
+        "line": 17,
+        "column": 4
+      },
+      "text": ""
+    }
+  ]
+}

@@ -1,0 +1,1557 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 878,
+    "line": 26,
+    "column": 2
+  },
+  "children": [
+    {
+      "kind": "InterfaceDeclaration",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 106,
+        "line": 7,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 73,
+            "line": 5,
+            "column": 10
+          },
+          "end": {
+            "offset": 82,
+            "line": 5,
+            "column": 19
+          },
+          "text": "IContext"
+        },
+        {
+          "kind": "MethodSignature",
+          "pos": {
+            "offset": 84,
+            "line": 5,
+            "column": 21
+          },
+          "end": {
+            "offset": 103,
+            "line": 6,
+            "column": 18
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 84,
+                "line": 5,
+                "column": 21
+              },
+              "end": {
+                "offset": 100,
+                "line": 6,
+                "column": 15
+              },
+              "text": "someMethod"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ClassDeclaration",
+      "pos": {
+        "offset": 106,
+        "line": 7,
+        "column": 2
+      },
+      "end": {
+        "offset": 746,
+        "line": 20,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 113,
+            "line": 8,
+            "column": 6
+          },
+          "end": {
+            "offset": 116,
+            "line": 8,
+            "column": 9
+          },
+          "text": "c1"
+        },
+        {
+          "kind": "MethodDeclaration",
+          "pos": {
+            "offset": 118,
+            "line": 8,
+            "column": 11
+          },
+          "end": {
+            "offset": 221,
+            "line": 9,
+            "column": 102
+          },
+          "children": [
+            {
+              "kind": "PrivateKeyword",
+              "pos": {
+                "offset": 118,
+                "line": 8,
+                "column": 11
+              },
+              "end": {
+                "offset": 131,
+                "line": 9,
+                "column": 12
+              },
+              "text": "private"
+            },
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 131,
+                "line": 9,
+                "column": 12
+              },
+              "end": {
+                "offset": 154,
+                "line": 9,
+                "column": 35
+              },
+              "text": "_forEachBindingContext"
+            },
+            {
+              "kind": "Parameter",
+              "pos": {
+                "offset": 155,
+                "line": 9,
+                "column": 36
+              },
+              "end": {
+                "offset": 179,
+                "line": 9,
+                "column": 60
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 155,
+                    "line": 9,
+                    "column": 36
+                  },
+                  "end": {
+                    "offset": 169,
+                    "line": 9,
+                    "column": 50
+                  },
+                  "text": "bindingContext"
+                },
+                {
+                  "kind": "TypeReference",
+                  "pos": {
+                    "offset": 170,
+                    "line": 9,
+                    "column": 51
+                  },
+                  "end": {
+                    "offset": 179,
+                    "line": 9,
+                    "column": 60
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 170,
+                        "line": 9,
+                        "column": 51
+                      },
+                      "end": {
+                        "offset": 179,
+                        "line": 9,
+                        "column": 60
+                      },
+                      "text": "IContext"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "Parameter",
+              "pos": {
+                "offset": 180,
+                "line": 9,
+                "column": 61
+              },
+              "end": {
+                "offset": 219,
+                "line": 9,
+                "column": 100
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 180,
+                    "line": 9,
+                    "column": 61
+                  },
+                  "end": {
+                    "offset": 183,
+                    "line": 9,
+                    "column": 64
+                  },
+                  "text": "fn"
+                },
+                {
+                  "kind": "FunctionType",
+                  "pos": {
+                    "offset": 184,
+                    "line": 9,
+                    "column": 65
+                  },
+                  "end": {
+                    "offset": 219,
+                    "line": 9,
+                    "column": 100
+                  },
+                  "children": [
+                    {
+                      "kind": "Parameter",
+                      "pos": {
+                        "offset": 186,
+                        "line": 9,
+                        "column": 67
+                      },
+                      "end": {
+                        "offset": 210,
+                        "line": 9,
+                        "column": 91
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 186,
+                            "line": 9,
+                            "column": 67
+                          },
+                          "end": {
+                            "offset": 200,
+                            "line": 9,
+                            "column": 81
+                          },
+                          "text": "bindingContext"
+                        },
+                        {
+                          "kind": "TypeReference",
+                          "pos": {
+                            "offset": 201,
+                            "line": 9,
+                            "column": 82
+                          },
+                          "end": {
+                            "offset": 210,
+                            "line": 9,
+                            "column": 91
+                          },
+                          "children": [
+                            {
+                              "kind": "Identifier",
+                              "pos": {
+                                "offset": 201,
+                                "line": 9,
+                                "column": 82
+                              },
+                              "end": {
+                                "offset": 210,
+                                "line": 9,
+                                "column": 91
+                              },
+                              "text": "IContext"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "VoidKeyword",
+                      "pos": {
+                        "offset": 214,
+                        "line": 9,
+                        "column": 95
+                      },
+                      "end": {
+                        "offset": 219,
+                        "line": 9,
+                        "column": 100
+                      },
+                      "text": "void"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "MethodDeclaration",
+          "pos": {
+            "offset": 221,
+            "line": 9,
+            "column": 102
+          },
+          "end": {
+            "offset": 336,
+            "line": 10,
+            "column": 114
+          },
+          "children": [
+            {
+              "kind": "PrivateKeyword",
+              "pos": {
+                "offset": 221,
+                "line": 9,
+                "column": 102
+              },
+              "end": {
+                "offset": 234,
+                "line": 10,
+                "column": 12
+              },
+              "text": "private"
+            },
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 234,
+                "line": 10,
+                "column": 12
+              },
+              "end": {
+                "offset": 257,
+                "line": 10,
+                "column": 35
+              },
+              "text": "_forEachBindingContext"
+            },
+            {
+              "kind": "Parameter",
+              "pos": {
+                "offset": 258,
+                "line": 10,
+                "column": 36
+              },
+              "end": {
+                "offset": 294,
+                "line": 10,
+                "column": 72
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 258,
+                    "line": 10,
+                    "column": 36
+                  },
+                  "end": {
+                    "offset": 277,
+                    "line": 10,
+                    "column": 55
+                  },
+                  "text": "bindingContextArray"
+                },
+                {
+                  "kind": "TypeReference",
+                  "pos": {
+                    "offset": 278,
+                    "line": 10,
+                    "column": 56
+                  },
+                  "end": {
+                    "offset": 294,
+                    "line": 10,
+                    "column": 72
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 278,
+                        "line": 10,
+                        "column": 56
+                      },
+                      "end": {
+                        "offset": 284,
+                        "line": 10,
+                        "column": 62
+                      },
+                      "text": "Array"
+                    },
+                    {
+                      "kind": "TypeReference",
+                      "pos": {
+                        "offset": 285,
+                        "line": 10,
+                        "column": 63
+                      },
+                      "end": {
+                        "offset": 293,
+                        "line": 10,
+                        "column": 71
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 285,
+                            "line": 10,
+                            "column": 63
+                          },
+                          "end": {
+                            "offset": 293,
+                            "line": 10,
+                            "column": 71
+                          },
+                          "text": "IContext"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "Parameter",
+              "pos": {
+                "offset": 295,
+                "line": 10,
+                "column": 73
+              },
+              "end": {
+                "offset": 334,
+                "line": 10,
+                "column": 112
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 295,
+                    "line": 10,
+                    "column": 73
+                  },
+                  "end": {
+                    "offset": 298,
+                    "line": 10,
+                    "column": 76
+                  },
+                  "text": "fn"
+                },
+                {
+                  "kind": "FunctionType",
+                  "pos": {
+                    "offset": 299,
+                    "line": 10,
+                    "column": 77
+                  },
+                  "end": {
+                    "offset": 334,
+                    "line": 10,
+                    "column": 112
+                  },
+                  "children": [
+                    {
+                      "kind": "Parameter",
+                      "pos": {
+                        "offset": 301,
+                        "line": 10,
+                        "column": 79
+                      },
+                      "end": {
+                        "offset": 325,
+                        "line": 10,
+                        "column": 103
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 301,
+                            "line": 10,
+                            "column": 79
+                          },
+                          "end": {
+                            "offset": 315,
+                            "line": 10,
+                            "column": 93
+                          },
+                          "text": "bindingContext"
+                        },
+                        {
+                          "kind": "TypeReference",
+                          "pos": {
+                            "offset": 316,
+                            "line": 10,
+                            "column": 94
+                          },
+                          "end": {
+                            "offset": 325,
+                            "line": 10,
+                            "column": 103
+                          },
+                          "children": [
+                            {
+                              "kind": "Identifier",
+                              "pos": {
+                                "offset": 316,
+                                "line": 10,
+                                "column": 94
+                              },
+                              "end": {
+                                "offset": 325,
+                                "line": 10,
+                                "column": 103
+                              },
+                              "text": "IContext"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "VoidKeyword",
+                      "pos": {
+                        "offset": 329,
+                        "line": 10,
+                        "column": 107
+                      },
+                      "end": {
+                        "offset": 334,
+                        "line": 10,
+                        "column": 112
+                      },
+                      "text": "void"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "MethodDeclaration",
+          "pos": {
+            "offset": 336,
+            "line": 10,
+            "column": 114
+          },
+          "end": {
+            "offset": 462,
+            "line": 13,
+            "column": 6
+          },
+          "children": [
+            {
+              "kind": "PrivateKeyword",
+              "pos": {
+                "offset": 336,
+                "line": 10,
+                "column": 114
+              },
+              "end": {
+                "offset": 349,
+                "line": 11,
+                "column": 12
+              },
+              "text": "private"
+            },
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 349,
+                "line": 11,
+                "column": 12
+              },
+              "end": {
+                "offset": 372,
+                "line": 11,
+                "column": 35
+              },
+              "text": "_forEachBindingContext"
+            },
+            {
+              "kind": "Parameter",
+              "pos": {
+                "offset": 373,
+                "line": 11,
+                "column": 36
+              },
+              "end": {
+                "offset": 380,
+                "line": 11,
+                "column": 43
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 373,
+                    "line": 11,
+                    "column": 36
+                  },
+                  "end": {
+                    "offset": 380,
+                    "line": 11,
+                    "column": 43
+                  },
+                  "text": "context"
+                }
+              ]
+            },
+            {
+              "kind": "Parameter",
+              "pos": {
+                "offset": 381,
+                "line": 11,
+                "column": 44
+              },
+              "end": {
+                "offset": 420,
+                "line": 11,
+                "column": 83
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 381,
+                    "line": 11,
+                    "column": 44
+                  },
+                  "end": {
+                    "offset": 384,
+                    "line": 11,
+                    "column": 47
+                  },
+                  "text": "fn"
+                },
+                {
+                  "kind": "FunctionType",
+                  "pos": {
+                    "offset": 385,
+                    "line": 11,
+                    "column": 48
+                  },
+                  "end": {
+                    "offset": 420,
+                    "line": 11,
+                    "column": 83
+                  },
+                  "children": [
+                    {
+                      "kind": "Parameter",
+                      "pos": {
+                        "offset": 387,
+                        "line": 11,
+                        "column": 50
+                      },
+                      "end": {
+                        "offset": 411,
+                        "line": 11,
+                        "column": 74
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 387,
+                            "line": 11,
+                            "column": 50
+                          },
+                          "end": {
+                            "offset": 401,
+                            "line": 11,
+                            "column": 64
+                          },
+                          "text": "bindingContext"
+                        },
+                        {
+                          "kind": "TypeReference",
+                          "pos": {
+                            "offset": 402,
+                            "line": 11,
+                            "column": 65
+                          },
+                          "end": {
+                            "offset": 411,
+                            "line": 11,
+                            "column": 74
+                          },
+                          "children": [
+                            {
+                              "kind": "Identifier",
+                              "pos": {
+                                "offset": 402,
+                                "line": 11,
+                                "column": 65
+                              },
+                              "end": {
+                                "offset": 411,
+                                "line": 11,
+                                "column": 74
+                              },
+                              "text": "IContext"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "VoidKeyword",
+                      "pos": {
+                        "offset": 415,
+                        "line": 11,
+                        "column": 78
+                      },
+                      "end": {
+                        "offset": 420,
+                        "line": 11,
+                        "column": 83
+                      },
+                      "text": "void"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "VoidKeyword",
+              "pos": {
+                "offset": 422,
+                "line": 11,
+                "column": 85
+              },
+              "end": {
+                "offset": 427,
+                "line": 11,
+                "column": 90
+              },
+              "text": "void"
+            },
+            {
+              "kind": "Block",
+              "pos": {
+                "offset": 427,
+                "line": 11,
+                "column": 90
+              },
+              "end": {
+                "offset": 462,
+                "line": 13,
+                "column": 6
+              }
+            }
+          ]
+        },
+        {
+          "kind": "MethodDeclaration",
+          "pos": {
+            "offset": 462,
+            "line": 13,
+            "column": 6
+          },
+          "end": {
+            "offset": 532,
+            "line": 15,
+            "column": 67
+          },
+          "children": [
+            {
+              "kind": "PrivateKeyword",
+              "pos": {
+                "offset": 462,
+                "line": 13,
+                "column": 6
+              },
+              "end": {
+                "offset": 477,
+                "line": 15,
+                "column": 12
+              },
+              "text": "private"
+            },
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 477,
+                "line": 15,
+                "column": 12
+              },
+              "end": {
+                "offset": 505,
+                "line": 15,
+                "column": 40
+              },
+              "text": "overloadWithArityDifference"
+            },
+            {
+              "kind": "Parameter",
+              "pos": {
+                "offset": 506,
+                "line": 15,
+                "column": 41
+              },
+              "end": {
+                "offset": 530,
+                "line": 15,
+                "column": 65
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 506,
+                    "line": 15,
+                    "column": 41
+                  },
+                  "end": {
+                    "offset": 520,
+                    "line": 15,
+                    "column": 55
+                  },
+                  "text": "bindingContext"
+                },
+                {
+                  "kind": "TypeReference",
+                  "pos": {
+                    "offset": 521,
+                    "line": 15,
+                    "column": 56
+                  },
+                  "end": {
+                    "offset": 530,
+                    "line": 15,
+                    "column": 65
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 521,
+                        "line": 15,
+                        "column": 56
+                      },
+                      "end": {
+                        "offset": 530,
+                        "line": 15,
+                        "column": 65
+                      },
+                      "text": "IContext"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "MethodDeclaration",
+          "pos": {
+            "offset": 532,
+            "line": 15,
+            "column": 67
+          },
+          "end": {
+            "offset": 652,
+            "line": 16,
+            "column": 119
+          },
+          "children": [
+            {
+              "kind": "PrivateKeyword",
+              "pos": {
+                "offset": 532,
+                "line": 15,
+                "column": 67
+              },
+              "end": {
+                "offset": 545,
+                "line": 16,
+                "column": 12
+              },
+              "text": "private"
+            },
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 545,
+                "line": 16,
+                "column": 12
+              },
+              "end": {
+                "offset": 573,
+                "line": 16,
+                "column": 40
+              },
+              "text": "overloadWithArityDifference"
+            },
+            {
+              "kind": "Parameter",
+              "pos": {
+                "offset": 574,
+                "line": 16,
+                "column": 41
+              },
+              "end": {
+                "offset": 610,
+                "line": 16,
+                "column": 77
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 574,
+                    "line": 16,
+                    "column": 41
+                  },
+                  "end": {
+                    "offset": 593,
+                    "line": 16,
+                    "column": 60
+                  },
+                  "text": "bindingContextArray"
+                },
+                {
+                  "kind": "TypeReference",
+                  "pos": {
+                    "offset": 594,
+                    "line": 16,
+                    "column": 61
+                  },
+                  "end": {
+                    "offset": 610,
+                    "line": 16,
+                    "column": 77
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 594,
+                        "line": 16,
+                        "column": 61
+                      },
+                      "end": {
+                        "offset": 600,
+                        "line": 16,
+                        "column": 67
+                      },
+                      "text": "Array"
+                    },
+                    {
+                      "kind": "TypeReference",
+                      "pos": {
+                        "offset": 601,
+                        "line": 16,
+                        "column": 68
+                      },
+                      "end": {
+                        "offset": 609,
+                        "line": 16,
+                        "column": 76
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 601,
+                            "line": 16,
+                            "column": 68
+                          },
+                          "end": {
+                            "offset": 609,
+                            "line": 16,
+                            "column": 76
+                          },
+                          "text": "IContext"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "Parameter",
+              "pos": {
+                "offset": 611,
+                "line": 16,
+                "column": 78
+              },
+              "end": {
+                "offset": 650,
+                "line": 16,
+                "column": 117
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 611,
+                    "line": 16,
+                    "column": 78
+                  },
+                  "end": {
+                    "offset": 614,
+                    "line": 16,
+                    "column": 81
+                  },
+                  "text": "fn"
+                },
+                {
+                  "kind": "FunctionType",
+                  "pos": {
+                    "offset": 615,
+                    "line": 16,
+                    "column": 82
+                  },
+                  "end": {
+                    "offset": 650,
+                    "line": 16,
+                    "column": 117
+                  },
+                  "children": [
+                    {
+                      "kind": "Parameter",
+                      "pos": {
+                        "offset": 617,
+                        "line": 16,
+                        "column": 84
+                      },
+                      "end": {
+                        "offset": 641,
+                        "line": 16,
+                        "column": 108
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 617,
+                            "line": 16,
+                            "column": 84
+                          },
+                          "end": {
+                            "offset": 631,
+                            "line": 16,
+                            "column": 98
+                          },
+                          "text": "bindingContext"
+                        },
+                        {
+                          "kind": "TypeReference",
+                          "pos": {
+                            "offset": 632,
+                            "line": 16,
+                            "column": 99
+                          },
+                          "end": {
+                            "offset": 641,
+                            "line": 16,
+                            "column": 108
+                          },
+                          "children": [
+                            {
+                              "kind": "Identifier",
+                              "pos": {
+                                "offset": 632,
+                                "line": 16,
+                                "column": 99
+                              },
+                              "end": {
+                                "offset": 641,
+                                "line": 16,
+                                "column": 108
+                              },
+                              "text": "IContext"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "VoidKeyword",
+                      "pos": {
+                        "offset": 645,
+                        "line": 16,
+                        "column": 112
+                      },
+                      "end": {
+                        "offset": 650,
+                        "line": 16,
+                        "column": 117
+                      },
+                      "text": "void"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "MethodDeclaration",
+          "pos": {
+            "offset": 652,
+            "line": 16,
+            "column": 119
+          },
+          "end": {
+            "offset": 743,
+            "line": 19,
+            "column": 6
+          },
+          "children": [
+            {
+              "kind": "PrivateKeyword",
+              "pos": {
+                "offset": 652,
+                "line": 16,
+                "column": 119
+              },
+              "end": {
+                "offset": 665,
+                "line": 17,
+                "column": 12
+              },
+              "text": "private"
+            },
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 665,
+                "line": 17,
+                "column": 12
+              },
+              "end": {
+                "offset": 693,
+                "line": 17,
+                "column": 40
+              },
+              "text": "overloadWithArityDifference"
+            },
+            {
+              "kind": "Parameter",
+              "pos": {
+                "offset": 694,
+                "line": 17,
+                "column": 41
+              },
+              "end": {
+                "offset": 701,
+                "line": 17,
+                "column": 48
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 694,
+                    "line": 17,
+                    "column": 41
+                  },
+                  "end": {
+                    "offset": 701,
+                    "line": 17,
+                    "column": 48
+                  },
+                  "text": "context"
+                }
+              ]
+            },
+            {
+              "kind": "VoidKeyword",
+              "pos": {
+                "offset": 703,
+                "line": 17,
+                "column": 50
+              },
+              "end": {
+                "offset": 708,
+                "line": 17,
+                "column": 55
+              },
+              "text": "void"
+            },
+            {
+              "kind": "Block",
+              "pos": {
+                "offset": 708,
+                "line": 17,
+                "column": 55
+              },
+              "end": {
+                "offset": 743,
+                "line": 19,
+                "column": 6
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ClassDeclaration",
+      "pos": {
+        "offset": 746,
+        "line": 20,
+        "column": 2
+      },
+      "end": {
+        "offset": 878,
+        "line": 26,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "DeclareKeyword",
+          "pos": {
+            "offset": 746,
+            "line": 20,
+            "column": 2
+          },
+          "end": {
+            "offset": 755,
+            "line": 21,
+            "column": 8
+          },
+          "text": "declare"
+        },
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 761,
+            "line": 21,
+            "column": 14
+          },
+          "end": {
+            "offset": 764,
+            "line": 21,
+            "column": 17
+          },
+          "text": "c2"
+        },
+        {
+          "kind": "MethodDeclaration",
+          "pos": {
+            "offset": 766,
+            "line": 21,
+            "column": 19
+          },
+          "end": {
+            "offset": 803,
+            "line": 22,
+            "column": 36
+          },
+          "children": [
+            {
+              "kind": "PrivateKeyword",
+              "pos": {
+                "offset": 766,
+                "line": 21,
+                "column": 19
+              },
+              "end": {
+                "offset": 779,
+                "line": 22,
+                "column": 12
+              },
+              "text": "private"
+            },
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 779,
+                "line": 22,
+                "column": 12
+              },
+              "end": {
+                "offset": 789,
+                "line": 22,
+                "column": 22
+              },
+              "text": "overload1"
+            },
+            {
+              "kind": "Parameter",
+              "pos": {
+                "offset": 790,
+                "line": 22,
+                "column": 23
+              },
+              "end": {
+                "offset": 797,
+                "line": 22,
+                "column": 30
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 790,
+                    "line": 22,
+                    "column": 23
+                  },
+                  "end": {
+                    "offset": 797,
+                    "line": 22,
+                    "column": 30
+                  },
+                  "text": "context"
+                }
+              ]
+            },
+            {
+              "kind": "Parameter",
+              "pos": {
+                "offset": 798,
+                "line": 22,
+                "column": 31
+              },
+              "end": {
+                "offset": 801,
+                "line": 22,
+                "column": 34
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 798,
+                    "line": 22,
+                    "column": 31
+                  },
+                  "end": {
+                    "offset": 801,
+                    "line": 22,
+                    "column": 34
+                  },
+                  "text": "fn"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "MethodDeclaration",
+          "pos": {
+            "offset": 803,
+            "line": 22,
+            "column": 36
+          },
+          "end": {
+            "offset": 838,
+            "line": 24,
+            "column": 32
+          },
+          "children": [
+            {
+              "kind": "PrivateKeyword",
+              "pos": {
+                "offset": 803,
+                "line": 22,
+                "column": 36
+              },
+              "end": {
+                "offset": 818,
+                "line": 24,
+                "column": 12
+              },
+              "text": "private"
+            },
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 818,
+                "line": 24,
+                "column": 12
+              },
+              "end": {
+                "offset": 828,
+                "line": 24,
+                "column": 22
+              },
+              "text": "overload2"
+            },
+            {
+              "kind": "Parameter",
+              "pos": {
+                "offset": 829,
+                "line": 24,
+                "column": 23
+              },
+              "end": {
+                "offset": 836,
+                "line": 24,
+                "column": 30
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 829,
+                    "line": 24,
+                    "column": 23
+                  },
+                  "end": {
+                    "offset": 836,
+                    "line": 24,
+                    "column": 30
+                  },
+                  "text": "context"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "MethodDeclaration",
+          "pos": {
+            "offset": 838,
+            "line": 24,
+            "column": 32
+          },
+          "end": {
+            "offset": 875,
+            "line": 25,
+            "column": 36
+          },
+          "children": [
+            {
+              "kind": "PrivateKeyword",
+              "pos": {
+                "offset": 838,
+                "line": 24,
+                "column": 32
+              },
+              "end": {
+                "offset": 851,
+                "line": 25,
+                "column": 12
+              },
+              "text": "private"
+            },
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 851,
+                "line": 25,
+                "column": 12
+              },
+              "end": {
+                "offset": 861,
+                "line": 25,
+                "column": 22
+              },
+              "text": "overload2"
+            },
+            {
+              "kind": "Parameter",
+              "pos": {
+                "offset": 862,
+                "line": 25,
+                "column": 23
+              },
+              "end": {
+                "offset": 869,
+                "line": 25,
+                "column": 30
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 862,
+                    "line": 25,
+                    "column": 23
+                  },
+                  "end": {
+                    "offset": 869,
+                    "line": 25,
+                    "column": 30
+                  },
+                  "text": "context"
+                }
+              ]
+            },
+            {
+              "kind": "Parameter",
+              "pos": {
+                "offset": 870,
+                "line": 25,
+                "column": 31
+              },
+              "end": {
+                "offset": 873,
+                "line": 25,
+                "column": 34
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 870,
+                    "line": 25,
+                    "column": 31
+                  },
+                  "end": {
+                    "offset": 873,
+                    "line": 25,
+                    "column": 34
+                  },
+                  "text": "fn"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 878,
+        "line": 26,
+        "column": 2
+      },
+      "end": {
+        "offset": 878,
+        "line": 26,
+        "column": 2
+      },
+      "text": ""
+    }
+  ]
+}

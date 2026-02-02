@@ -1,0 +1,947 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/tsparser"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn create_source_file(String, ParseOptions) -> SourceFile
+
+pub fn default_parse_options(String, script_kind? : ScriptKind, jsdoc_parsing_mode? : JsDocParsingMode) -> ParseOptions
+
+pub fn default_parse_options_without_jsdoc(String, script_kind? : ScriptKind) -> ParseOptions
+
+pub fn parse_isolated_entity_name(String, ParseOptions) -> (Array[ParseError], String?)
+
+pub fn parse_isolated_jsdoc_comment(String, ParseOptions) -> (Array[ParseError], CommentRange?)
+
+pub fn parse_isolated_type_expression(String, ParseOptions) -> (Array[ParseError], TypeNode?)
+
+pub fn parse_json_text(String, name? : String) -> SourceFile
+
+pub fn parse_program(String, name? : String) -> (ArrayView[ParseError], Program)
+
+pub fn parse_program_with_jsx(String, Bool, name? : String) -> (ArrayView[ParseError], Program)
+
+pub fn parse_source(String, ParseOptions) -> (ArrayView[ParseError], Program)
+
+// Errors
+pub(all) suberror LexError {
+  InvalidChar(pos~ : Position, UInt16)
+  UnterminatedString(pos~ : Position)
+  UnexpectedEndOfText(pos~ : Position)
+  UnterminatedComment(pos~ : Position)
+  InvalidNumber(pos~ : Position, String)
+} derive(Eq, @debug.Debug)
+
+pub(all) suberror ParseError {
+  LexErr(LexError)
+  SpeculativeArrowFailure
+  Diagnostic(filename~ : String, line~ : Int, column~ : Int, error_code~ : Int, error_msg~ : String)
+} derive(Eq, @debug.Debug)
+pub impl Show for ParseError
+
+// Types and methods
+pub enum AccessModifier {
+  Public
+  Private
+  Protected
+} derive(@debug.Debug)
+
+pub enum ArrayElement {
+  Expr(Expr)
+  Spread(Expr)
+  Hole
+} derive(@debug.Debug)
+
+pub struct ArrayPattern {
+  elems : Array[ArrayPatternElem]
+} derive(@debug.Debug)
+
+pub enum ArrayPatternElem {
+  Elem(BindingElement)
+  Rest(BindingPattern)
+  Hole
+} derive(@debug.Debug)
+
+pub struct ArrowFunction {
+  type_params : Array[TypeParam]
+  params : Array[Param]
+  return_type : TypeNode?
+  body : FunctionBody
+} derive(@debug.Debug)
+
+pub struct AsExpr {
+  expr : Expr
+  type_ann : TypeNode
+} derive(@debug.Debug)
+
+pub struct AssignExpr {
+  op : AssignOp
+  target : Expr
+  value : Expr
+} derive(@debug.Debug)
+
+pub enum AssignOp {
+  Assign
+  AddAssign
+  SubAssign
+  MulAssign
+  DivAssign
+  ModAssign
+  PowAssign
+  LogicalAndAssign
+  LogicalOrAssign
+  NullishAssign
+  BitAndAssign
+  BitOrAssign
+  BitXorAssign
+  ShlAssign
+  ShrAssign
+  UShrAssign
+} derive(@debug.Debug)
+
+pub struct BinaryExpr {
+  op : BinaryOp
+  left : Expr
+  right : Expr
+} derive(@debug.Debug)
+
+pub enum BinaryOp {
+  Add
+  Sub
+  Mul
+  Div
+  Mod
+  Eq
+  Neq
+  StrictEq
+  StrictNeq
+  Lt
+  Lte
+  Gt
+  Gte
+  Instanceof
+  In
+  And
+  Or
+  Nullish
+  BitAnd
+  BitOr
+  BitXor
+  Shl
+  Shr
+  UShr
+  Comma
+  Pow
+} derive(@debug.Debug)
+
+pub struct BindingElement {
+  pattern : BindingPattern
+  default_value : Expr?
+  span : Span
+} derive(@debug.Debug)
+
+pub struct BindingPattern {
+  kind : BindingPatternKind
+  span : Span
+} derive(@debug.Debug)
+
+pub enum BindingPatternKind {
+  Ident(String)
+  Object(ObjectPattern)
+  Array(ArrayPattern)
+} derive(@debug.Debug)
+
+pub struct Block {
+  stmts : Array[Stmt]
+  span : Span
+} derive(@debug.Debug)
+
+pub struct CallExpr {
+  callee : Expr
+  args : Array[Expr]
+  optional : Bool
+} derive(@debug.Debug)
+
+pub struct CatchClause {
+  param : CatchParam?
+  body : Block
+} derive(@debug.Debug)
+
+pub struct CatchParam {
+  name : String
+  type_ann : TypeNode?
+  span : Span
+} derive(@debug.Debug)
+
+pub struct ClassDecl {
+  name : String?
+  decorators : Array[Expr]
+  type_params : Array[TypeParam]
+  extends : Expr?
+  implements : Array[TypeNode]
+  members : Array[ClassMember]
+  span : Span
+} derive(@debug.Debug)
+
+pub struct ClassMember {
+  kind : ClassMemberKind
+  decorators : Array[Expr]
+  is_static : Bool
+  access : AccessModifier?
+  is_readonly : Bool
+  span : Span
+} derive(@debug.Debug)
+
+pub enum ClassMemberKind {
+  StaticBlock(Block)
+  Constructor(Array[Param], Block)
+  Method(MemberName, Array[Param], TypeNode?, Block)
+  Getter(MemberName, TypeNode?, Block)
+  Setter(MemberName, Param, Block)
+  Field(MemberName, TypeNode?, Expr?)
+} derive(@debug.Debug)
+
+pub struct CommentDirective {
+  kind : CommentDirectiveKind
+  span : Span
+  text : String
+} derive(@debug.Debug)
+
+pub enum CommentDirectiveKind {
+  TsIgnore
+  TsExpectError
+  TsNoCheck
+  TsCheck
+} derive(@debug.Debug)
+
+pub enum CommentKind {
+  Line
+  Block
+  JsDoc
+} derive(@debug.Debug)
+
+pub struct CommentRange {
+  kind : CommentKind
+  span : Span
+  text : String
+} derive(@debug.Debug)
+
+pub struct ConditionalExpr {
+  condition : Expr
+  consequent : Expr
+  alternate : Expr
+} derive(@debug.Debug)
+
+pub struct ConstructorType {
+  type_params : Array[TypeParam]
+  params : Array[Param]
+  return_type : TypeNode
+  is_abstract : Bool
+} derive(@debug.Debug)
+
+pub struct DoWhileStmt {
+  body : Stmt
+  condition : Expr
+} derive(@debug.Debug)
+
+pub struct EnumDecl {
+  name : String
+  members : Array[EnumMember]
+  is_const : Bool
+  span : Span
+} derive(@debug.Debug)
+
+pub struct EnumMember {
+  name : String
+  init : Expr?
+  span : Span
+} derive(@debug.Debug)
+
+pub enum ExportDecl {
+  Named(ExportNamed)
+  Default(ExportDefault)
+  Declaration(Stmt)
+  Assign(Expr)
+} derive(@debug.Debug)
+
+pub enum ExportDefault {
+  Expr(Expr)
+  Function(FunctionDecl)
+  Class(ClassDecl)
+} derive(@debug.Debug)
+
+pub struct ExportNamed {
+  is_type_only : Bool
+  specs : Array[ExportSpec]
+  module_specifier : Expr?
+} derive(@debug.Debug)
+
+pub struct ExportSpec {
+  is_type_only : Bool
+  name : String
+  as_name : String?
+  span : Span
+} derive(@debug.Debug)
+
+pub struct Expr {
+  kind : ExprKind
+  span : Span
+} derive(@debug.Debug)
+
+pub enum ExprKind {
+  Ident(String)
+  PrivateIdent(String)
+  Number(String)
+  String(String)
+  Bool(Bool)
+  Null
+  Undefined
+  This
+  Array(Array[ArrayElement])
+  Object(ObjectLiteral)
+  Function(FunctionDecl)
+  Class(ClassDecl)
+  Arrow(ArrowFunction)
+  New(NewExpr)
+  TypeAssert(TypeAssert)
+  As(AsExpr)
+  Satisfies(SatisfiesExpr)
+  JSXElement(JSXElement)
+  JSXFragment(JSXFragment)
+  Template(TemplateLiteral)
+  Unary(UnaryExpr)
+  Update(UpdateExpr)
+  NonNull(Expr)
+  Binary(BinaryExpr)
+  Conditional(ConditionalExpr)
+  Assign(AssignExpr)
+  Call(CallExpr)
+  Member(MemberExpr)
+} derive(@debug.Debug)
+
+pub enum ForInLeft {
+  Var(VarDecl)
+  Expr(Expr)
+} derive(@debug.Debug)
+
+pub struct ForInStmt {
+  left : ForInLeft
+  right : Expr
+  body : Stmt
+} derive(@debug.Debug)
+
+pub enum ForInit {
+  Var(VarDecl)
+  Expr(Expr)
+} derive(@debug.Debug)
+
+pub struct ForOfStmt {
+  left : ForInLeft
+  right : Expr
+  body : Stmt
+} derive(@debug.Debug)
+
+pub struct ForStmt {
+  init : ForInit?
+  condition : Expr?
+  update : Expr?
+  body : Stmt
+} derive(@debug.Debug)
+
+pub enum FunctionBody {
+  Block(Block)
+  Expr(Expr)
+} derive(@debug.Debug)
+
+pub struct FunctionDecl {
+  name : String?
+  type_params : Array[TypeParam]
+  params : Array[Param]
+  return_type : TypeNode?
+  body : Block
+} derive(@debug.Debug)
+
+pub struct ImportAssignDecl {
+  name : String
+  value : Expr
+  span : Span
+} derive(@debug.Debug)
+
+pub struct ImportAttribute {
+  name : String
+  value : Expr
+  span : Span
+} derive(@debug.Debug)
+
+pub struct ImportAttributes {
+  fields : Array[ImportAttribute]
+  span : Span
+} derive(@debug.Debug)
+
+pub struct ImportDecl {
+  is_type_only : Bool
+  default_name : String?
+  ns_name : String?
+  named : Array[ImportSpec]
+  module_specifier : Expr
+  span : Span
+} derive(@debug.Debug)
+
+pub struct ImportSpec {
+  is_type_only : Bool
+  name : String
+  as_name : String?
+  span : Span
+} derive(@debug.Debug)
+
+pub struct ImportType {
+  argument : String
+  attributes : ImportAttributes?
+  qualifier : String?
+  type_args : Array[TypeNode]
+  is_typeof : Bool
+} derive(@debug.Debug)
+
+pub struct InferType {
+  type_param : TypeParam
+} derive(@debug.Debug)
+
+pub struct InterfaceDecl {
+  name : String
+  type_params : Array[TypeParam]
+  extends : Array[TypeNode]
+  members : Array[InterfaceMember]
+  span : Span
+} derive(@debug.Debug)
+
+pub struct InterfaceMember {
+  name : TypeMemberName
+  optional : Bool
+  type_ann : TypeNode
+  span : Span
+} derive(@debug.Debug)
+
+pub enum JSXAttr {
+  Attribute(JSXAttribute)
+  Spread(JSXExprContainer)
+} derive(@debug.Debug)
+
+pub enum JSXAttrValue {
+  String(String)
+  Expr(JSXExprContainer)
+  Element(Expr)
+} derive(@debug.Debug)
+
+pub struct JSXAttribute {
+  name : String
+  value : JSXAttrValue?
+  span : Span
+} derive(@debug.Debug)
+
+pub enum JSXChild {
+  Text(String)
+  Expr(JSXExprContainer)
+  Element(Expr)
+} derive(@debug.Debug)
+
+pub struct JSXElement {
+  name : String
+  type_args : Array[TypeNode]
+  attrs : Array[JSXAttr]
+  children : Array[JSXChild]
+  self_closing : Bool
+  closing_name : String?
+  opening_span : Span
+  closing_span : Span?
+} derive(@debug.Debug)
+
+pub struct JSXExprContainer {
+  expr : Expr
+  span : Span
+} derive(@debug.Debug)
+
+pub struct JSXFragment {
+  children : Array[JSXChild]
+  opening_span : Span
+  closing_span : Span
+} derive(@debug.Debug)
+
+pub enum JsDocParsingMode {
+  ParseAll
+  ParseNone
+} derive(Eq, @debug.Debug)
+
+pub enum Keyword {
+  Let
+  Const
+  Var
+  Function
+  Return
+  If
+  Else
+  While
+  For
+  Do
+  Switch
+  Case
+  Type
+  Typeof
+  Interface
+  Enum
+  True
+  False
+  Null
+  Undefined
+  This
+  Delete
+  Void
+  Await
+  Yield
+  New
+  Class
+  Extends
+  Implements
+  Export
+  Import
+  From
+  As
+  Default
+  Abstract
+  Public
+  Private
+  Protected
+  Readonly
+  Static
+  Get
+  Set
+  Break
+  Continue
+  Try
+  Catch
+  Finally
+  Throw
+} derive(Eq, @debug.Debug)
+
+pub struct LabeledStmt {
+  label : String
+  stmt : Stmt
+} derive(@debug.Debug)
+
+pub struct MappedType {
+  readonly_modifier : MappedTypeModifier?
+  type_param_name : String
+  source_type : TypeNode
+  name_type : TypeNode?
+  optional_modifier : MappedTypeModifier?
+  value_type : TypeNode?
+} derive(@debug.Debug)
+
+pub enum MappedTypeModifier {
+  Add
+  Remove
+} derive(@debug.Debug)
+
+pub struct MemberExpr {
+  object : Expr
+  property : MemberProp
+  computed : Bool
+  optional : Bool
+} derive(@debug.Debug)
+
+pub enum MemberName {
+  Ident(String)
+  String(String)
+  Number(String)
+  Computed(String)
+  Private(String)
+} derive(@debug.Debug)
+
+pub enum MemberProp {
+  Ident(String)
+  Private(String)
+  Expr(Expr)
+} derive(@debug.Debug)
+
+pub struct NamespaceDecl {
+  name : String
+  body : Block
+  span : Span
+} derive(@debug.Debug)
+
+pub struct NewExpr {
+  callee : Expr
+  args : Array[Expr]
+} derive(@debug.Debug)
+
+pub struct ObjectLiteral {
+  props : Array[ObjectProp]
+} derive(@debug.Debug)
+
+pub struct ObjectPattern {
+  props : Array[ObjectPatternProp]
+} derive(@debug.Debug)
+
+pub enum ObjectPatternProp {
+  Property(ObjectPatternProperty)
+  Rest(BindingPattern)
+} derive(@debug.Debug)
+
+pub struct ObjectPatternProperty {
+  key : String
+  binding : BindingElement
+  shorthand : Bool
+  span : Span
+} derive(@debug.Debug)
+
+pub enum ObjectProp {
+  Property(ObjectPropEntry)
+  Spread(Expr)
+} derive(@debug.Debug)
+
+pub struct ObjectPropEntry {
+  name : String
+  value : Expr
+  shorthand : Bool
+  span : Span
+} derive(@debug.Debug)
+
+pub struct Param {
+  pattern : BindingPattern
+  optional : Bool
+  type_ann : TypeNode?
+  default_value : Expr?
+  is_rest : Bool
+  span : Span
+} derive(@debug.Debug)
+
+pub struct ParenthesizedType {
+  inner : TypeNode
+} derive(@debug.Debug)
+
+pub struct ParseOptions {
+  file_name : String
+  script_kind : ScriptKind
+  language_target : String?
+  jsx_mode : Bool
+  strict_mode : Bool
+  module_kind : String?
+  jsdoc_parsing_mode : JsDocParsingMode
+  allow_js : Bool
+  has_multi_target_directive : Bool
+  report_unreachable_code : Bool
+  isolated_modules : Bool
+  allow_synthetic_default_imports : Bool
+  verbatim_module_syntax : Bool
+  erasable_syntax_only : Bool
+  experimental_decorators : Bool
+} derive(@debug.Debug)
+
+pub struct Position {
+  offset : Int
+  line : Int
+  column : Int
+} derive(Eq, @debug.Debug)
+
+pub struct Program {
+  stmts : Array[Stmt]
+} derive(@debug.Debug)
+
+pub struct SatisfiesExpr {
+  expr : Expr
+  type_ann : TypeNode
+} derive(@debug.Debug)
+
+pub enum ScriptKind {
+  Ts
+  Tsx
+  Js
+  Jsx
+  Dts
+  Json
+} derive(Eq, @debug.Debug)
+
+pub struct SourceFile {
+  file_name : String
+  script_kind : ScriptKind
+  is_declaration_file : Bool
+  stmts : Array[Stmt]
+  parse_errors : Array[ParseError]
+  comment_directives : Array[CommentDirective]
+  comments : Array[CommentRange]
+  strict_mode : Bool
+  module_kind : String?
+  language_target : String?
+  jsx_mode : Bool
+  jsdoc_parsing_mode : JsDocParsingMode
+  external_module_indicator : Bool
+  identifiers : Array[String]
+} derive(@debug.Debug)
+
+pub struct Span {
+  start : Position
+  end : Position
+} derive(Eq, @debug.Debug)
+pub fn Span::merge(Self, Self) -> Self
+
+pub struct Stmt {
+  kind : StmtKind
+  span : Span
+} derive(@debug.Debug)
+
+pub enum StmtKind {
+  ImportDecl(ImportDecl)
+  ImportAssign(ImportAssignDecl)
+  ExportDecl(ExportDecl)
+  VarDecl(VarDecl)
+  FunctionDecl(FunctionDecl)
+  ClassDecl(ClassDecl)
+  NamespaceDecl(NamespaceDecl)
+  TypeAliasDecl(TypeAliasDecl)
+  InterfaceDecl(InterfaceDecl)
+  EnumDecl(EnumDecl)
+  Return(Expr?)
+  If(Expr, Stmt, Stmt?)
+  While(Expr, Stmt)
+  For(ForStmt)
+  ForIn(ForInStmt)
+  ForOf(ForOfStmt)
+  DoWhile(DoWhileStmt)
+  Switch(SwitchStmt)
+  Break(String?)
+  Continue(String?)
+  Throw(Expr)
+  With(WithStmt)
+  Debugger
+  Try(TryStmt)
+  Labeled(LabeledStmt)
+  ExprStmt(Expr)
+  Block(Block)
+  Empty
+} derive(@debug.Debug)
+
+pub struct SwitchCase {
+  case_expr : Expr?
+  consequent : Array[Stmt]
+} derive(@debug.Debug)
+
+pub struct SwitchStmt {
+  discriminant : Expr
+  cases : Array[SwitchCase]
+} derive(@debug.Debug)
+
+pub struct TemplateLiteral {
+  quasis : Array[String]
+  exprs : Array[Expr]
+} derive(@debug.Debug)
+
+pub struct TemplateLiteralType {
+  quasis : Array[String]
+  types : Array[TypeNode]
+} derive(@debug.Debug)
+
+pub struct Token {
+  kind : TokenKind
+  span : Span
+} derive(Eq, @debug.Debug)
+
+pub enum TokenKind {
+  Ident(String)
+  PrivateIdent(String)
+  Number(String)
+  String(String)
+  Keyword(Keyword)
+  LParen
+  RParen
+  LBrace
+  RBrace
+  LBracket
+  RBracket
+  Comma
+  Semicolon
+  Colon
+  Dot
+  At
+  Question
+  QuestionDot
+  Nullish
+  Arrow
+  Plus
+  PlusPlus
+  PlusEq
+  Minus
+  MinusMinus
+  MinusEq
+  Star
+  StarStar
+  StarEq
+  Slash
+  SlashEq
+  Percent
+  PercentEq
+  Ellipsis
+  TemplateStart
+  TemplateChunk(String)
+  TemplateExprStart
+  TemplateEnd
+  Eq
+  EqEq
+  EqEqEq
+  NotEq
+  NotEqEq
+  Lt
+  Lte
+  Gt
+  Gte
+  AndAnd
+  OrOr
+  Ampersand
+  Pipe
+  Caret
+  Bang
+  Tilde
+  ConflictMarkerTrivia
+  Eof
+} derive(Eq, @debug.Debug)
+
+pub struct TryStmt {
+  block : Block
+  handler : CatchClause?
+  finalizer : Block?
+} derive(@debug.Debug)
+
+pub struct TypeAliasDecl {
+  name : String
+  type_params : Array[TypeParam]
+  value : TypeNode
+  span : Span
+} derive(@debug.Debug)
+
+pub struct TypeAssert {
+  expr : Expr
+  type_ann : TypeNode
+} derive(@debug.Debug)
+
+pub enum TypeKind {
+  Ident(String)
+  TypeQuery(String)
+  ImportType(ImportType)
+  Literal(TypeLiteral)
+  Tuple(Array[TypeNode])
+  Object(Array[TypeMember])
+  MappedType(MappedType)
+  TemplateLiteral(TemplateLiteralType)
+  InferType(InferType)
+  Constructor(ConstructorType)
+  Parenthesized(ParenthesizedType)
+  Union(Array[TypeNode])
+  Intersection(Array[TypeNode])
+  Conditional(TypeNode, TypeNode, TypeNode, TypeNode)
+  TypeOperator(String, TypeNode)
+  TypePredicate(String, TypeNode)
+  Array(TypeNode)
+  IndexAccess(TypeNode, TypeNode)
+  Generic(TypeNode, Array[TypeNode])
+  Function(Array[Param], TypeNode)
+  GenericFunction(Array[TypeParam], Array[Param], TypeNode)
+} derive(@debug.Debug)
+
+pub enum TypeLiteral {
+  String(String)
+  Number(String)
+  Bool(Bool)
+  Null
+  Undefined
+} derive(@debug.Debug)
+
+pub struct TypeMember {
+  name : TypeMemberName
+  optional : Bool
+  type_ann : TypeNode
+  span : Span
+} derive(@debug.Debug)
+
+pub enum TypeMemberName {
+  Named(MemberName)
+  Call
+  Construct
+} derive(@debug.Debug)
+
+pub struct TypeNode {
+  kind : TypeKind
+  span : Span
+} derive(@debug.Debug)
+
+pub struct TypeParam {
+  name : String
+  variance : TypeParamVariance?
+  constraint : TypeNode?
+  default_type : TypeNode?
+  span : Span
+} derive(@debug.Debug)
+
+pub enum TypeParamVariance {
+  In
+  Out
+} derive(@debug.Debug)
+
+pub struct UnaryExpr {
+  op : UnaryOp
+  expr : Expr
+} derive(@debug.Debug)
+
+pub enum UnaryOp {
+  Plus
+  Minus
+  Not
+  BitNot
+  Typeof
+  Delete
+  Void
+  Await
+  Yield
+  YieldStar
+} derive(@debug.Debug)
+
+pub struct UpdateExpr {
+  op : UpdateOp
+  prefix : Bool
+  expr : Expr
+} derive(@debug.Debug)
+
+pub enum UpdateOp {
+  Increment
+  Decrement
+} derive(@debug.Debug)
+
+pub struct VarDecl {
+  kind : VarKind
+  decls : Array[VarDeclarator]
+} derive(@debug.Debug)
+
+pub struct VarDeclarator {
+  pattern : BindingPattern
+  type_ann : TypeNode?
+  init : Expr?
+  span : Span
+} derive(@debug.Debug)
+
+pub enum VarKind {
+  Let
+  Const
+  Var
+  Using
+  AwaitUsing
+} derive(Eq, @debug.Debug)
+
+pub struct WithStmt {
+  object : Expr
+  body : Stmt
+} derive(@debug.Debug)
+
+// Type aliases
+
+// Traits
+

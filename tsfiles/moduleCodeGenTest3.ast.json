@@ -1,0 +1,261 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 83,
+    "line": 4,
+    "column": 19
+  },
+  "children": [
+    {
+      "kind": "ModuleDeclaration",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 61,
+        "line": 2,
+        "column": 42
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 29,
+            "line": 2,
+            "column": 10
+          },
+          "end": {
+            "offset": 33,
+            "line": 2,
+            "column": 14
+          },
+          "text": "Baz"
+        },
+        {
+          "kind": "ModuleBlock",
+          "pos": {
+            "offset": 33,
+            "line": 2,
+            "column": 14
+          },
+          "end": {
+            "offset": 61,
+            "line": 2,
+            "column": 42
+          },
+          "children": [
+            {
+              "kind": "FirstStatement",
+              "pos": {
+                "offset": 35,
+                "line": 2,
+                "column": 16
+              },
+              "end": {
+                "offset": 59,
+                "line": 2,
+                "column": 40
+              },
+              "children": [
+                {
+                  "kind": "ExportKeyword",
+                  "pos": {
+                    "offset": 35,
+                    "line": 2,
+                    "column": 16
+                  },
+                  "end": {
+                    "offset": 42,
+                    "line": 2,
+                    "column": 23
+                  },
+                  "text": "export"
+                },
+                {
+                  "kind": "VariableDeclarationList",
+                  "pos": {
+                    "offset": 42,
+                    "line": 2,
+                    "column": 23
+                  },
+                  "end": {
+                    "offset": 58,
+                    "line": 2,
+                    "column": 39
+                  },
+                  "children": [
+                    {
+                      "kind": "VariableDeclaration",
+                      "pos": {
+                        "offset": 46,
+                        "line": 2,
+                        "column": 27
+                      },
+                      "end": {
+                        "offset": 58,
+                        "line": 2,
+                        "column": 39
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 46,
+                            "line": 2,
+                            "column": 27
+                          },
+                          "end": {
+                            "offset": 48,
+                            "line": 2,
+                            "column": 29
+                          },
+                          "text": "x"
+                        },
+                        {
+                          "kind": "StringLiteral",
+                          "pos": {
+                            "offset": 50,
+                            "line": 2,
+                            "column": 31
+                          },
+                          "end": {
+                            "offset": 58,
+                            "line": 2,
+                            "column": 39
+                          },
+                          "text": "hello"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ExpressionStatement",
+      "pos": {
+        "offset": 61,
+        "line": 2,
+        "column": 42
+      },
+      "end": {
+        "offset": 83,
+        "line": 4,
+        "column": 19
+      },
+      "children": [
+        {
+          "kind": "BinaryExpression",
+          "pos": {
+            "offset": 61,
+            "line": 2,
+            "column": 42
+          },
+          "end": {
+            "offset": 82,
+            "line": 4,
+            "column": 18
+          },
+          "children": [
+            {
+              "kind": "PropertyAccessExpression",
+              "pos": {
+                "offset": 61,
+                "line": 2,
+                "column": 42
+              },
+              "end": {
+                "offset": 70,
+                "line": 4,
+                "column": 6
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 61,
+                    "line": 2,
+                    "column": 42
+                  },
+                  "end": {
+                    "offset": 68,
+                    "line": 4,
+                    "column": 4
+                  },
+                  "text": "Baz"
+                },
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 69,
+                    "line": 4,
+                    "column": 5
+                  },
+                  "end": {
+                    "offset": 70,
+                    "line": 4,
+                    "column": 6
+                  },
+                  "text": "x"
+                }
+              ]
+            },
+            {
+              "kind": "FirstAssignment",
+              "pos": {
+                "offset": 70,
+                "line": 4,
+                "column": 6
+              },
+              "end": {
+                "offset": 72,
+                "line": 4,
+                "column": 8
+              },
+              "text": "="
+            },
+            {
+              "kind": "StringLiteral",
+              "pos": {
+                "offset": 72,
+                "line": 4,
+                "column": 8
+              },
+              "end": {
+                "offset": 82,
+                "line": 4,
+                "column": 18
+              },
+              "text": "goodbye"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 83,
+        "line": 4,
+        "column": 19
+      },
+      "end": {
+        "offset": 83,
+        "line": 4,
+        "column": 19
+      },
+      "text": ""
+    }
+  ]
+}

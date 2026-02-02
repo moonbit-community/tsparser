@@ -1,0 +1,651 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 377,
+    "line": 17,
+    "column": 1
+  },
+  "children": [
+    {
+      "kind": "TypeAliasDeclaration",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 92,
+        "line": 6,
+        "column": 29
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 68,
+            "line": 6,
+            "column": 5
+          },
+          "end": {
+            "offset": 73,
+            "line": 6,
+            "column": 10
+          },
+          "text": "Type"
+        },
+        {
+          "kind": "UnionType",
+          "pos": {
+            "offset": 75,
+            "line": 6,
+            "column": 12
+          },
+          "end": {
+            "offset": 91,
+            "line": 6,
+            "column": 28
+          },
+          "children": [
+            {
+              "kind": "StringKeyword",
+              "pos": {
+                "offset": 75,
+                "line": 6,
+                "column": 12
+              },
+              "end": {
+                "offset": 82,
+                "line": 6,
+                "column": 19
+              },
+              "text": "string"
+            },
+            {
+              "kind": "ObjectKeyword",
+              "pos": {
+                "offset": 84,
+                "line": 6,
+                "column": 21
+              },
+              "end": {
+                "offset": 91,
+                "line": 6,
+                "column": 28
+              },
+              "text": "object"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ClassDeclaration",
+      "pos": {
+        "offset": 92,
+        "line": 6,
+        "column": 29
+      },
+      "end": {
+        "offset": 146,
+        "line": 10,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 101,
+            "line": 8,
+            "column": 6
+          },
+          "end": {
+            "offset": 116,
+            "line": 8,
+            "column": 21
+          },
+          "text": "SyncableObject"
+        },
+        {
+          "kind": "PropertyDeclaration",
+          "pos": {
+            "offset": 118,
+            "line": 8,
+            "column": 23
+          },
+          "end": {
+            "offset": 143,
+            "line": 9,
+            "column": 24
+          },
+          "children": [
+            {
+              "kind": "PrivateKeyword",
+              "pos": {
+                "offset": 118,
+                "line": 8,
+                "column": 23
+              },
+              "end": {
+                "offset": 129,
+                "line": 9,
+                "column": 10
+              },
+              "text": "private"
+            },
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 129,
+                "line": 9,
+                "column": 10
+              },
+              "end": {
+                "offset": 133,
+                "line": 9,
+                "column": 14
+              },
+              "text": "foo"
+            },
+            {
+              "kind": "UnknownKeyword",
+              "pos": {
+                "offset": 134,
+                "line": 9,
+                "column": 15
+              },
+              "end": {
+                "offset": 142,
+                "line": 9,
+                "column": 23
+              },
+              "text": "unknown"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "InterfaceDeclaration",
+      "pos": {
+        "offset": 146,
+        "line": 10,
+        "column": 2
+      },
+      "end": {
+        "offset": 201,
+        "line": 12,
+        "column": 52
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 159,
+            "line": 12,
+            "column": 10
+          },
+          "end": {
+            "offset": 171,
+            "line": 12,
+            "column": 22
+          },
+          "text": "SyncableRef"
+        },
+        {
+          "kind": "TypeParameter",
+          "pos": {
+            "offset": 172,
+            "line": 12,
+            "column": 23
+          },
+          "end": {
+            "offset": 197,
+            "line": 12,
+            "column": 48
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 172,
+                "line": 12,
+                "column": 23
+              },
+              "end": {
+                "offset": 173,
+                "line": 12,
+                "column": 24
+              },
+              "text": "T"
+            },
+            {
+              "kind": "TypeReference",
+              "pos": {
+                "offset": 181,
+                "line": 12,
+                "column": 32
+              },
+              "end": {
+                "offset": 197,
+                "line": 12,
+                "column": 48
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 181,
+                    "line": 12,
+                    "column": 32
+                  },
+                  "end": {
+                    "offset": 197,
+                    "line": 12,
+                    "column": 48
+                  },
+                  "text": "ISyncableObject"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "InterfaceDeclaration",
+      "pos": {
+        "offset": 201,
+        "line": 12,
+        "column": 52
+      },
+      "end": {
+        "offset": 268,
+        "line": 14,
+        "column": 64
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 214,
+            "line": 14,
+            "column": 10
+          },
+          "end": {
+            "offset": 230,
+            "line": 14,
+            "column": 26
+          },
+          "text": "ISyncableObject"
+        },
+        {
+          "kind": "TypeParameter",
+          "pos": {
+            "offset": 231,
+            "line": 14,
+            "column": 27
+          },
+          "end": {
+            "offset": 241,
+            "line": 14,
+            "column": 37
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 231,
+                "line": 14,
+                "column": 27
+              },
+              "end": {
+                "offset": 232,
+                "line": 14,
+                "column": 28
+              },
+              "text": "T"
+            },
+            {
+              "kind": "ObjectKeyword",
+              "pos": {
+                "offset": 234,
+                "line": 14,
+                "column": 30
+              },
+              "end": {
+                "offset": 241,
+                "line": 14,
+                "column": 37
+              },
+              "text": "object"
+            }
+          ]
+        },
+        {
+          "kind": "HeritageClause",
+          "pos": {
+            "offset": 242,
+            "line": 14,
+            "column": 38
+          },
+          "end": {
+            "offset": 265,
+            "line": 14,
+            "column": 61
+          },
+          "children": [
+            {
+              "kind": "ExpressionWithTypeArguments",
+              "pos": {
+                "offset": 250,
+                "line": 14,
+                "column": 46
+              },
+              "end": {
+                "offset": 265,
+                "line": 14,
+                "column": 61
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 250,
+                    "line": 14,
+                    "column": 46
+                  },
+                  "end": {
+                    "offset": 265,
+                    "line": 14,
+                    "column": 61
+                  },
+                  "text": "SyncableObject"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "TypeAliasDeclaration",
+      "pos": {
+        "offset": 268,
+        "line": 14,
+        "column": 64
+      },
+      "end": {
+        "offset": 375,
+        "line": 16,
+        "column": 104
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 276,
+            "line": 16,
+            "column": 5
+          },
+          "end": {
+            "offset": 298,
+            "line": 16,
+            "column": 27
+          },
+          "text": "__ValueDescriptorType"
+        },
+        {
+          "kind": "TypeParameter",
+          "pos": {
+            "offset": 299,
+            "line": 16,
+            "column": 28
+          },
+          "end": {
+            "offset": 324,
+            "line": 16,
+            "column": 53
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 299,
+                "line": 16,
+                "column": 28
+              },
+              "end": {
+                "offset": 300,
+                "line": 16,
+                "column": 29
+              },
+              "text": "T"
+            },
+            {
+              "kind": "UnionType",
+              "pos": {
+                "offset": 308,
+                "line": 16,
+                "column": 37
+              },
+              "end": {
+                "offset": 324,
+                "line": 16,
+                "column": 53
+              },
+              "children": [
+                {
+                  "kind": "StringKeyword",
+                  "pos": {
+                    "offset": 308,
+                    "line": 16,
+                    "column": 37
+                  },
+                  "end": {
+                    "offset": 315,
+                    "line": 16,
+                    "column": 44
+                  },
+                  "text": "string"
+                },
+                {
+                  "kind": "ObjectKeyword",
+                  "pos": {
+                    "offset": 317,
+                    "line": 16,
+                    "column": 46
+                  },
+                  "end": {
+                    "offset": 324,
+                    "line": 16,
+                    "column": 53
+                  },
+                  "text": "object"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "ConditionalType",
+          "pos": {
+            "offset": 327,
+            "line": 16,
+            "column": 56
+          },
+          "end": {
+            "offset": 374,
+            "line": 16,
+            "column": 103
+          },
+          "children": [
+            {
+              "kind": "TypeReference",
+              "pos": {
+                "offset": 327,
+                "line": 16,
+                "column": 56
+              },
+              "end": {
+                "offset": 329,
+                "line": 16,
+                "column": 58
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 327,
+                    "line": 16,
+                    "column": 56
+                  },
+                  "end": {
+                    "offset": 329,
+                    "line": 16,
+                    "column": 58
+                  },
+                  "text": "T"
+                }
+              ]
+            },
+            {
+              "kind": "TypeReference",
+              "pos": {
+                "offset": 337,
+                "line": 16,
+                "column": 66
+              },
+              "end": {
+                "offset": 353,
+                "line": 16,
+                "column": 82
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 337,
+                    "line": 16,
+                    "column": 66
+                  },
+                  "end": {
+                    "offset": 353,
+                    "line": 16,
+                    "column": 82
+                  },
+                  "text": "ISyncableObject"
+                }
+              ]
+            },
+            {
+              "kind": "TypeReference",
+              "pos": {
+                "offset": 355,
+                "line": 16,
+                "column": 84
+              },
+              "end": {
+                "offset": 370,
+                "line": 16,
+                "column": 99
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 355,
+                    "line": 16,
+                    "column": 84
+                  },
+                  "end": {
+                    "offset": 367,
+                    "line": 16,
+                    "column": 96
+                  },
+                  "text": "SyncableRef"
+                },
+                {
+                  "kind": "TypeReference",
+                  "pos": {
+                    "offset": 368,
+                    "line": 16,
+                    "column": 97
+                  },
+                  "end": {
+                    "offset": 369,
+                    "line": 16,
+                    "column": 98
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 368,
+                        "line": 16,
+                        "column": 97
+                      },
+                      "end": {
+                        "offset": 369,
+                        "line": 16,
+                        "column": 98
+                      },
+                      "text": "T"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "TypeReference",
+              "pos": {
+                "offset": 372,
+                "line": 16,
+                "column": 101
+              },
+              "end": {
+                "offset": 374,
+                "line": 16,
+                "column": 103
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 372,
+                    "line": 16,
+                    "column": 101
+                  },
+                  "end": {
+                    "offset": 374,
+                    "line": 16,
+                    "column": 103
+                  },
+                  "text": "T"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 375,
+        "line": 16,
+        "column": 104
+      },
+      "end": {
+        "offset": 377,
+        "line": 17,
+        "column": 1
+      },
+      "text": ""
+    }
+  ]
+}

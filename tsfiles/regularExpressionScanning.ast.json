@@ -1,0 +1,693 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 2602,
+    "line": 51,
+    "column": 1
+  },
+  "children": [
+    {
+      "kind": "FirstStatement",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 2600,
+        "line": 50,
+        "column": 3
+      },
+      "children": [
+        {
+          "kind": "VariableDeclarationList",
+          "pos": {
+            "offset": 0,
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "offset": 2599,
+            "line": 50,
+            "column": 2
+          },
+          "children": [
+            {
+              "kind": "VariableDeclaration",
+              "pos": {
+                "offset": 38,
+                "line": 3,
+                "column": 6
+              },
+              "end": {
+                "offset": 2599,
+                "line": 50,
+                "column": 2
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 38,
+                    "line": 3,
+                    "column": 6
+                  },
+                  "end": {
+                    "offset": 46,
+                    "line": 3,
+                    "column": 14
+                  },
+                  "text": "regexes"
+                },
+                {
+                  "kind": "ArrayType",
+                  "pos": {
+                    "offset": 47,
+                    "line": 3,
+                    "column": 15
+                  },
+                  "end": {
+                    "offset": 56,
+                    "line": 3,
+                    "column": 24
+                  },
+                  "children": [
+                    {
+                      "kind": "TypeReference",
+                      "pos": {
+                        "offset": 47,
+                        "line": 3,
+                        "column": 15
+                      },
+                      "end": {
+                        "offset": 54,
+                        "line": 3,
+                        "column": 22
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 47,
+                            "line": 3,
+                            "column": 15
+                          },
+                          "end": {
+                            "offset": 54,
+                            "line": 3,
+                            "column": 22
+                          },
+                          "text": "RegExp"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "ArrayLiteralExpression",
+                  "pos": {
+                    "offset": 58,
+                    "line": 3,
+                    "column": 26
+                  },
+                  "end": {
+                    "offset": 2599,
+                    "line": 50,
+                    "column": 2
+                  },
+                  "children": [
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 60,
+                        "line": 3,
+                        "column": 28
+                      },
+                      "end": {
+                        "offset": 95,
+                        "line": 5,
+                        "column": 23
+                      },
+                      "text": "/foo/visualstudiocode"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 96,
+                        "line": 5,
+                        "column": 24
+                      },
+                      "end": {
+                        "offset": 138,
+                        "line": 7,
+                        "column": 18
+                      },
+                      "text": "/(?med-ium:bar)/"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 139,
+                        "line": 7,
+                        "column": 19
+                      },
+                      "end": {
+                        "offset": 168,
+                        "line": 9,
+                        "column": 6
+                      },
+                      "text": "/\\0/"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 169,
+                        "line": 9,
+                        "column": 7
+                      },
+                      "end": {
+                        "offset": 176,
+                        "line": 10,
+                        "column": 6
+                      },
+                      "text": "/\\1/"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 177,
+                        "line": 10,
+                        "column": 7
+                      },
+                      "end": {
+                        "offset": 184,
+                        "line": 11,
+                        "column": 6
+                      },
+                      "text": "/\\2/"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 185,
+                        "line": 11,
+                        "column": 7
+                      },
+                      "end": {
+                        "offset": 196,
+                        "line": 12,
+                        "column": 10
+                      },
+                      "text": "/(hi)\\1/"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 197,
+                        "line": 12,
+                        "column": 11
+                      },
+                      "end": {
+                        "offset": 217,
+                        "line": 13,
+                        "column": 19
+                      },
+                      "text": "/(hi) (hello) \\2/"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 218,
+                        "line": 13,
+                        "column": 20
+                      },
+                      "end": {
+                        "offset": 278,
+                        "line": 14,
+                        "column": 59
+                      },
+                      "text": "/\\2()(\\12)(foo)\\1\\0[\\0\\1\\01\\123\\08\\8](\\3\\03)\\5\\005\\9\\009/"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 279,
+                        "line": 14,
+                        "column": 60
+                      },
+                      "end": {
+                        "offset": 340,
+                        "line": 15,
+                        "column": 60
+                      },
+                      "text": "/\\2()(\\12)(foo)\\1\\0[\\0\\1\\01\\123\\08\\8](\\3\\03)\\5\\005\\9\\009/u"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 341,
+                        "line": 15,
+                        "column": 61
+                      },
+                      "end": {
+                        "offset": 406,
+                        "line": 16,
+                        "column": 64
+                      },
+                      "text": "/(?<foo>)((?<bar>bar)bar)(?<baz>baz)|(foo(?<foo>foo))(?<baz>)/"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 407,
+                        "line": 16,
+                        "column": 65
+                      },
+                      "end": {
+                        "offset": 478,
+                        "line": 17,
+                        "column": 70
+                      },
+                      "text": "/(\\k<bar>)\\k<absent>(?<foo>foo)|(?<bar>)((?<foo>)|(bar(?<bar>bar)))/"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 479,
+                        "line": 17,
+                        "column": 71
+                      },
+                      "end": {
+                        "offset": 569,
+                        "line": 19,
+                        "column": 72
+                      },
+                      "text": "/{}{1,2}_{3}.{4,}?(foo){008}${32,16}\\b{064,128}.+&*?\\???\\n{,256}{\\\\{,/"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 570,
+                        "line": 19,
+                        "column": 73
+                      },
+                      "end": {
+                        "offset": 634,
+                        "line": 21,
+                        "column": 40
+                      },
+                      "text": "/[-A-Za-z-z-aZ-A\\d_-\\d-.-.\\r-\\n\\w-\\W]/"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 635,
+                        "line": 21,
+                        "column": 41
+                      },
+                      "end": {
+                        "offset": 708,
+                        "line": 22,
+                        "column": 72
+                      },
+                      "text": "/\\p{L}\\p{gc=L}\\p{ASCII}\\p{Invalid}[\\p{L}\\p{gc=L}\\P{ASCII}\\p{Invalid}]/"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 709,
+                        "line": 22,
+                        "column": 73
+                      },
+                      "end": {
+                        "offset": 783,
+                        "line": 23,
+                        "column": 73
+                      },
+                      "text": "/\\p{L}\\p{gc=L}\\p{ASCII}\\p{Invalid}[\\p{L}\\p{gc=L}\\P{ASCII}\\p{Invalid}]/u"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 784,
+                        "line": 23,
+                        "column": 74
+                      },
+                      "end": {
+                        "offset": 858,
+                        "line": 24,
+                        "column": 73
+                      },
+                      "text": "/\\p{L}\\p{gc=L}\\p{ASCII}\\p{Invalid}[\\p{L}\\p{gc=L}\\P{ASCII}\\p{Invalid}]/v"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 859,
+                        "line": 24,
+                        "column": 74
+                      },
+                      "end": {
+                        "offset": 927,
+                        "line": 25,
+                        "column": 67
+                      },
+                      "text": "/\\p{InvalidProperty=Value}\\p{=}\\p{sc=}\\P{=foo}[\\p{}\\p\\\\\\P\\P{]\\p{/"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 928,
+                        "line": 25,
+                        "column": 68
+                      },
+                      "end": {
+                        "offset": 997,
+                        "line": 26,
+                        "column": 68
+                      },
+                      "text": "/\\p{InvalidProperty=Value}\\p{=}\\p{sc=}\\P{=foo}[\\p{}\\p\\\\\\P\\P{]\\p{/u"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 998,
+                        "line": 26,
+                        "column": 69
+                      },
+                      "end": {
+                        "offset": 1067,
+                        "line": 27,
+                        "column": 68
+                      },
+                      "text": "/\\p{InvalidProperty=Value}\\p{=}\\p{sc=}\\P{=foo}[\\p{}\\p\\\\\\P\\P{]\\p{/v"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 1068,
+                        "line": 27,
+                        "column": 69
+                      },
+                      "end": {
+                        "offset": 1128,
+                        "line": 28,
+                        "column": 59
+                      },
+                      "text": "/\\p{RGI_Emoji}\\P{RGI_Emoji}[^\\p{RGI_Emoji}\\P{RGI_Emoji}]/"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 1129,
+                        "line": 28,
+                        "column": 60
+                      },
+                      "end": {
+                        "offset": 1190,
+                        "line": 29,
+                        "column": 60
+                      },
+                      "text": "/\\p{RGI_Emoji}\\P{RGI_Emoji}[^\\p{RGI_Emoji}\\P{RGI_Emoji}]/u"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 1191,
+                        "line": 29,
+                        "column": 61
+                      },
+                      "end": {
+                        "offset": 1252,
+                        "line": 30,
+                        "column": 60
+                      },
+                      "text": "/\\p{RGI_Emoji}\\P{RGI_Emoji}[^\\p{RGI_Emoji}\\P{RGI_Emoji}]/v"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 1253,
+                        "line": 30,
+                        "column": 61
+                      },
+                      "end": {
+                        "offset": 1303,
+                        "line": 32,
+                        "column": 26
+                      },
+                      "text": "/\\c[\\c0\\ca\\cQ\\c\\C]\\c1\\C/"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 1304,
+                        "line": 32,
+                        "column": 27
+                      },
+                      "end": {
+                        "offset": 1332,
+                        "line": 33,
+                        "column": 27
+                      },
+                      "text": "/\\c[\\c0\\ca\\cQ\\c\\C]\\c1\\C/u"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 1333,
+                        "line": 33,
+                        "column": 28
+                      },
+                      "end": {
+                        "offset": 1381,
+                        "line": 34,
+                        "column": 47
+                      },
+                      "text": "/\\q\\\\\\`[\\q\\\\\\`[\\Q\\\\\\Q{\\q{foo|bar|baz]\\q{]\\q{/"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 1382,
+                        "line": 34,
+                        "column": 48
+                      },
+                      "end": {
+                        "offset": 1431,
+                        "line": 35,
+                        "column": 48
+                      },
+                      "text": "/\\q\\\\\\`[\\q\\\\\\`[\\Q\\\\\\Q{\\q{foo|bar|baz]\\q{]\\q{/u"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 1432,
+                        "line": 35,
+                        "column": 49
+                      },
+                      "end": {
+                        "offset": 1481,
+                        "line": 36,
+                        "column": 48
+                      },
+                      "text": "/\\q\\\\\\`[\\q\\\\\\`[\\Q\\\\\\Q{\\q{foo|bar|baz]\\q{]\\q{/v"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 1482,
+                        "line": 36,
+                        "column": 49
+                      },
+                      "end": {
+                        "offset": 1597,
+                        "line": 38,
+                        "column": 87
+                      },
+                      "text": "/[a--b[--][\\d++[]]&&[[&0-9--]&&[\\p{L}]--\\P{L}-_-]]&&&\\q{foo}[0---9][&&q&&&\\q{bar}&&]/"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 1598,
+                        "line": 38,
+                        "column": 88
+                      },
+                      "end": {
+                        "offset": 1687,
+                        "line": 39,
+                        "column": 88
+                      },
+                      "text": "/[a--b[--][\\d++[]]&&[[&0-9--]&&[\\p{L}]--\\P{L}-_-]]&&&\\q{foo}[0---9][&&q&&&\\q{bar}&&]/u"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 1688,
+                        "line": 39,
+                        "column": 89
+                      },
+                      "end": {
+                        "offset": 1777,
+                        "line": 40,
+                        "column": 88
+                      },
+                      "text": "/[a--b[--][\\d++[]]&&[[&0-9--]&&[\\p{L}]--\\P{L}-_-]]&&&\\q{foo}[0---9][&&q&&&\\q{bar}&&]/v"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 1778,
+                        "line": 40,
+                        "column": 89
+                      },
+                      "end": {
+                        "offset": 1857,
+                        "line": 41,
+                        "column": 78
+                      },
+                      "text": "/[[^\\P{Decimal_Number}&&[0-9]]&&\\p{L}&&\\p{ID_Continue}--\\p{ASCII}\\p{CWCF}]/v"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 1858,
+                        "line": 41,
+                        "column": 79
+                      },
+                      "end": {
+                        "offset": 1943,
+                        "line": 42,
+                        "column": 84
+                      },
+                      "text": "/[^\\p{Emoji}\\p{RGI_Emoji}][^\\p{Emoji}--\\p{RGI_Emoji}][^\\p{Emoji}&&\\p{RGI_Emoji}]/v"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 1944,
+                        "line": 42,
+                        "column": 85
+                      },
+                      "end": {
+                        "offset": 2029,
+                        "line": 43,
+                        "column": 84
+                      },
+                      "text": "/[^\\p{RGI_Emoji}\\p{Emoji}][^\\p{RGI_Emoji}--\\p{Emoji}][^\\p{RGI_Emoji}&&\\p{Emoji}]/v"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 2030,
+                        "line": 43,
+                        "column": 85
+                      },
+                      "end": {
+                        "offset": 2109,
+                        "line": 44,
+                        "column": 78
+                      },
+                      "text": "/[^\\p{RGI_Emoji}\\q{foo}][^\\p{RGI_Emoji}--\\q{foo}][^\\p{RGI_Emoji}&&\\q{foo}]/v"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 2110,
+                        "line": 44,
+                        "column": 79
+                      },
+                      "end": {
+                        "offset": 2207,
+                        "line": 45,
+                        "column": 96
+                      },
+                      "text": "/[^\\p{Emoji}[[\\p{RGI_Emoji}]]][^\\p{Emoji}--[[\\p{RGI_Emoji}]]][^\\p{Emoji}&&[[\\p{RGI_Emoji}]]]/v"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 2208,
+                        "line": 45,
+                        "column": 97
+                      },
+                      "end": {
+                        "offset": 2305,
+                        "line": 46,
+                        "column": 96
+                      },
+                      "text": "/[^[[\\p{RGI_Emoji}]]\\p{Emoji}][^[[\\p{RGI_Emoji}]]--\\p{Emoji}][^[[\\p{RGI_Emoji}]]&&\\p{Emoji}]/v"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 2306,
+                        "line": 46,
+                        "column": 97
+                      },
+                      "end": {
+                        "offset": 2397,
+                        "line": 47,
+                        "column": 90
+                      },
+                      "text": "/[^[[\\p{RGI_Emoji}]]\\q{foo}][^[[\\p{RGI_Emoji}]]--\\q{foo}][^[[\\p{RGI_Emoji}]]&&\\q{foo}]/v"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 2398,
+                        "line": 47,
+                        "column": 91
+                      },
+                      "end": {
+                        "offset": 2491,
+                        "line": 48,
+                        "column": 92
+                      },
+                      "text": "/[^\\q{foo|bar|baz}--\\q{foo}--\\q{bar}--\\q{baz}][^\\p{L}--\\q{foo}--[\\q{bar}]--[^[\\q{baz}]]]/v"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 2492,
+                        "line": 48,
+                        "column": 93
+                      },
+                      "end": {
+                        "offset": 2595,
+                        "line": 49,
+                        "column": 102
+                      },
+                      "text": "/[^[[\\q{foo|bar|baz}]]--\\q{foo}--\\q{bar}--\\q{baz}][^[^[^\\p{L}]]--\\q{foo}--[\\q{bar}]--[^[\\q{baz}]]]/v"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 2600,
+        "line": 50,
+        "column": 3
+      },
+      "end": {
+        "offset": 2602,
+        "line": 51,
+        "column": 1
+      },
+      "text": ""
+    }
+  ]
+}

@@ -1,0 +1,594 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 202,
+    "line": 13,
+    "column": 12
+  },
+  "children": [
+    {
+      "kind": "InterfaceDeclaration",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 60,
+        "line": 4,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 28,
+            "line": 2,
+            "column": 10
+          },
+          "end": {
+            "offset": 32,
+            "line": 2,
+            "column": 14
+          },
+          "text": "Foo"
+        },
+        {
+          "kind": "PropertySignature",
+          "pos": {
+            "offset": 34,
+            "line": 2,
+            "column": 16
+          },
+          "end": {
+            "offset": 58,
+            "line": 3,
+            "column": 24
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 34,
+                "line": 2,
+                "column": 16
+              },
+              "end": {
+                "offset": 40,
+                "line": 3,
+                "column": 6
+              },
+              "text": "foo"
+            },
+            {
+              "kind": "UnionType",
+              "pos": {
+                "offset": 41,
+                "line": 3,
+                "column": 7
+              },
+              "end": {
+                "offset": 58,
+                "line": 3,
+                "column": 24
+              },
+              "children": [
+                {
+                  "kind": "StringKeyword",
+                  "pos": {
+                    "offset": 41,
+                    "line": 3,
+                    "column": 7
+                  },
+                  "end": {
+                    "offset": 48,
+                    "line": 3,
+                    "column": 14
+                  },
+                  "text": "string"
+                },
+                {
+                  "kind": "UndefinedKeyword",
+                  "pos": {
+                    "offset": 49,
+                    "line": 3,
+                    "column": 15
+                  },
+                  "end": {
+                    "offset": 58,
+                    "line": 3,
+                    "column": 24
+                  },
+                  "text": "undefined"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "TypeAliasDeclaration",
+      "pos": {
+        "offset": 60,
+        "line": 4,
+        "column": 2
+      },
+      "end": {
+        "offset": 92,
+        "line": 6,
+        "column": 31
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 66,
+            "line": 6,
+            "column": 5
+          },
+          "end": {
+            "offset": 70,
+            "line": 6,
+            "column": 9
+          },
+          "text": "Str"
+        },
+        {
+          "kind": "TypeParameter",
+          "pos": {
+            "offset": 71,
+            "line": 6,
+            "column": 10
+          },
+          "end": {
+            "offset": 87,
+            "line": 6,
+            "column": 26
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 71,
+                "line": 6,
+                "column": 10
+              },
+              "end": {
+                "offset": 72,
+                "line": 6,
+                "column": 11
+              },
+              "text": "T"
+            },
+            {
+              "kind": "StringKeyword",
+              "pos": {
+                "offset": 80,
+                "line": 6,
+                "column": 19
+              },
+              "end": {
+                "offset": 87,
+                "line": 6,
+                "column": 26
+              },
+              "text": "string"
+            }
+          ]
+        },
+        {
+          "kind": "TypeReference",
+          "pos": {
+            "offset": 90,
+            "line": 6,
+            "column": 29
+          },
+          "end": {
+            "offset": 92,
+            "line": 6,
+            "column": 31
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 90,
+                "line": 6,
+                "column": 29
+              },
+              "end": {
+                "offset": 92,
+                "line": 6,
+                "column": 31
+              },
+              "text": "T"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "TypeAliasDeclaration",
+      "pos": {
+        "offset": 92,
+        "line": 6,
+        "column": 31
+      },
+      "end": {
+        "offset": 202,
+        "line": 13,
+        "column": 12
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 98,
+            "line": 8,
+            "column": 5
+          },
+          "end": {
+            "offset": 102,
+            "line": 8,
+            "column": 9
+          },
+          "text": "Bar"
+        },
+        {
+          "kind": "TypeParameter",
+          "pos": {
+            "offset": 103,
+            "line": 8,
+            "column": 10
+          },
+          "end": {
+            "offset": 104,
+            "line": 8,
+            "column": 11
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 103,
+                "line": 8,
+                "column": 10
+              },
+              "end": {
+                "offset": 104,
+                "line": 8,
+                "column": 11
+              },
+              "text": "T"
+            }
+          ]
+        },
+        {
+          "kind": "ConditionalType",
+          "pos": {
+            "offset": 107,
+            "line": 8,
+            "column": 14
+          },
+          "end": {
+            "offset": 202,
+            "line": 13,
+            "column": 12
+          },
+          "children": [
+            {
+              "kind": "TypeReference",
+              "pos": {
+                "offset": 107,
+                "line": 8,
+                "column": 14
+              },
+              "end": {
+                "offset": 112,
+                "line": 9,
+                "column": 4
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 107,
+                    "line": 8,
+                    "column": 14
+                  },
+                  "end": {
+                    "offset": 112,
+                    "line": 9,
+                    "column": 4
+                  },
+                  "text": "T"
+                }
+              ]
+            },
+            {
+              "kind": "TypeReference",
+              "pos": {
+                "offset": 120,
+                "line": 9,
+                "column": 12
+              },
+              "end": {
+                "offset": 124,
+                "line": 9,
+                "column": 16
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 120,
+                    "line": 9,
+                    "column": 12
+                  },
+                  "end": {
+                    "offset": 124,
+                    "line": 9,
+                    "column": 16
+                  },
+                  "text": "Foo"
+                }
+              ]
+            },
+            {
+              "kind": "ConditionalType",
+              "pos": {
+                "offset": 130,
+                "line": 10,
+                "column": 6
+              },
+              "end": {
+                "offset": 190,
+                "line": 12,
+                "column": 14
+              },
+              "children": [
+                {
+                  "kind": "IndexedAccessType",
+                  "pos": {
+                    "offset": 130,
+                    "line": 10,
+                    "column": 6
+                  },
+                  "end": {
+                    "offset": 139,
+                    "line": 10,
+                    "column": 15
+                  },
+                  "children": [
+                    {
+                      "kind": "TypeReference",
+                      "pos": {
+                        "offset": 130,
+                        "line": 10,
+                        "column": 6
+                      },
+                      "end": {
+                        "offset": 132,
+                        "line": 10,
+                        "column": 8
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 130,
+                            "line": 10,
+                            "column": 6
+                          },
+                          "end": {
+                            "offset": 132,
+                            "line": 10,
+                            "column": 8
+                          },
+                          "text": "T"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "LiteralType",
+                      "pos": {
+                        "offset": 133,
+                        "line": 10,
+                        "column": 9
+                      },
+                      "end": {
+                        "offset": 138,
+                        "line": 10,
+                        "column": 14
+                      },
+                      "children": [
+                        {
+                          "kind": "StringLiteral",
+                          "pos": {
+                            "offset": 133,
+                            "line": 10,
+                            "column": 9
+                          },
+                          "end": {
+                            "offset": 138,
+                            "line": 10,
+                            "column": 14
+                          },
+                          "text": "foo"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "StringKeyword",
+                  "pos": {
+                    "offset": 147,
+                    "line": 10,
+                    "column": 23
+                  },
+                  "end": {
+                    "offset": 154,
+                    "line": 10,
+                    "column": 30
+                  },
+                  "text": "string"
+                },
+                {
+                  "kind": "TypeReference",
+                  "pos": {
+                    "offset": 162,
+                    "line": 11,
+                    "column": 8
+                  },
+                  "end": {
+                    "offset": 176,
+                    "line": 11,
+                    "column": 22
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 162,
+                        "line": 11,
+                        "column": 8
+                      },
+                      "end": {
+                        "offset": 166,
+                        "line": 11,
+                        "column": 12
+                      },
+                      "text": "Str"
+                    },
+                    {
+                      "kind": "IndexedAccessType",
+                      "pos": {
+                        "offset": 167,
+                        "line": 11,
+                        "column": 13
+                      },
+                      "end": {
+                        "offset": 175,
+                        "line": 11,
+                        "column": 21
+                      },
+                      "children": [
+                        {
+                          "kind": "TypeReference",
+                          "pos": {
+                            "offset": 167,
+                            "line": 11,
+                            "column": 13
+                          },
+                          "end": {
+                            "offset": 168,
+                            "line": 11,
+                            "column": 14
+                          },
+                          "children": [
+                            {
+                              "kind": "Identifier",
+                              "pos": {
+                                "offset": 167,
+                                "line": 11,
+                                "column": 13
+                              },
+                              "end": {
+                                "offset": 168,
+                                "line": 11,
+                                "column": 14
+                              },
+                              "text": "T"
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "LiteralType",
+                          "pos": {
+                            "offset": 169,
+                            "line": 11,
+                            "column": 15
+                          },
+                          "end": {
+                            "offset": 174,
+                            "line": 11,
+                            "column": 20
+                          },
+                          "children": [
+                            {
+                              "kind": "StringLiteral",
+                              "pos": {
+                                "offset": 169,
+                                "line": 11,
+                                "column": 15
+                              },
+                              "end": {
+                                "offset": 174,
+                                "line": 11,
+                                "column": 20
+                              },
+                              "text": "foo"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "NeverKeyword",
+                  "pos": {
+                    "offset": 184,
+                    "line": 12,
+                    "column": 8
+                  },
+                  "end": {
+                    "offset": 190,
+                    "line": 12,
+                    "column": 14
+                  },
+                  "text": "never"
+                }
+              ]
+            },
+            {
+              "kind": "NeverKeyword",
+              "pos": {
+                "offset": 196,
+                "line": 13,
+                "column": 6
+              },
+              "end": {
+                "offset": 202,
+                "line": 13,
+                "column": 12
+              },
+              "text": "never"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 202,
+        "line": 13,
+        "column": 12
+      },
+      "end": {
+        "offset": 202,
+        "line": 13,
+        "column": 12
+      },
+      "text": ""
+    }
+  ]
+}

@@ -1,0 +1,218 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 99,
+    "line": 4,
+    "column": 1
+  },
+  "children": [
+    {
+      "kind": "ExpressionStatement",
+      "pos": {
+        "offset": 20,
+        "line": 2,
+        "column": 2
+      },
+      "end": {
+        "offset": 33,
+        "line": 2,
+        "column": 15
+      },
+      "children": [
+        {
+          "kind": "BinaryExpression",
+          "pos": {
+            "offset": 20,
+            "line": 2,
+            "column": 2
+          },
+          "end": {
+            "offset": 33,
+            "line": 2,
+            "column": 15
+          },
+          "children": [
+            {
+              "kind": "PrefixUnaryExpression",
+              "pos": {
+                "offset": 20,
+                "line": 2,
+                "column": 2
+              },
+              "end": {
+                "offset": 29,
+                "line": 2,
+                "column": 11
+              },
+              "children": [
+                {
+                  "kind": "RegularExpressionLiteral",
+                  "pos": {
+                    "offset": 21,
+                    "line": 2,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 29,
+                    "line": 2,
+                    "column": 11
+                  },
+                  "text": "/usr/bin"
+                }
+              ]
+            },
+            {
+              "kind": "SlashToken",
+              "pos": {
+                "offset": 29,
+                "line": 2,
+                "column": 11
+              },
+              "end": {
+                "offset": 30,
+                "line": 2,
+                "column": 12
+              },
+              "text": "/"
+            },
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 30,
+                "line": 2,
+                "column": 12
+              },
+              "end": {
+                "offset": 33,
+                "line": 2,
+                "column": 15
+              },
+              "text": "env"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ExpressionStatement",
+      "pos": {
+        "offset": 33,
+        "line": 2,
+        "column": 15
+      },
+      "end": {
+        "offset": 38,
+        "line": 2,
+        "column": 20
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 33,
+            "line": 2,
+            "column": 15
+          },
+          "end": {
+            "offset": 38,
+            "line": 2,
+            "column": 20
+          },
+          "text": "node"
+        }
+      ]
+    },
+    {
+      "kind": "FirstStatement",
+      "pos": {
+        "offset": 38,
+        "line": 2,
+        "column": 20
+      },
+      "end": {
+        "offset": 98,
+        "line": 3,
+        "column": 60
+      },
+      "children": [
+        {
+          "kind": "VariableDeclarationList",
+          "pos": {
+            "offset": 38,
+            "line": 2,
+            "column": 20
+          },
+          "end": {
+            "offset": 97,
+            "line": 3,
+            "column": 59
+          },
+          "children": [
+            {
+              "kind": "VariableDeclaration",
+              "pos": {
+                "offset": 42,
+                "line": 3,
+                "column": 4
+              },
+              "end": {
+                "offset": 97,
+                "line": 3,
+                "column": 59
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 42,
+                    "line": 3,
+                    "column": 4
+                  },
+                  "end": {
+                    "offset": 46,
+                    "line": 3,
+                    "column": 8
+                  },
+                  "text": "foo"
+                },
+                {
+                  "kind": "StringLiteral",
+                  "pos": {
+                    "offset": 48,
+                    "line": 3,
+                    "column": 10
+                  },
+                  "end": {
+                    "offset": 97,
+                    "line": 3,
+                    "column": 59
+                  },
+                  "text": "I wish the generated JS to be executed in node"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 98,
+        "line": 3,
+        "column": 60
+      },
+      "end": {
+        "offset": 99,
+        "line": 4,
+        "column": 1
+      },
+      "text": ""
+    }
+  ]
+}

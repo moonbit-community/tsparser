@@ -1,0 +1,403 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 100,
+    "line": 7,
+    "column": 2
+  },
+  "children": [
+    {
+      "kind": "FirstStatement",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 33,
+        "line": 2,
+        "column": 14
+      },
+      "children": [
+        {
+          "kind": "VariableDeclarationList",
+          "pos": {
+            "offset": 0,
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "offset": 32,
+            "line": 2,
+            "column": 13
+          },
+          "children": [
+            {
+              "kind": "VariableDeclaration",
+              "pos": {
+                "offset": 23,
+                "line": 2,
+                "column": 4
+              },
+              "end": {
+                "offset": 32,
+                "line": 2,
+                "column": 13
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 23,
+                    "line": 2,
+                    "column": 4
+                  },
+                  "end": {
+                    "offset": 25,
+                    "line": 2,
+                    "column": 6
+                  },
+                  "text": "v"
+                },
+                {
+                  "kind": "ArrayType",
+                  "pos": {
+                    "offset": 26,
+                    "line": 2,
+                    "column": 7
+                  },
+                  "end": {
+                    "offset": 32,
+                    "line": 2,
+                    "column": 13
+                  },
+                  "children": [
+                    {
+                      "kind": "AnyKeyword",
+                      "pos": {
+                        "offset": 26,
+                        "line": 2,
+                        "column": 7
+                      },
+                      "end": {
+                        "offset": 30,
+                        "line": 2,
+                        "column": 11
+                      },
+                      "text": "any"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "FunctionDeclaration",
+      "pos": {
+        "offset": 33,
+        "line": 2,
+        "column": 14
+      },
+      "end": {
+        "offset": 66,
+        "line": 4,
+        "column": 30
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 45,
+            "line": 4,
+            "column": 9
+          },
+          "end": {
+            "offset": 49,
+            "line": 4,
+            "column": 13
+          },
+          "text": "foo"
+        },
+        {
+          "kind": "Parameter",
+          "pos": {
+            "offset": 50,
+            "line": 4,
+            "column": 14
+          },
+          "end": {
+            "offset": 61,
+            "line": 4,
+            "column": 25
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 50,
+                "line": 4,
+                "column": 14
+              },
+              "end": {
+                "offset": 51,
+                "line": 4,
+                "column": 15
+              },
+              "text": "a"
+            },
+            {
+              "kind": "ArrayLiteralExpression",
+              "pos": {
+                "offset": 53,
+                "line": 4,
+                "column": 17
+              },
+              "end": {
+                "offset": 61,
+                "line": 4,
+                "column": 25
+              },
+              "children": [
+                {
+                  "kind": "BinaryExpression",
+                  "pos": {
+                    "offset": 55,
+                    "line": 4,
+                    "column": 19
+                  },
+                  "end": {
+                    "offset": 60,
+                    "line": 4,
+                    "column": 24
+                  },
+                  "children": [
+                    {
+                      "kind": "FirstLiteralToken",
+                      "pos": {
+                        "offset": 55,
+                        "line": 4,
+                        "column": 19
+                      },
+                      "end": {
+                        "offset": 56,
+                        "line": 4,
+                        "column": 20
+                      },
+                      "text": "1"
+                    },
+                    {
+                      "kind": "PlusToken",
+                      "pos": {
+                        "offset": 56,
+                        "line": 4,
+                        "column": 20
+                      },
+                      "end": {
+                        "offset": 58,
+                        "line": 4,
+                        "column": 22
+                      },
+                      "text": "+"
+                    },
+                    {
+                      "kind": "FirstLiteralToken",
+                      "pos": {
+                        "offset": 58,
+                        "line": 4,
+                        "column": 22
+                      },
+                      "end": {
+                        "offset": 60,
+                        "line": 4,
+                        "column": 24
+                      },
+                      "text": "1"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "Block",
+          "pos": {
+            "offset": 62,
+            "line": 4,
+            "column": 26
+          },
+          "end": {
+            "offset": 66,
+            "line": 4,
+            "column": 30
+          }
+        }
+      ]
+    },
+    {
+      "kind": "FunctionDeclaration",
+      "pos": {
+        "offset": 66,
+        "line": 4,
+        "column": 30
+      },
+      "end": {
+        "offset": 100,
+        "line": 7,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 78,
+            "line": 6,
+            "column": 9
+          },
+          "end": {
+            "offset": 82,
+            "line": 6,
+            "column": 13
+          },
+          "text": "bar"
+        },
+        {
+          "kind": "Parameter",
+          "pos": {
+            "offset": 83,
+            "line": 6,
+            "column": 14
+          },
+          "end": {
+            "offset": 94,
+            "line": 6,
+            "column": 25
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 83,
+                "line": 6,
+                "column": 14
+              },
+              "end": {
+                "offset": 84,
+                "line": 6,
+                "column": 15
+              },
+              "text": "a"
+            },
+            {
+              "kind": "ArrayLiteralExpression",
+              "pos": {
+                "offset": 86,
+                "line": 6,
+                "column": 17
+              },
+              "end": {
+                "offset": 94,
+                "line": 6,
+                "column": 25
+              },
+              "children": [
+                {
+                  "kind": "BinaryExpression",
+                  "pos": {
+                    "offset": 88,
+                    "line": 6,
+                    "column": 19
+                  },
+                  "end": {
+                    "offset": 93,
+                    "line": 6,
+                    "column": 24
+                  },
+                  "children": [
+                    {
+                      "kind": "FirstLiteralToken",
+                      "pos": {
+                        "offset": 88,
+                        "line": 6,
+                        "column": 19
+                      },
+                      "end": {
+                        "offset": 89,
+                        "line": 6,
+                        "column": 20
+                      },
+                      "text": "1"
+                    },
+                    {
+                      "kind": "PlusToken",
+                      "pos": {
+                        "offset": 89,
+                        "line": 6,
+                        "column": 20
+                      },
+                      "end": {
+                        "offset": 91,
+                        "line": 6,
+                        "column": 22
+                      },
+                      "text": "+"
+                    },
+                    {
+                      "kind": "FirstLiteralToken",
+                      "pos": {
+                        "offset": 91,
+                        "line": 6,
+                        "column": 22
+                      },
+                      "end": {
+                        "offset": 93,
+                        "line": 6,
+                        "column": 24
+                      },
+                      "text": "1"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "Block",
+          "pos": {
+            "offset": 95,
+            "line": 6,
+            "column": 26
+          },
+          "end": {
+            "offset": 100,
+            "line": 7,
+            "column": 2
+          }
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 100,
+        "line": 7,
+        "column": 2
+      },
+      "end": {
+        "offset": 100,
+        "line": 7,
+        "column": 2
+      },
+      "text": ""
+    }
+  ]
+}

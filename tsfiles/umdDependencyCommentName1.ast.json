@@ -1,0 +1,160 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 110,
+    "line": 7,
+    "column": 1
+  },
+  "children": [
+    {
+      "kind": "ImportEqualsDeclaration",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 101,
+        "line": 5,
+        "column": 26
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 82,
+            "line": 5,
+            "column": 7
+          },
+          "end": {
+            "offset": 85,
+            "line": 5,
+            "column": 10
+          },
+          "text": "m1"
+        },
+        {
+          "kind": "ExternalModuleReference",
+          "pos": {
+            "offset": 87,
+            "line": 5,
+            "column": 12
+          },
+          "end": {
+            "offset": 101,
+            "line": 5,
+            "column": 26
+          },
+          "children": [
+            {
+              "kind": "StringLiteral",
+              "pos": {
+                "offset": 96,
+                "line": 5,
+                "column": 21
+              },
+              "end": {
+                "offset": 100,
+                "line": 5,
+                "column": 25
+              },
+              "text": "m2"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ExpressionStatement",
+      "pos": {
+        "offset": 101,
+        "line": 5,
+        "column": 26
+      },
+      "end": {
+        "offset": 109,
+        "line": 6,
+        "column": 8
+      },
+      "children": [
+        {
+          "kind": "CallExpression",
+          "pos": {
+            "offset": 101,
+            "line": 5,
+            "column": 26
+          },
+          "end": {
+            "offset": 108,
+            "line": 6,
+            "column": 7
+          },
+          "children": [
+            {
+              "kind": "PropertyAccessExpression",
+              "pos": {
+                "offset": 101,
+                "line": 5,
+                "column": 26
+              },
+              "end": {
+                "offset": 106,
+                "line": 6,
+                "column": 5
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 101,
+                    "line": 5,
+                    "column": 26
+                  },
+                  "end": {
+                    "offset": 104,
+                    "line": 6,
+                    "column": 3
+                  },
+                  "text": "m1"
+                },
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 105,
+                    "line": 6,
+                    "column": 4
+                  },
+                  "end": {
+                    "offset": 106,
+                    "line": 6,
+                    "column": 5
+                  },
+                  "text": "f"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 109,
+        "line": 6,
+        "column": 8
+      },
+      "end": {
+        "offset": 110,
+        "line": 7,
+        "column": 1
+      },
+      "text": ""
+    }
+  ]
+}

@@ -1,0 +1,855 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 574,
+    "line": 21,
+    "column": 1
+  },
+  "children": [
+    {
+      "kind": "TypeAliasDeclaration",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 264,
+        "line": 5,
+        "column": 94
+      },
+      "children": [
+        {
+          "kind": "ExportKeyword",
+          "pos": {
+            "offset": 0,
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "offset": 177,
+            "line": 5,
+            "column": 7
+          },
+          "text": "export"
+        },
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 182,
+            "line": 5,
+            "column": 12
+          },
+          "end": {
+            "offset": 189,
+            "line": 5,
+            "column": 19
+          },
+          "text": "Client"
+        },
+        {
+          "kind": "ConditionalType",
+          "pos": {
+            "offset": 191,
+            "line": 5,
+            "column": 21
+          },
+          "end": {
+            "offset": 264,
+            "line": 5,
+            "column": 94
+          },
+          "children": [
+            {
+              "kind": "TypeReference",
+              "pos": {
+                "offset": 191,
+                "line": 5,
+                "column": 21
+              },
+              "end": {
+                "offset": 226,
+                "line": 5,
+                "column": 56
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 191,
+                    "line": 5,
+                    "column": 21
+                  },
+                  "end": {
+                    "offset": 202,
+                    "line": 5,
+                    "column": 32
+                  },
+                  "text": "ReturnType"
+                },
+                {
+                  "kind": "TypeQuery",
+                  "pos": {
+                    "offset": 203,
+                    "line": 5,
+                    "column": 33
+                  },
+                  "end": {
+                    "offset": 225,
+                    "line": 5,
+                    "column": 55
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 209,
+                        "line": 5,
+                        "column": 39
+                      },
+                      "end": {
+                        "offset": 225,
+                        "line": 5,
+                        "column": 55
+                      },
+                      "text": "getPrismaClient"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "ConstructorType",
+              "pos": {
+                "offset": 234,
+                "line": 5,
+                "column": 64
+              },
+              "end": {
+                "offset": 252,
+                "line": 5,
+                "column": 82
+              },
+              "children": [
+                {
+                  "kind": "InferType",
+                  "pos": {
+                    "offset": 244,
+                    "line": 5,
+                    "column": 74
+                  },
+                  "end": {
+                    "offset": 252,
+                    "line": 5,
+                    "column": 82
+                  },
+                  "children": [
+                    {
+                      "kind": "TypeParameter",
+                      "pos": {
+                        "offset": 250,
+                        "line": 5,
+                        "column": 80
+                      },
+                      "end": {
+                        "offset": 252,
+                        "line": 5,
+                        "column": 82
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 250,
+                            "line": 5,
+                            "column": 80
+                          },
+                          "end": {
+                            "offset": 252,
+                            "line": 5,
+                            "column": 82
+                          },
+                          "text": "T"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "TypeReference",
+              "pos": {
+                "offset": 254,
+                "line": 5,
+                "column": 84
+              },
+              "end": {
+                "offset": 256,
+                "line": 5,
+                "column": 86
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 254,
+                    "line": 5,
+                    "column": 84
+                  },
+                  "end": {
+                    "offset": 256,
+                    "line": 5,
+                    "column": 86
+                  },
+                  "text": "T"
+                }
+              ]
+            },
+            {
+              "kind": "NeverKeyword",
+              "pos": {
+                "offset": 258,
+                "line": 5,
+                "column": 88
+              },
+              "end": {
+                "offset": 264,
+                "line": 5,
+                "column": 94
+              },
+              "text": "never"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "FunctionDeclaration",
+      "pos": {
+        "offset": 264,
+        "line": 5,
+        "column": 94
+      },
+      "end": {
+        "offset": 488,
+        "line": 16,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "ExportKeyword",
+          "pos": {
+            "offset": 264,
+            "line": 5,
+            "column": 94
+          },
+          "end": {
+            "offset": 272,
+            "line": 7,
+            "column": 7
+          },
+          "text": "export"
+        },
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 281,
+            "line": 7,
+            "column": 16
+          },
+          "end": {
+            "offset": 297,
+            "line": 7,
+            "column": 32
+          },
+          "text": "getPrismaClient"
+        },
+        {
+          "kind": "Parameter",
+          "pos": {
+            "offset": 298,
+            "line": 7,
+            "column": 33
+          },
+          "end": {
+            "offset": 311,
+            "line": 7,
+            "column": 46
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 298,
+                "line": 7,
+                "column": 33
+              },
+              "end": {
+                "offset": 305,
+                "line": 7,
+                "column": 40
+              },
+              "text": "options"
+            },
+            {
+              "kind": "QuestionToken",
+              "pos": {
+                "offset": 305,
+                "line": 7,
+                "column": 40
+              },
+              "end": {
+                "offset": 306,
+                "line": 7,
+                "column": 41
+              },
+              "text": "?"
+            },
+            {
+              "kind": "AnyKeyword",
+              "pos": {
+                "offset": 307,
+                "line": 7,
+                "column": 42
+              },
+              "end": {
+                "offset": 311,
+                "line": 7,
+                "column": 46
+              },
+              "text": "any"
+            }
+          ]
+        },
+        {
+          "kind": "Block",
+          "pos": {
+            "offset": 312,
+            "line": 7,
+            "column": 47
+          },
+          "end": {
+            "offset": 488,
+            "line": 16,
+            "column": 2
+          },
+          "children": [
+            {
+              "kind": "ClassDeclaration",
+              "pos": {
+                "offset": 314,
+                "line": 7,
+                "column": 49
+              },
+              "end": {
+                "offset": 463,
+                "line": 13,
+                "column": 4
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 322,
+                    "line": 8,
+                    "column": 8
+                  },
+                  "end": {
+                    "offset": 335,
+                    "line": 8,
+                    "column": 21
+                  },
+                  "text": "PrismaClient"
+                },
+                {
+                  "kind": "PropertyDeclaration",
+                  "pos": {
+                    "offset": 337,
+                    "line": 8,
+                    "column": 23
+                  },
+                  "end": {
+                    "offset": 355,
+                    "line": 9,
+                    "column": 18
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 337,
+                        "line": 8,
+                        "column": 23
+                      },
+                      "end": {
+                        "offset": 346,
+                        "line": 9,
+                        "column": 9
+                      },
+                      "text": "self"
+                    },
+                    {
+                      "kind": "TypeReference",
+                      "pos": {
+                        "offset": 347,
+                        "line": 9,
+                        "column": 10
+                      },
+                      "end": {
+                        "offset": 354,
+                        "line": 9,
+                        "column": 17
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 347,
+                            "line": 9,
+                            "column": 10
+                          },
+                          "end": {
+                            "offset": 354,
+                            "line": 9,
+                            "column": 17
+                          },
+                          "text": "Client"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "Constructor",
+                  "pos": {
+                    "offset": 355,
+                    "line": 9,
+                    "column": 18
+                  },
+                  "end": {
+                    "offset": 459,
+                    "line": 12,
+                    "column": 6
+                  },
+                  "children": [
+                    {
+                      "kind": "Parameter",
+                      "pos": {
+                        "offset": 372,
+                        "line": 10,
+                        "column": 17
+                      },
+                      "end": {
+                        "offset": 385,
+                        "line": 10,
+                        "column": 30
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 372,
+                            "line": 10,
+                            "column": 17
+                          },
+                          "end": {
+                            "offset": 379,
+                            "line": 10,
+                            "column": 24
+                          },
+                          "text": "options"
+                        },
+                        {
+                          "kind": "QuestionToken",
+                          "pos": {
+                            "offset": 379,
+                            "line": 10,
+                            "column": 24
+                          },
+                          "end": {
+                            "offset": 380,
+                            "line": 10,
+                            "column": 25
+                          },
+                          "text": "?"
+                        },
+                        {
+                          "kind": "AnyKeyword",
+                          "pos": {
+                            "offset": 381,
+                            "line": 10,
+                            "column": 26
+                          },
+                          "end": {
+                            "offset": 385,
+                            "line": 10,
+                            "column": 30
+                          },
+                          "text": "any"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "Block",
+                      "pos": {
+                        "offset": 386,
+                        "line": 10,
+                        "column": 31
+                      },
+                      "end": {
+                        "offset": 459,
+                        "line": 12,
+                        "column": 6
+                      },
+                      "children": [
+                        {
+                          "kind": "ReturnStatement",
+                          "pos": {
+                            "offset": 388,
+                            "line": 10,
+                            "column": 33
+                          },
+                          "end": {
+                            "offset": 453,
+                            "line": 11,
+                            "column": 65
+                          },
+                          "children": [
+                            {
+                              "kind": "ParenthesizedExpression",
+                              "pos": {
+                                "offset": 401,
+                                "line": 11,
+                                "column": 13
+                              },
+                              "end": {
+                                "offset": 452,
+                                "line": 11,
+                                "column": 64
+                              },
+                              "children": [
+                                {
+                                  "kind": "BinaryExpression",
+                                  "pos": {
+                                    "offset": 403,
+                                    "line": 11,
+                                    "column": 15
+                                  },
+                                  "end": {
+                                    "offset": 451,
+                                    "line": 11,
+                                    "column": 63
+                                  },
+                                  "children": [
+                                    {
+                                      "kind": "PropertyAccessExpression",
+                                      "pos": {
+                                        "offset": 403,
+                                        "line": 11,
+                                        "column": 15
+                                      },
+                                      "end": {
+                                        "offset": 412,
+                                        "line": 11,
+                                        "column": 24
+                                      },
+                                      "children": [
+                                        {
+                                          "kind": "ThisKeyword",
+                                          "pos": {
+                                            "offset": 403,
+                                            "line": 11,
+                                            "column": 15
+                                          },
+                                          "end": {
+                                            "offset": 407,
+                                            "line": 11,
+                                            "column": 19
+                                          },
+                                          "text": "this"
+                                        },
+                                        {
+                                          "kind": "Identifier",
+                                          "pos": {
+                                            "offset": 408,
+                                            "line": 11,
+                                            "column": 20
+                                          },
+                                          "end": {
+                                            "offset": 412,
+                                            "line": 11,
+                                            "column": 24
+                                          },
+                                          "text": "self"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "kind": "FirstAssignment",
+                                      "pos": {
+                                        "offset": 412,
+                                        "line": 11,
+                                        "column": 24
+                                      },
+                                      "end": {
+                                        "offset": 414,
+                                        "line": 11,
+                                        "column": 26
+                                      },
+                                      "text": "="
+                                    },
+                                    {
+                                      "kind": "CallExpression",
+                                      "pos": {
+                                        "offset": 414,
+                                        "line": 11,
+                                        "column": 26
+                                      },
+                                      "end": {
+                                        "offset": 451,
+                                        "line": 11,
+                                        "column": 63
+                                      },
+                                      "children": [
+                                        {
+                                          "kind": "Identifier",
+                                          "pos": {
+                                            "offset": 414,
+                                            "line": 11,
+                                            "column": 26
+                                          },
+                                          "end": {
+                                            "offset": 445,
+                                            "line": 11,
+                                            "column": 57
+                                          },
+                                          "text": "applyModelsAndClientExtensions"
+                                        },
+                                        {
+                                          "kind": "ThisKeyword",
+                                          "pos": {
+                                            "offset": 446,
+                                            "line": 11,
+                                            "column": 58
+                                          },
+                                          "end": {
+                                            "offset": 450,
+                                            "line": 11,
+                                            "column": 62
+                                          },
+                                          "text": "this"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "ReturnStatement",
+              "pos": {
+                "offset": 463,
+                "line": 13,
+                "column": 4
+              },
+              "end": {
+                "offset": 486,
+                "line": 15,
+                "column": 22
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 473,
+                    "line": 15,
+                    "column": 9
+                  },
+                  "end": {
+                    "offset": 486,
+                    "line": 15,
+                    "column": 22
+                  },
+                  "text": "PrismaClient"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "FunctionDeclaration",
+      "pos": {
+        "offset": 488,
+        "line": 16,
+        "column": 2
+      },
+      "end": {
+        "offset": 573,
+        "line": 20,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "ExportKeyword",
+          "pos": {
+            "offset": 488,
+            "line": 16,
+            "column": 2
+          },
+          "end": {
+            "offset": 496,
+            "line": 18,
+            "column": 7
+          },
+          "text": "export"
+        },
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 505,
+            "line": 18,
+            "column": 16
+          },
+          "end": {
+            "offset": 536,
+            "line": 18,
+            "column": 47
+          },
+          "text": "applyModelsAndClientExtensions"
+        },
+        {
+          "kind": "Parameter",
+          "pos": {
+            "offset": 537,
+            "line": 18,
+            "column": 48
+          },
+          "end": {
+            "offset": 551,
+            "line": 18,
+            "column": 62
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 537,
+                "line": 18,
+                "column": 48
+              },
+              "end": {
+                "offset": 543,
+                "line": 18,
+                "column": 54
+              },
+              "text": "client"
+            },
+            {
+              "kind": "TypeReference",
+              "pos": {
+                "offset": 544,
+                "line": 18,
+                "column": 55
+              },
+              "end": {
+                "offset": 551,
+                "line": 18,
+                "column": 62
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 544,
+                    "line": 18,
+                    "column": 55
+                  },
+                  "end": {
+                    "offset": 551,
+                    "line": 18,
+                    "column": 62
+                  },
+                  "text": "Client"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "Block",
+          "pos": {
+            "offset": 552,
+            "line": 18,
+            "column": 63
+          },
+          "end": {
+            "offset": 573,
+            "line": 20,
+            "column": 2
+          },
+          "children": [
+            {
+              "kind": "ReturnStatement",
+              "pos": {
+                "offset": 554,
+                "line": 18,
+                "column": 65
+              },
+              "end": {
+                "offset": 571,
+                "line": 19,
+                "column": 17
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 563,
+                    "line": 19,
+                    "column": 9
+                  },
+                  "end": {
+                    "offset": 570,
+                    "line": 19,
+                    "column": 16
+                  },
+                  "text": "client"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 573,
+        "line": 20,
+        "column": 2
+      },
+      "end": {
+        "offset": 574,
+        "line": 21,
+        "column": 1
+      },
+      "text": ""
+    }
+  ]
+}

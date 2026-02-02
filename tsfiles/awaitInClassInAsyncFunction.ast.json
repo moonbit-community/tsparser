@@ -1,0 +1,292 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 233,
+    "line": 14,
+    "column": 1
+  },
+  "children": [
+    {
+      "kind": "FunctionDeclaration",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 149,
+        "line": 7,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "AsyncKeyword",
+          "pos": {
+            "offset": 0,
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "offset": 116,
+            "line": 5,
+            "column": 6
+          },
+          "text": "async"
+        },
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 125,
+            "line": 5,
+            "column": 15
+          },
+          "end": {
+            "offset": 129,
+            "line": 5,
+            "column": 19
+          },
+          "text": "bar"
+        },
+        {
+          "kind": "Block",
+          "pos": {
+            "offset": 131,
+            "line": 5,
+            "column": 21
+          },
+          "end": {
+            "offset": 149,
+            "line": 7,
+            "column": 2
+          },
+          "children": [
+            {
+              "kind": "ReturnStatement",
+              "pos": {
+                "offset": 133,
+                "line": 5,
+                "column": 23
+              },
+              "end": {
+                "offset": 147,
+                "line": 6,
+                "column": 14
+              },
+              "children": [
+                {
+                  "kind": "FirstLiteralToken",
+                  "pos": {
+                    "offset": 144,
+                    "line": 6,
+                    "column": 11
+                  },
+                  "end": {
+                    "offset": 146,
+                    "line": 6,
+                    "column": 13
+                  },
+                  "text": "2"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "FunctionDeclaration",
+      "pos": {
+        "offset": 149,
+        "line": 7,
+        "column": 2
+      },
+      "end": {
+        "offset": 232,
+        "line": 13,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "AsyncKeyword",
+          "pos": {
+            "offset": 149,
+            "line": 7,
+            "column": 2
+          },
+          "end": {
+            "offset": 156,
+            "line": 9,
+            "column": 6
+          },
+          "text": "async"
+        },
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 165,
+            "line": 9,
+            "column": 15
+          },
+          "end": {
+            "offset": 169,
+            "line": 9,
+            "column": 19
+          },
+          "text": "foo"
+        },
+        {
+          "kind": "Block",
+          "pos": {
+            "offset": 171,
+            "line": 9,
+            "column": 21
+          },
+          "end": {
+            "offset": 232,
+            "line": 13,
+            "column": 2
+          },
+          "children": [
+            {
+              "kind": "ReturnStatement",
+              "pos": {
+                "offset": 173,
+                "line": 9,
+                "column": 23
+              },
+              "end": {
+                "offset": 230,
+                "line": 12,
+                "column": 7
+              },
+              "children": [
+                {
+                  "kind": "NewExpression",
+                  "pos": {
+                    "offset": 184,
+                    "line": 10,
+                    "column": 11
+                  },
+                  "end": {
+                    "offset": 229,
+                    "line": 12,
+                    "column": 6
+                  },
+                  "children": [
+                    {
+                      "kind": "ClassExpression",
+                      "pos": {
+                        "offset": 188,
+                        "line": 10,
+                        "column": 15
+                      },
+                      "end": {
+                        "offset": 229,
+                        "line": 12,
+                        "column": 6
+                      },
+                      "children": [
+                        {
+                          "kind": "PropertyDeclaration",
+                          "pos": {
+                            "offset": 196,
+                            "line": 10,
+                            "column": 23
+                          },
+                          "end": {
+                            "offset": 223,
+                            "line": 11,
+                            "column": 27
+                          },
+                          "children": [
+                            {
+                              "kind": "Identifier",
+                              "pos": {
+                                "offset": 196,
+                                "line": 10,
+                                "column": 23
+                              },
+                              "end": {
+                                "offset": 208,
+                                "line": 11,
+                                "column": 12
+                              },
+                              "text": "baz"
+                            },
+                            {
+                              "kind": "AwaitExpression",
+                              "pos": {
+                                "offset": 210,
+                                "line": 11,
+                                "column": 14
+                              },
+                              "end": {
+                                "offset": 222,
+                                "line": 11,
+                                "column": 26
+                              },
+                              "children": [
+                                {
+                                  "kind": "CallExpression",
+                                  "pos": {
+                                    "offset": 216,
+                                    "line": 11,
+                                    "column": 20
+                                  },
+                                  "end": {
+                                    "offset": 222,
+                                    "line": 11,
+                                    "column": 26
+                                  },
+                                  "children": [
+                                    {
+                                      "kind": "Identifier",
+                                      "pos": {
+                                        "offset": 216,
+                                        "line": 11,
+                                        "column": 20
+                                      },
+                                      "end": {
+                                        "offset": 220,
+                                        "line": 11,
+                                        "column": 24
+                                      },
+                                      "text": "bar"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 232,
+        "line": 13,
+        "column": 2
+      },
+      "end": {
+        "offset": 233,
+        "line": 14,
+        "column": 1
+      },
+      "text": ""
+    }
+  ]
+}

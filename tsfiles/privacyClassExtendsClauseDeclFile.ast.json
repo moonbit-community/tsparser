@@ -1,0 +1,2723 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 3167,
+    "line": 99,
+    "column": 1
+  },
+  "children": [
+    {
+      "kind": "ModuleDeclaration",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 969,
+        "line": 28,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "ExportKeyword",
+          "pos": {
+            "offset": 0,
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "offset": 140,
+            "line": 6,
+            "column": 7
+          },
+          "text": "export"
+        },
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 150,
+            "line": 6,
+            "column": 17
+          },
+          "end": {
+            "offset": 163,
+            "line": 6,
+            "column": 30
+          },
+          "text": "publicModule"
+        },
+        {
+          "kind": "ModuleBlock",
+          "pos": {
+            "offset": 163,
+            "line": 6,
+            "column": 30
+          },
+          "end": {
+            "offset": 969,
+            "line": 28,
+            "column": 2
+          },
+          "children": [
+            {
+              "kind": "ClassDeclaration",
+              "pos": {
+                "offset": 165,
+                "line": 6,
+                "column": 32
+              },
+              "end": {
+                "offset": 253,
+                "line": 10,
+                "column": 6
+              },
+              "children": [
+                {
+                  "kind": "ExportKeyword",
+                  "pos": {
+                    "offset": 165,
+                    "line": 6,
+                    "column": 32
+                  },
+                  "end": {
+                    "offset": 177,
+                    "line": 7,
+                    "column": 11
+                  },
+                  "text": "export"
+                },
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 183,
+                    "line": 7,
+                    "column": 17
+                  },
+                  "end": {
+                    "offset": 209,
+                    "line": 7,
+                    "column": 43
+                  },
+                  "text": "publicClassInPublicModule"
+                },
+                {
+                  "kind": "MethodDeclaration",
+                  "pos": {
+                    "offset": 211,
+                    "line": 7,
+                    "column": 45
+                  },
+                  "end": {
+                    "offset": 246,
+                    "line": 9,
+                    "column": 10
+                  },
+                  "children": [
+                    {
+                      "kind": "PrivateKeyword",
+                      "pos": {
+                        "offset": 211,
+                        "line": 7,
+                        "column": 45
+                      },
+                      "end": {
+                        "offset": 228,
+                        "line": 8,
+                        "column": 16
+                      },
+                      "text": "private"
+                    },
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 228,
+                        "line": 8,
+                        "column": 16
+                      },
+                      "end": {
+                        "offset": 231,
+                        "line": 8,
+                        "column": 19
+                      },
+                      "text": "f1"
+                    },
+                    {
+                      "kind": "Block",
+                      "pos": {
+                        "offset": 233,
+                        "line": 8,
+                        "column": 21
+                      },
+                      "end": {
+                        "offset": 246,
+                        "line": 9,
+                        "column": 10
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "ClassDeclaration",
+              "pos": {
+                "offset": 253,
+                "line": 10,
+                "column": 6
+              },
+              "end": {
+                "offset": 302,
+                "line": 13,
+                "column": 6
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 266,
+                    "line": 12,
+                    "column": 10
+                  },
+                  "end": {
+                    "offset": 293,
+                    "line": 12,
+                    "column": 37
+                  },
+                  "text": "privateClassInPublicModule"
+                }
+              ]
+            },
+            {
+              "kind": "ClassDeclaration",
+              "pos": {
+                "offset": 302,
+                "line": 13,
+                "column": 6
+              },
+              "end": {
+                "offset": 399,
+                "line": 16,
+                "column": 6
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 315,
+                    "line": 15,
+                    "column": 10
+                  },
+                  "end": {
+                    "offset": 356,
+                    "line": 15,
+                    "column": 51
+                  },
+                  "text": "privateClassExtendingPublicClassInModule"
+                },
+                {
+                  "kind": "HeritageClause",
+                  "pos": {
+                    "offset": 356,
+                    "line": 15,
+                    "column": 51
+                  },
+                  "end": {
+                    "offset": 390,
+                    "line": 15,
+                    "column": 85
+                  },
+                  "children": [
+                    {
+                      "kind": "ExpressionWithTypeArguments",
+                      "pos": {
+                        "offset": 364,
+                        "line": 15,
+                        "column": 59
+                      },
+                      "end": {
+                        "offset": 390,
+                        "line": 15,
+                        "column": 85
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 364,
+                            "line": 15,
+                            "column": 59
+                          },
+                          "end": {
+                            "offset": 390,
+                            "line": 15,
+                            "column": 85
+                          },
+                          "text": "publicClassInPublicModule"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "ClassDeclaration",
+              "pos": {
+                "offset": 399,
+                "line": 16,
+                "column": 6
+              },
+              "end": {
+                "offset": 496,
+                "line": 18,
+                "column": 6
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 410,
+                    "line": 17,
+                    "column": 10
+                  },
+                  "end": {
+                    "offset": 452,
+                    "line": 17,
+                    "column": 52
+                  },
+                  "text": "privateClassExtendingPrivateClassInModule"
+                },
+                {
+                  "kind": "HeritageClause",
+                  "pos": {
+                    "offset": 452,
+                    "line": 17,
+                    "column": 52
+                  },
+                  "end": {
+                    "offset": 487,
+                    "line": 17,
+                    "column": 87
+                  },
+                  "children": [
+                    {
+                      "kind": "ExpressionWithTypeArguments",
+                      "pos": {
+                        "offset": 460,
+                        "line": 17,
+                        "column": 60
+                      },
+                      "end": {
+                        "offset": 487,
+                        "line": 17,
+                        "column": 87
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 460,
+                            "line": 17,
+                            "column": 60
+                          },
+                          "end": {
+                            "offset": 487,
+                            "line": 17,
+                            "column": 87
+                          },
+                          "text": "privateClassInPublicModule"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "ClassDeclaration",
+              "pos": {
+                "offset": 496,
+                "line": 18,
+                "column": 6
+              },
+              "end": {
+                "offset": 597,
+                "line": 20,
+                "column": 6
+              },
+              "children": [
+                {
+                  "kind": "ExportKeyword",
+                  "pos": {
+                    "offset": 496,
+                    "line": 18,
+                    "column": 6
+                  },
+                  "end": {
+                    "offset": 508,
+                    "line": 19,
+                    "column": 11
+                  },
+                  "text": "export"
+                },
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 514,
+                    "line": 19,
+                    "column": 17
+                  },
+                  "end": {
+                    "offset": 554,
+                    "line": 19,
+                    "column": 57
+                  },
+                  "text": "publicClassExtendingPublicClassInModule"
+                },
+                {
+                  "kind": "HeritageClause",
+                  "pos": {
+                    "offset": 554,
+                    "line": 19,
+                    "column": 57
+                  },
+                  "end": {
+                    "offset": 588,
+                    "line": 19,
+                    "column": 91
+                  },
+                  "children": [
+                    {
+                      "kind": "ExpressionWithTypeArguments",
+                      "pos": {
+                        "offset": 562,
+                        "line": 19,
+                        "column": 65
+                      },
+                      "end": {
+                        "offset": 588,
+                        "line": 19,
+                        "column": 91
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 562,
+                            "line": 19,
+                            "column": 65
+                          },
+                          "end": {
+                            "offset": 588,
+                            "line": 19,
+                            "column": 91
+                          },
+                          "text": "publicClassInPublicModule"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "ClassDeclaration",
+              "pos": {
+                "offset": 597,
+                "line": 20,
+                "column": 6
+              },
+              "end": {
+                "offset": 716,
+                "line": 22,
+                "column": 6
+              },
+              "children": [
+                {
+                  "kind": "ExportKeyword",
+                  "pos": {
+                    "offset": 597,
+                    "line": 20,
+                    "column": 6
+                  },
+                  "end": {
+                    "offset": 609,
+                    "line": 21,
+                    "column": 11
+                  },
+                  "text": "export"
+                },
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 615,
+                    "line": 21,
+                    "column": 17
+                  },
+                  "end": {
+                    "offset": 656,
+                    "line": 21,
+                    "column": 58
+                  },
+                  "text": "publicClassExtendingPrivateClassInModule"
+                },
+                {
+                  "kind": "HeritageClause",
+                  "pos": {
+                    "offset": 656,
+                    "line": 21,
+                    "column": 58
+                  },
+                  "end": {
+                    "offset": 691,
+                    "line": 21,
+                    "column": 93
+                  },
+                  "children": [
+                    {
+                      "kind": "ExpressionWithTypeArguments",
+                      "pos": {
+                        "offset": 664,
+                        "line": 21,
+                        "column": 66
+                      },
+                      "end": {
+                        "offset": 691,
+                        "line": 21,
+                        "column": 93
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 664,
+                            "line": 21,
+                            "column": 66
+                          },
+                          "end": {
+                            "offset": 691,
+                            "line": 21,
+                            "column": 93
+                          },
+                          "text": "privateClassInPublicModule"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "ClassDeclaration",
+              "pos": {
+                "offset": 716,
+                "line": 22,
+                "column": 6
+              },
+              "end": {
+                "offset": 831,
+                "line": 25,
+                "column": 6
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 729,
+                    "line": 24,
+                    "column": 10
+                  },
+                  "end": {
+                    "offset": 773,
+                    "line": 24,
+                    "column": 54
+                  },
+                  "text": "privateClassExtendingFromPrivateModuleClass"
+                },
+                {
+                  "kind": "HeritageClause",
+                  "pos": {
+                    "offset": 773,
+                    "line": 24,
+                    "column": 54
+                  },
+                  "end": {
+                    "offset": 822,
+                    "line": 24,
+                    "column": 103
+                  },
+                  "children": [
+                    {
+                      "kind": "ExpressionWithTypeArguments",
+                      "pos": {
+                        "offset": 781,
+                        "line": 24,
+                        "column": 62
+                      },
+                      "end": {
+                        "offset": 822,
+                        "line": 24,
+                        "column": 103
+                      },
+                      "children": [
+                        {
+                          "kind": "PropertyAccessExpression",
+                          "pos": {
+                            "offset": 781,
+                            "line": 24,
+                            "column": 62
+                          },
+                          "end": {
+                            "offset": 822,
+                            "line": 24,
+                            "column": 103
+                          },
+                          "children": [
+                            {
+                              "kind": "Identifier",
+                              "pos": {
+                                "offset": 781,
+                                "line": 24,
+                                "column": 62
+                              },
+                              "end": {
+                                "offset": 795,
+                                "line": 24,
+                                "column": 76
+                              },
+                              "text": "privateModule"
+                            },
+                            {
+                              "kind": "Identifier",
+                              "pos": {
+                                "offset": 796,
+                                "line": 24,
+                                "column": 77
+                              },
+                              "end": {
+                                "offset": 822,
+                                "line": 24,
+                                "column": 103
+                              },
+                              "text": "publicClassInPrivateModule"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "ClassDeclaration",
+              "pos": {
+                "offset": 831,
+                "line": 25,
+                "column": 6
+              },
+              "end": {
+                "offset": 966,
+                "line": 27,
+                "column": 6
+              },
+              "children": [
+                {
+                  "kind": "ExportKeyword",
+                  "pos": {
+                    "offset": 831,
+                    "line": 25,
+                    "column": 6
+                  },
+                  "end": {
+                    "offset": 843,
+                    "line": 26,
+                    "column": 11
+                  },
+                  "text": "export"
+                },
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 849,
+                    "line": 26,
+                    "column": 17
+                  },
+                  "end": {
+                    "offset": 892,
+                    "line": 26,
+                    "column": 60
+                  },
+                  "text": "publicClassExtendingFromPrivateModuleClass"
+                },
+                {
+                  "kind": "HeritageClause",
+                  "pos": {
+                    "offset": 892,
+                    "line": 26,
+                    "column": 60
+                  },
+                  "end": {
+                    "offset": 941,
+                    "line": 26,
+                    "column": 109
+                  },
+                  "children": [
+                    {
+                      "kind": "ExpressionWithTypeArguments",
+                      "pos": {
+                        "offset": 900,
+                        "line": 26,
+                        "column": 68
+                      },
+                      "end": {
+                        "offset": 941,
+                        "line": 26,
+                        "column": 109
+                      },
+                      "children": [
+                        {
+                          "kind": "PropertyAccessExpression",
+                          "pos": {
+                            "offset": 900,
+                            "line": 26,
+                            "column": 68
+                          },
+                          "end": {
+                            "offset": 941,
+                            "line": 26,
+                            "column": 109
+                          },
+                          "children": [
+                            {
+                              "kind": "Identifier",
+                              "pos": {
+                                "offset": 900,
+                                "line": 26,
+                                "column": 68
+                              },
+                              "end": {
+                                "offset": 914,
+                                "line": 26,
+                                "column": 82
+                              },
+                              "text": "privateModule"
+                            },
+                            {
+                              "kind": "Identifier",
+                              "pos": {
+                                "offset": 915,
+                                "line": 26,
+                                "column": 83
+                              },
+                              "end": {
+                                "offset": 941,
+                                "line": 26,
+                                "column": 109
+                              },
+                              "text": "publicClassInPrivateModule"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ModuleDeclaration",
+      "pos": {
+        "offset": 969,
+        "line": 28,
+        "column": 2
+      },
+      "end": {
+        "offset": 1777,
+        "line": 52,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 982,
+            "line": 30,
+            "column": 10
+          },
+          "end": {
+            "offset": 996,
+            "line": 30,
+            "column": 24
+          },
+          "text": "privateModule"
+        },
+        {
+          "kind": "ModuleBlock",
+          "pos": {
+            "offset": 996,
+            "line": 30,
+            "column": 24
+          },
+          "end": {
+            "offset": 1777,
+            "line": 52,
+            "column": 2
+          },
+          "children": [
+            {
+              "kind": "ClassDeclaration",
+              "pos": {
+                "offset": 998,
+                "line": 30,
+                "column": 26
+              },
+              "end": {
+                "offset": 1087,
+                "line": 34,
+                "column": 6
+              },
+              "children": [
+                {
+                  "kind": "ExportKeyword",
+                  "pos": {
+                    "offset": 998,
+                    "line": 30,
+                    "column": 26
+                  },
+                  "end": {
+                    "offset": 1010,
+                    "line": 31,
+                    "column": 11
+                  },
+                  "text": "export"
+                },
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 1016,
+                    "line": 31,
+                    "column": 17
+                  },
+                  "end": {
+                    "offset": 1043,
+                    "line": 31,
+                    "column": 44
+                  },
+                  "text": "publicClassInPrivateModule"
+                },
+                {
+                  "kind": "MethodDeclaration",
+                  "pos": {
+                    "offset": 1045,
+                    "line": 31,
+                    "column": 46
+                  },
+                  "end": {
+                    "offset": 1080,
+                    "line": 33,
+                    "column": 10
+                  },
+                  "children": [
+                    {
+                      "kind": "PrivateKeyword",
+                      "pos": {
+                        "offset": 1045,
+                        "line": 31,
+                        "column": 46
+                      },
+                      "end": {
+                        "offset": 1062,
+                        "line": 32,
+                        "column": 16
+                      },
+                      "text": "private"
+                    },
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 1062,
+                        "line": 32,
+                        "column": 16
+                      },
+                      "end": {
+                        "offset": 1065,
+                        "line": 32,
+                        "column": 19
+                      },
+                      "text": "f1"
+                    },
+                    {
+                      "kind": "Block",
+                      "pos": {
+                        "offset": 1067,
+                        "line": 32,
+                        "column": 21
+                      },
+                      "end": {
+                        "offset": 1080,
+                        "line": 33,
+                        "column": 10
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "ClassDeclaration",
+              "pos": {
+                "offset": 1087,
+                "line": 34,
+                "column": 6
+              },
+              "end": {
+                "offset": 1137,
+                "line": 37,
+                "column": 6
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 1100,
+                    "line": 36,
+                    "column": 10
+                  },
+                  "end": {
+                    "offset": 1128,
+                    "line": 36,
+                    "column": 38
+                  },
+                  "text": "privateClassInPrivateModule"
+                }
+              ]
+            },
+            {
+              "kind": "ClassDeclaration",
+              "pos": {
+                "offset": 1137,
+                "line": 37,
+                "column": 6
+              },
+              "end": {
+                "offset": 1235,
+                "line": 40,
+                "column": 6
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 1150,
+                    "line": 39,
+                    "column": 10
+                  },
+                  "end": {
+                    "offset": 1191,
+                    "line": 39,
+                    "column": 51
+                  },
+                  "text": "privateClassExtendingPublicClassInModule"
+                },
+                {
+                  "kind": "HeritageClause",
+                  "pos": {
+                    "offset": 1191,
+                    "line": 39,
+                    "column": 51
+                  },
+                  "end": {
+                    "offset": 1226,
+                    "line": 39,
+                    "column": 86
+                  },
+                  "children": [
+                    {
+                      "kind": "ExpressionWithTypeArguments",
+                      "pos": {
+                        "offset": 1199,
+                        "line": 39,
+                        "column": 59
+                      },
+                      "end": {
+                        "offset": 1226,
+                        "line": 39,
+                        "column": 86
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 1199,
+                            "line": 39,
+                            "column": 59
+                          },
+                          "end": {
+                            "offset": 1226,
+                            "line": 39,
+                            "column": 86
+                          },
+                          "text": "publicClassInPrivateModule"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "ClassDeclaration",
+              "pos": {
+                "offset": 1235,
+                "line": 40,
+                "column": 6
+              },
+              "end": {
+                "offset": 1333,
+                "line": 42,
+                "column": 6
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 1246,
+                    "line": 41,
+                    "column": 10
+                  },
+                  "end": {
+                    "offset": 1288,
+                    "line": 41,
+                    "column": 52
+                  },
+                  "text": "privateClassExtendingPrivateClassInModule"
+                },
+                {
+                  "kind": "HeritageClause",
+                  "pos": {
+                    "offset": 1288,
+                    "line": 41,
+                    "column": 52
+                  },
+                  "end": {
+                    "offset": 1324,
+                    "line": 41,
+                    "column": 88
+                  },
+                  "children": [
+                    {
+                      "kind": "ExpressionWithTypeArguments",
+                      "pos": {
+                        "offset": 1296,
+                        "line": 41,
+                        "column": 60
+                      },
+                      "end": {
+                        "offset": 1324,
+                        "line": 41,
+                        "column": 88
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 1296,
+                            "line": 41,
+                            "column": 60
+                          },
+                          "end": {
+                            "offset": 1324,
+                            "line": 41,
+                            "column": 88
+                          },
+                          "text": "privateClassInPrivateModule"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "ClassDeclaration",
+              "pos": {
+                "offset": 1333,
+                "line": 42,
+                "column": 6
+              },
+              "end": {
+                "offset": 1435,
+                "line": 44,
+                "column": 6
+              },
+              "children": [
+                {
+                  "kind": "ExportKeyword",
+                  "pos": {
+                    "offset": 1333,
+                    "line": 42,
+                    "column": 6
+                  },
+                  "end": {
+                    "offset": 1345,
+                    "line": 43,
+                    "column": 11
+                  },
+                  "text": "export"
+                },
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 1351,
+                    "line": 43,
+                    "column": 17
+                  },
+                  "end": {
+                    "offset": 1391,
+                    "line": 43,
+                    "column": 57
+                  },
+                  "text": "publicClassExtendingPublicClassInModule"
+                },
+                {
+                  "kind": "HeritageClause",
+                  "pos": {
+                    "offset": 1391,
+                    "line": 43,
+                    "column": 57
+                  },
+                  "end": {
+                    "offset": 1426,
+                    "line": 43,
+                    "column": 92
+                  },
+                  "children": [
+                    {
+                      "kind": "ExpressionWithTypeArguments",
+                      "pos": {
+                        "offset": 1399,
+                        "line": 43,
+                        "column": 65
+                      },
+                      "end": {
+                        "offset": 1426,
+                        "line": 43,
+                        "column": 92
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 1399,
+                            "line": 43,
+                            "column": 65
+                          },
+                          "end": {
+                            "offset": 1426,
+                            "line": 43,
+                            "column": 92
+                          },
+                          "text": "publicClassInPrivateModule"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "ClassDeclaration",
+              "pos": {
+                "offset": 1435,
+                "line": 44,
+                "column": 6
+              },
+              "end": {
+                "offset": 1540,
+                "line": 46,
+                "column": 6
+              },
+              "children": [
+                {
+                  "kind": "ExportKeyword",
+                  "pos": {
+                    "offset": 1435,
+                    "line": 44,
+                    "column": 6
+                  },
+                  "end": {
+                    "offset": 1447,
+                    "line": 45,
+                    "column": 11
+                  },
+                  "text": "export"
+                },
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 1453,
+                    "line": 45,
+                    "column": 17
+                  },
+                  "end": {
+                    "offset": 1494,
+                    "line": 45,
+                    "column": 58
+                  },
+                  "text": "publicClassExtendingPrivateClassInModule"
+                },
+                {
+                  "kind": "HeritageClause",
+                  "pos": {
+                    "offset": 1494,
+                    "line": 45,
+                    "column": 58
+                  },
+                  "end": {
+                    "offset": 1530,
+                    "line": 45,
+                    "column": 94
+                  },
+                  "children": [
+                    {
+                      "kind": "ExpressionWithTypeArguments",
+                      "pos": {
+                        "offset": 1502,
+                        "line": 45,
+                        "column": 66
+                      },
+                      "end": {
+                        "offset": 1530,
+                        "line": 45,
+                        "column": 94
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 1502,
+                            "line": 45,
+                            "column": 66
+                          },
+                          "end": {
+                            "offset": 1530,
+                            "line": 45,
+                            "column": 94
+                          },
+                          "text": "privateClassInPrivateModule"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "ClassDeclaration",
+              "pos": {
+                "offset": 1540,
+                "line": 46,
+                "column": 6
+              },
+              "end": {
+                "offset": 1655,
+                "line": 49,
+                "column": 6
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 1553,
+                    "line": 48,
+                    "column": 10
+                  },
+                  "end": {
+                    "offset": 1597,
+                    "line": 48,
+                    "column": 54
+                  },
+                  "text": "privateClassExtendingFromPrivateModuleClass"
+                },
+                {
+                  "kind": "HeritageClause",
+                  "pos": {
+                    "offset": 1597,
+                    "line": 48,
+                    "column": 54
+                  },
+                  "end": {
+                    "offset": 1646,
+                    "line": 48,
+                    "column": 103
+                  },
+                  "children": [
+                    {
+                      "kind": "ExpressionWithTypeArguments",
+                      "pos": {
+                        "offset": 1605,
+                        "line": 48,
+                        "column": 62
+                      },
+                      "end": {
+                        "offset": 1646,
+                        "line": 48,
+                        "column": 103
+                      },
+                      "children": [
+                        {
+                          "kind": "PropertyAccessExpression",
+                          "pos": {
+                            "offset": 1605,
+                            "line": 48,
+                            "column": 62
+                          },
+                          "end": {
+                            "offset": 1646,
+                            "line": 48,
+                            "column": 103
+                          },
+                          "children": [
+                            {
+                              "kind": "Identifier",
+                              "pos": {
+                                "offset": 1605,
+                                "line": 48,
+                                "column": 62
+                              },
+                              "end": {
+                                "offset": 1619,
+                                "line": 48,
+                                "column": 76
+                              },
+                              "text": "privateModule"
+                            },
+                            {
+                              "kind": "Identifier",
+                              "pos": {
+                                "offset": 1620,
+                                "line": 48,
+                                "column": 77
+                              },
+                              "end": {
+                                "offset": 1646,
+                                "line": 48,
+                                "column": 103
+                              },
+                              "text": "publicClassInPrivateModule"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "ClassDeclaration",
+              "pos": {
+                "offset": 1655,
+                "line": 49,
+                "column": 6
+              },
+              "end": {
+                "offset": 1774,
+                "line": 51,
+                "column": 6
+              },
+              "children": [
+                {
+                  "kind": "ExportKeyword",
+                  "pos": {
+                    "offset": 1655,
+                    "line": 49,
+                    "column": 6
+                  },
+                  "end": {
+                    "offset": 1667,
+                    "line": 50,
+                    "column": 11
+                  },
+                  "text": "export"
+                },
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 1673,
+                    "line": 50,
+                    "column": 17
+                  },
+                  "end": {
+                    "offset": 1716,
+                    "line": 50,
+                    "column": 60
+                  },
+                  "text": "publicClassExtendingFromPrivateModuleClass"
+                },
+                {
+                  "kind": "HeritageClause",
+                  "pos": {
+                    "offset": 1716,
+                    "line": 50,
+                    "column": 60
+                  },
+                  "end": {
+                    "offset": 1765,
+                    "line": 50,
+                    "column": 109
+                  },
+                  "children": [
+                    {
+                      "kind": "ExpressionWithTypeArguments",
+                      "pos": {
+                        "offset": 1724,
+                        "line": 50,
+                        "column": 68
+                      },
+                      "end": {
+                        "offset": 1765,
+                        "line": 50,
+                        "column": 109
+                      },
+                      "children": [
+                        {
+                          "kind": "PropertyAccessExpression",
+                          "pos": {
+                            "offset": 1724,
+                            "line": 50,
+                            "column": 68
+                          },
+                          "end": {
+                            "offset": 1765,
+                            "line": 50,
+                            "column": 109
+                          },
+                          "children": [
+                            {
+                              "kind": "Identifier",
+                              "pos": {
+                                "offset": 1724,
+                                "line": 50,
+                                "column": 68
+                              },
+                              "end": {
+                                "offset": 1738,
+                                "line": 50,
+                                "column": 82
+                              },
+                              "text": "privateModule"
+                            },
+                            {
+                              "kind": "Identifier",
+                              "pos": {
+                                "offset": 1739,
+                                "line": 50,
+                                "column": 83
+                              },
+                              "end": {
+                                "offset": 1765,
+                                "line": 50,
+                                "column": 109
+                              },
+                              "text": "publicClassInPrivateModule"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ClassDeclaration",
+      "pos": {
+        "offset": 1777,
+        "line": 52,
+        "column": 2
+      },
+      "end": {
+        "offset": 1837,
+        "line": 57,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "ExportKeyword",
+          "pos": {
+            "offset": 1777,
+            "line": 52,
+            "column": 2
+          },
+          "end": {
+            "offset": 1787,
+            "line": 54,
+            "column": 7
+          },
+          "text": "export"
+        },
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 1793,
+            "line": 54,
+            "column": 13
+          },
+          "end": {
+            "offset": 1805,
+            "line": 54,
+            "column": 25
+          },
+          "text": "publicClass"
+        },
+        {
+          "kind": "MethodDeclaration",
+          "pos": {
+            "offset": 1807,
+            "line": 54,
+            "column": 27
+          },
+          "end": {
+            "offset": 1834,
+            "line": 56,
+            "column": 6
+          },
+          "children": [
+            {
+              "kind": "PrivateKeyword",
+              "pos": {
+                "offset": 1807,
+                "line": 54,
+                "column": 27
+              },
+              "end": {
+                "offset": 1820,
+                "line": 55,
+                "column": 12
+              },
+              "text": "private"
+            },
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 1820,
+                "line": 55,
+                "column": 12
+              },
+              "end": {
+                "offset": 1823,
+                "line": 55,
+                "column": 15
+              },
+              "text": "f1"
+            },
+            {
+              "kind": "Block",
+              "pos": {
+                "offset": 1825,
+                "line": 55,
+                "column": 17
+              },
+              "end": {
+                "offset": 1834,
+                "line": 56,
+                "column": 6
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ClassDeclaration",
+      "pos": {
+        "offset": 1837,
+        "line": 57,
+        "column": 2
+      },
+      "end": {
+        "offset": 1864,
+        "line": 60,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 1846,
+            "line": 59,
+            "column": 6
+          },
+          "end": {
+            "offset": 1859,
+            "line": 59,
+            "column": 19
+          },
+          "text": "privateClass"
+        }
+      ]
+    },
+    {
+      "kind": "ClassDeclaration",
+      "pos": {
+        "offset": 1864,
+        "line": 60,
+        "column": 2
+      },
+      "end": {
+        "offset": 1931,
+        "line": 63,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 1873,
+            "line": 62,
+            "column": 6
+          },
+          "end": {
+            "offset": 1906,
+            "line": 62,
+            "column": 39
+          },
+          "text": "privateClassExtendingPublicClass"
+        },
+        {
+          "kind": "HeritageClause",
+          "pos": {
+            "offset": 1906,
+            "line": 62,
+            "column": 39
+          },
+          "end": {
+            "offset": 1926,
+            "line": 62,
+            "column": 59
+          },
+          "children": [
+            {
+              "kind": "ExpressionWithTypeArguments",
+              "pos": {
+                "offset": 1914,
+                "line": 62,
+                "column": 47
+              },
+              "end": {
+                "offset": 1926,
+                "line": 62,
+                "column": 59
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 1914,
+                    "line": 62,
+                    "column": 47
+                  },
+                  "end": {
+                    "offset": 1926,
+                    "line": 62,
+                    "column": 59
+                  },
+                  "text": "publicClass"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ClassDeclaration",
+      "pos": {
+        "offset": 1931,
+        "line": 63,
+        "column": 2
+      },
+      "end": {
+        "offset": 2006,
+        "line": 65,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 1938,
+            "line": 64,
+            "column": 6
+          },
+          "end": {
+            "offset": 1980,
+            "line": 64,
+            "column": 48
+          },
+          "text": "privateClassExtendingPrivateClassInModule"
+        },
+        {
+          "kind": "HeritageClause",
+          "pos": {
+            "offset": 1980,
+            "line": 64,
+            "column": 48
+          },
+          "end": {
+            "offset": 2001,
+            "line": 64,
+            "column": 69
+          },
+          "children": [
+            {
+              "kind": "ExpressionWithTypeArguments",
+              "pos": {
+                "offset": 1988,
+                "line": 64,
+                "column": 56
+              },
+              "end": {
+                "offset": 2001,
+                "line": 64,
+                "column": 69
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 1988,
+                    "line": 64,
+                    "column": 56
+                  },
+                  "end": {
+                    "offset": 2001,
+                    "line": 64,
+                    "column": 69
+                  },
+                  "text": "privateClass"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ClassDeclaration",
+      "pos": {
+        "offset": 2006,
+        "line": 65,
+        "column": 2
+      },
+      "end": {
+        "offset": 2077,
+        "line": 67,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "ExportKeyword",
+          "pos": {
+            "offset": 2006,
+            "line": 65,
+            "column": 2
+          },
+          "end": {
+            "offset": 2014,
+            "line": 66,
+            "column": 7
+          },
+          "text": "export"
+        },
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 2020,
+            "line": 66,
+            "column": 13
+          },
+          "end": {
+            "offset": 2052,
+            "line": 66,
+            "column": 45
+          },
+          "text": "publicClassExtendingPublicClass"
+        },
+        {
+          "kind": "HeritageClause",
+          "pos": {
+            "offset": 2052,
+            "line": 66,
+            "column": 45
+          },
+          "end": {
+            "offset": 2072,
+            "line": 66,
+            "column": 65
+          },
+          "children": [
+            {
+              "kind": "ExpressionWithTypeArguments",
+              "pos": {
+                "offset": 2060,
+                "line": 66,
+                "column": 53
+              },
+              "end": {
+                "offset": 2072,
+                "line": 66,
+                "column": 65
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 2060,
+                    "line": 66,
+                    "column": 53
+                  },
+                  "end": {
+                    "offset": 2072,
+                    "line": 66,
+                    "column": 65
+                  },
+                  "text": "publicClass"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ClassDeclaration",
+      "pos": {
+        "offset": 2077,
+        "line": 67,
+        "column": 2
+      },
+      "end": {
+        "offset": 2166,
+        "line": 69,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "ExportKeyword",
+          "pos": {
+            "offset": 2077,
+            "line": 67,
+            "column": 2
+          },
+          "end": {
+            "offset": 2085,
+            "line": 68,
+            "column": 7
+          },
+          "text": "export"
+        },
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 2091,
+            "line": 68,
+            "column": 13
+          },
+          "end": {
+            "offset": 2124,
+            "line": 68,
+            "column": 46
+          },
+          "text": "publicClassExtendingPrivateClass"
+        },
+        {
+          "kind": "HeritageClause",
+          "pos": {
+            "offset": 2124,
+            "line": 68,
+            "column": 46
+          },
+          "end": {
+            "offset": 2145,
+            "line": 68,
+            "column": 67
+          },
+          "children": [
+            {
+              "kind": "ExpressionWithTypeArguments",
+              "pos": {
+                "offset": 2132,
+                "line": 68,
+                "column": 54
+              },
+              "end": {
+                "offset": 2145,
+                "line": 68,
+                "column": 67
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 2132,
+                    "line": 68,
+                    "column": 54
+                  },
+                  "end": {
+                    "offset": 2145,
+                    "line": 68,
+                    "column": 67
+                  },
+                  "text": "privateClass"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ClassDeclaration",
+      "pos": {
+        "offset": 2166,
+        "line": 69,
+        "column": 2
+      },
+      "end": {
+        "offset": 2273,
+        "line": 72,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 2175,
+            "line": 71,
+            "column": 6
+          },
+          "end": {
+            "offset": 2219,
+            "line": 71,
+            "column": 50
+          },
+          "text": "privateClassExtendingFromPrivateModuleClass"
+        },
+        {
+          "kind": "HeritageClause",
+          "pos": {
+            "offset": 2219,
+            "line": 71,
+            "column": 50
+          },
+          "end": {
+            "offset": 2268,
+            "line": 71,
+            "column": 99
+          },
+          "children": [
+            {
+              "kind": "ExpressionWithTypeArguments",
+              "pos": {
+                "offset": 2227,
+                "line": 71,
+                "column": 58
+              },
+              "end": {
+                "offset": 2268,
+                "line": 71,
+                "column": 99
+              },
+              "children": [
+                {
+                  "kind": "PropertyAccessExpression",
+                  "pos": {
+                    "offset": 2227,
+                    "line": 71,
+                    "column": 58
+                  },
+                  "end": {
+                    "offset": 2268,
+                    "line": 71,
+                    "column": 99
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 2227,
+                        "line": 71,
+                        "column": 58
+                      },
+                      "end": {
+                        "offset": 2241,
+                        "line": 71,
+                        "column": 72
+                      },
+                      "text": "privateModule"
+                    },
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 2242,
+                        "line": 71,
+                        "column": 73
+                      },
+                      "end": {
+                        "offset": 2268,
+                        "line": 71,
+                        "column": 99
+                      },
+                      "text": "publicClassInPrivateModule"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ClassDeclaration",
+      "pos": {
+        "offset": 2273,
+        "line": 72,
+        "column": 2
+      },
+      "end": {
+        "offset": 2400,
+        "line": 74,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "ExportKeyword",
+          "pos": {
+            "offset": 2273,
+            "line": 72,
+            "column": 2
+          },
+          "end": {
+            "offset": 2281,
+            "line": 73,
+            "column": 7
+          },
+          "text": "export"
+        },
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 2287,
+            "line": 73,
+            "column": 13
+          },
+          "end": {
+            "offset": 2330,
+            "line": 73,
+            "column": 56
+          },
+          "text": "publicClassExtendingFromPrivateModuleClass"
+        },
+        {
+          "kind": "HeritageClause",
+          "pos": {
+            "offset": 2330,
+            "line": 73,
+            "column": 56
+          },
+          "end": {
+            "offset": 2379,
+            "line": 73,
+            "column": 105
+          },
+          "children": [
+            {
+              "kind": "ExpressionWithTypeArguments",
+              "pos": {
+                "offset": 2338,
+                "line": 73,
+                "column": 64
+              },
+              "end": {
+                "offset": 2379,
+                "line": 73,
+                "column": 105
+              },
+              "children": [
+                {
+                  "kind": "PropertyAccessExpression",
+                  "pos": {
+                    "offset": 2338,
+                    "line": 73,
+                    "column": 64
+                  },
+                  "end": {
+                    "offset": 2379,
+                    "line": 73,
+                    "column": 105
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 2338,
+                        "line": 73,
+                        "column": 64
+                      },
+                      "end": {
+                        "offset": 2352,
+                        "line": 73,
+                        "column": 78
+                      },
+                      "text": "privateModule"
+                    },
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 2353,
+                        "line": 73,
+                        "column": 79
+                      },
+                      "end": {
+                        "offset": 2379,
+                        "line": 73,
+                        "column": 105
+                      },
+                      "text": "publicClassInPrivateModule"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ModuleDeclaration",
+      "pos": {
+        "offset": 2400,
+        "line": 74,
+        "column": 2
+      },
+      "end": {
+        "offset": 3053,
+        "line": 94,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 2476,
+            "line": 77,
+            "column": 10
+          },
+          "end": {
+            "offset": 2497,
+            "line": 77,
+            "column": 31
+          },
+          "text": "publicModuleInGlobal"
+        },
+        {
+          "kind": "ModuleBlock",
+          "pos": {
+            "offset": 2497,
+            "line": 77,
+            "column": 31
+          },
+          "end": {
+            "offset": 3053,
+            "line": 94,
+            "column": 2
+          },
+          "children": [
+            {
+              "kind": "ClassDeclaration",
+              "pos": {
+                "offset": 2499,
+                "line": 77,
+                "column": 33
+              },
+              "end": {
+                "offset": 2587,
+                "line": 81,
+                "column": 6
+              },
+              "children": [
+                {
+                  "kind": "ExportKeyword",
+                  "pos": {
+                    "offset": 2499,
+                    "line": 77,
+                    "column": 33
+                  },
+                  "end": {
+                    "offset": 2511,
+                    "line": 78,
+                    "column": 11
+                  },
+                  "text": "export"
+                },
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 2517,
+                    "line": 78,
+                    "column": 17
+                  },
+                  "end": {
+                    "offset": 2543,
+                    "line": 78,
+                    "column": 43
+                  },
+                  "text": "publicClassInPublicModule"
+                },
+                {
+                  "kind": "MethodDeclaration",
+                  "pos": {
+                    "offset": 2545,
+                    "line": 78,
+                    "column": 45
+                  },
+                  "end": {
+                    "offset": 2580,
+                    "line": 80,
+                    "column": 10
+                  },
+                  "children": [
+                    {
+                      "kind": "PrivateKeyword",
+                      "pos": {
+                        "offset": 2545,
+                        "line": 78,
+                        "column": 45
+                      },
+                      "end": {
+                        "offset": 2562,
+                        "line": 79,
+                        "column": 16
+                      },
+                      "text": "private"
+                    },
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 2562,
+                        "line": 79,
+                        "column": 16
+                      },
+                      "end": {
+                        "offset": 2565,
+                        "line": 79,
+                        "column": 19
+                      },
+                      "text": "f1"
+                    },
+                    {
+                      "kind": "Block",
+                      "pos": {
+                        "offset": 2567,
+                        "line": 79,
+                        "column": 21
+                      },
+                      "end": {
+                        "offset": 2580,
+                        "line": 80,
+                        "column": 10
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "ClassDeclaration",
+              "pos": {
+                "offset": 2587,
+                "line": 81,
+                "column": 6
+              },
+              "end": {
+                "offset": 2636,
+                "line": 84,
+                "column": 6
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 2600,
+                    "line": 83,
+                    "column": 10
+                  },
+                  "end": {
+                    "offset": 2627,
+                    "line": 83,
+                    "column": 37
+                  },
+                  "text": "privateClassInPublicModule"
+                }
+              ]
+            },
+            {
+              "kind": "ClassDeclaration",
+              "pos": {
+                "offset": 2636,
+                "line": 84,
+                "column": 6
+              },
+              "end": {
+                "offset": 2733,
+                "line": 87,
+                "column": 6
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 2649,
+                    "line": 86,
+                    "column": 10
+                  },
+                  "end": {
+                    "offset": 2690,
+                    "line": 86,
+                    "column": 51
+                  },
+                  "text": "privateClassExtendingPublicClassInModule"
+                },
+                {
+                  "kind": "HeritageClause",
+                  "pos": {
+                    "offset": 2690,
+                    "line": 86,
+                    "column": 51
+                  },
+                  "end": {
+                    "offset": 2724,
+                    "line": 86,
+                    "column": 85
+                  },
+                  "children": [
+                    {
+                      "kind": "ExpressionWithTypeArguments",
+                      "pos": {
+                        "offset": 2698,
+                        "line": 86,
+                        "column": 59
+                      },
+                      "end": {
+                        "offset": 2724,
+                        "line": 86,
+                        "column": 85
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 2698,
+                            "line": 86,
+                            "column": 59
+                          },
+                          "end": {
+                            "offset": 2724,
+                            "line": 86,
+                            "column": 85
+                          },
+                          "text": "publicClassInPublicModule"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "ClassDeclaration",
+              "pos": {
+                "offset": 2733,
+                "line": 87,
+                "column": 6
+              },
+              "end": {
+                "offset": 2830,
+                "line": 89,
+                "column": 6
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 2744,
+                    "line": 88,
+                    "column": 10
+                  },
+                  "end": {
+                    "offset": 2786,
+                    "line": 88,
+                    "column": 52
+                  },
+                  "text": "privateClassExtendingPrivateClassInModule"
+                },
+                {
+                  "kind": "HeritageClause",
+                  "pos": {
+                    "offset": 2786,
+                    "line": 88,
+                    "column": 52
+                  },
+                  "end": {
+                    "offset": 2821,
+                    "line": 88,
+                    "column": 87
+                  },
+                  "children": [
+                    {
+                      "kind": "ExpressionWithTypeArguments",
+                      "pos": {
+                        "offset": 2794,
+                        "line": 88,
+                        "column": 60
+                      },
+                      "end": {
+                        "offset": 2821,
+                        "line": 88,
+                        "column": 87
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 2794,
+                            "line": 88,
+                            "column": 60
+                          },
+                          "end": {
+                            "offset": 2821,
+                            "line": 88,
+                            "column": 87
+                          },
+                          "text": "privateClassInPublicModule"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "ClassDeclaration",
+              "pos": {
+                "offset": 2830,
+                "line": 89,
+                "column": 6
+              },
+              "end": {
+                "offset": 2931,
+                "line": 91,
+                "column": 6
+              },
+              "children": [
+                {
+                  "kind": "ExportKeyword",
+                  "pos": {
+                    "offset": 2830,
+                    "line": 89,
+                    "column": 6
+                  },
+                  "end": {
+                    "offset": 2842,
+                    "line": 90,
+                    "column": 11
+                  },
+                  "text": "export"
+                },
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 2848,
+                    "line": 90,
+                    "column": 17
+                  },
+                  "end": {
+                    "offset": 2888,
+                    "line": 90,
+                    "column": 57
+                  },
+                  "text": "publicClassExtendingPublicClassInModule"
+                },
+                {
+                  "kind": "HeritageClause",
+                  "pos": {
+                    "offset": 2888,
+                    "line": 90,
+                    "column": 57
+                  },
+                  "end": {
+                    "offset": 2922,
+                    "line": 90,
+                    "column": 91
+                  },
+                  "children": [
+                    {
+                      "kind": "ExpressionWithTypeArguments",
+                      "pos": {
+                        "offset": 2896,
+                        "line": 90,
+                        "column": 65
+                      },
+                      "end": {
+                        "offset": 2922,
+                        "line": 90,
+                        "column": 91
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 2896,
+                            "line": 90,
+                            "column": 65
+                          },
+                          "end": {
+                            "offset": 2922,
+                            "line": 90,
+                            "column": 91
+                          },
+                          "text": "publicClassInPublicModule"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "ClassDeclaration",
+              "pos": {
+                "offset": 2931,
+                "line": 91,
+                "column": 6
+              },
+              "end": {
+                "offset": 3050,
+                "line": 93,
+                "column": 6
+              },
+              "children": [
+                {
+                  "kind": "ExportKeyword",
+                  "pos": {
+                    "offset": 2931,
+                    "line": 91,
+                    "column": 6
+                  },
+                  "end": {
+                    "offset": 2943,
+                    "line": 92,
+                    "column": 11
+                  },
+                  "text": "export"
+                },
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 2949,
+                    "line": 92,
+                    "column": 17
+                  },
+                  "end": {
+                    "offset": 2990,
+                    "line": 92,
+                    "column": 58
+                  },
+                  "text": "publicClassExtendingPrivateClassInModule"
+                },
+                {
+                  "kind": "HeritageClause",
+                  "pos": {
+                    "offset": 2990,
+                    "line": 92,
+                    "column": 58
+                  },
+                  "end": {
+                    "offset": 3025,
+                    "line": 92,
+                    "column": 93
+                  },
+                  "children": [
+                    {
+                      "kind": "ExpressionWithTypeArguments",
+                      "pos": {
+                        "offset": 2998,
+                        "line": 92,
+                        "column": 66
+                      },
+                      "end": {
+                        "offset": 3025,
+                        "line": 92,
+                        "column": 93
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 2998,
+                            "line": 92,
+                            "column": 66
+                          },
+                          "end": {
+                            "offset": 3025,
+                            "line": 92,
+                            "column": 93
+                          },
+                          "text": "privateClassInPublicModule"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ClassDeclaration",
+      "pos": {
+        "offset": 3053,
+        "line": 94,
+        "column": 2
+      },
+      "end": {
+        "offset": 3085,
+        "line": 96,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 3060,
+            "line": 95,
+            "column": 6
+          },
+          "end": {
+            "offset": 3080,
+            "line": 95,
+            "column": 26
+          },
+          "text": "publicClassInGlobal"
+        }
+      ]
+    },
+    {
+      "kind": "ClassDeclaration",
+      "pos": {
+        "offset": 3085,
+        "line": 96,
+        "column": 2
+      },
+      "end": {
+        "offset": 3165,
+        "line": 98,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 3092,
+            "line": 97,
+            "column": 6
+          },
+          "end": {
+            "offset": 3132,
+            "line": 97,
+            "column": 46
+          },
+          "text": "publicClassExtendingPublicClassInGlobal"
+        },
+        {
+          "kind": "HeritageClause",
+          "pos": {
+            "offset": 3132,
+            "line": 97,
+            "column": 46
+          },
+          "end": {
+            "offset": 3160,
+            "line": 97,
+            "column": 74
+          },
+          "children": [
+            {
+              "kind": "ExpressionWithTypeArguments",
+              "pos": {
+                "offset": 3140,
+                "line": 97,
+                "column": 54
+              },
+              "end": {
+                "offset": 3160,
+                "line": 97,
+                "column": 74
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 3140,
+                    "line": 97,
+                    "column": 54
+                  },
+                  "end": {
+                    "offset": 3160,
+                    "line": 97,
+                    "column": 74
+                  },
+                  "text": "publicClassInGlobal"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 3165,
+        "line": 98,
+        "column": 2
+      },
+      "end": {
+        "offset": 3167,
+        "line": 99,
+        "column": 1
+      },
+      "text": ""
+    }
+  ]
+}

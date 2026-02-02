@@ -1,0 +1,320 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 233,
+    "line": 16,
+    "column": 1
+  },
+  "children": [
+    {
+      "kind": "FirstStatement",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 119,
+        "line": 6,
+        "column": 22
+      },
+      "children": [
+        {
+          "kind": "ExportKeyword",
+          "pos": {
+            "offset": 0,
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "offset": 104,
+            "line": 6,
+            "column": 7
+          },
+          "text": "export"
+        },
+        {
+          "kind": "VariableDeclarationList",
+          "pos": {
+            "offset": 104,
+            "line": 6,
+            "column": 7
+          },
+          "end": {
+            "offset": 118,
+            "line": 6,
+            "column": 21
+          },
+          "children": [
+            {
+              "kind": "VariableDeclaration",
+              "pos": {
+                "offset": 110,
+                "line": 6,
+                "column": 13
+              },
+              "end": {
+                "offset": 118,
+                "line": 6,
+                "column": 21
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 110,
+                    "line": 6,
+                    "column": 13
+                  },
+                  "end": {
+                    "offset": 114,
+                    "line": 6,
+                    "column": 17
+                  },
+                  "text": "foo"
+                },
+                {
+                  "kind": "FirstLiteralToken",
+                  "pos": {
+                    "offset": 116,
+                    "line": 6,
+                    "column": 19
+                  },
+                  "end": {
+                    "offset": 118,
+                    "line": 6,
+                    "column": 21
+                  },
+                  "text": "1"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ExpressionStatement",
+      "pos": {
+        "offset": 119,
+        "line": 6,
+        "column": 22
+      },
+      "end": {
+        "offset": 158,
+        "line": 9,
+        "column": 14
+      },
+      "children": [
+        {
+          "kind": "StringLiteral",
+          "pos": {
+            "offset": 119,
+            "line": 6,
+            "column": 22
+          },
+          "end": {
+            "offset": 157,
+            "line": 9,
+            "column": 13
+          },
+          "text": "use strict"
+        }
+      ]
+    },
+    {
+      "kind": "ImportDeclaration",
+      "pos": {
+        "offset": 158,
+        "line": 9,
+        "column": 14
+      },
+      "end": {
+        "offset": 210,
+        "line": 13,
+        "column": 30
+      },
+      "children": [
+        {
+          "kind": "ImportClause",
+          "pos": {
+            "offset": 187,
+            "line": 13,
+            "column": 7
+          },
+          "end": {
+            "offset": 195,
+            "line": 13,
+            "column": 15
+          },
+          "children": [
+            {
+              "kind": "NamedImports",
+              "pos": {
+                "offset": 187,
+                "line": 13,
+                "column": 7
+              },
+              "end": {
+                "offset": 195,
+                "line": 13,
+                "column": 15
+              },
+              "children": [
+                {
+                  "kind": "ImportSpecifier",
+                  "pos": {
+                    "offset": 189,
+                    "line": 13,
+                    "column": 9
+                  },
+                  "end": {
+                    "offset": 193,
+                    "line": 13,
+                    "column": 13
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 189,
+                        "line": 13,
+                        "column": 9
+                      },
+                      "end": {
+                        "offset": 193,
+                        "line": 13,
+                        "column": 13
+                      },
+                      "text": "foo"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "StringLiteral",
+          "pos": {
+            "offset": 200,
+            "line": 13,
+            "column": 20
+          },
+          "end": {
+            "offset": 209,
+            "line": 13,
+            "column": 29
+          },
+          "text": "./a.js"
+        }
+      ]
+    },
+    {
+      "kind": "ExpressionStatement",
+      "pos": {
+        "offset": 210,
+        "line": 13,
+        "column": 30
+      },
+      "end": {
+        "offset": 231,
+        "line": 15,
+        "column": 18
+      },
+      "children": [
+        {
+          "kind": "CallExpression",
+          "pos": {
+            "offset": 210,
+            "line": 13,
+            "column": 30
+          },
+          "end": {
+            "offset": 230,
+            "line": 15,
+            "column": 17
+          },
+          "children": [
+            {
+              "kind": "PropertyAccessExpression",
+              "pos": {
+                "offset": 210,
+                "line": 13,
+                "column": 30
+              },
+              "end": {
+                "offset": 225,
+                "line": 15,
+                "column": 12
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 210,
+                    "line": 13,
+                    "column": 30
+                  },
+                  "end": {
+                    "offset": 221,
+                    "line": 15,
+                    "column": 8
+                  },
+                  "text": "console"
+                },
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 222,
+                    "line": 15,
+                    "column": 9
+                  },
+                  "end": {
+                    "offset": 225,
+                    "line": 15,
+                    "column": 12
+                  },
+                  "text": "log"
+                }
+              ]
+            },
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 226,
+                "line": 15,
+                "column": 13
+              },
+              "end": {
+                "offset": 229,
+                "line": 15,
+                "column": 16
+              },
+              "text": "foo"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 231,
+        "line": 15,
+        "column": 18
+      },
+      "end": {
+        "offset": 233,
+        "line": 16,
+        "column": 1
+      },
+      "text": ""
+    }
+  ]
+}

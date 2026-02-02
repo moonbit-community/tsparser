@@ -1,0 +1,336 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 177,
+    "line": 13,
+    "column": 1
+  },
+  "children": [
+    {
+      "kind": "FirstStatement",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 176,
+        "line": 12,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "VariableDeclarationList",
+          "pos": {
+            "offset": 0,
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "offset": 176,
+            "line": 12,
+            "column": 2
+          },
+          "children": [
+            {
+              "kind": "VariableDeclaration",
+              "pos": {
+                "offset": 99,
+                "line": 7,
+                "column": 6
+              },
+              "end": {
+                "offset": 176,
+                "line": 12,
+                "column": 2
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 99,
+                    "line": 7,
+                    "column": 6
+                  },
+                  "end": {
+                    "offset": 103,
+                    "line": 7,
+                    "column": 10
+                  },
+                  "text": "fn1"
+                },
+                {
+                  "kind": "ArrowFunction",
+                  "pos": {
+                    "offset": 105,
+                    "line": 7,
+                    "column": 12
+                  },
+                  "end": {
+                    "offset": 176,
+                    "line": 12,
+                    "column": 2
+                  },
+                  "children": [
+                    {
+                      "kind": "EqualsGreaterThanToken",
+                      "pos": {
+                        "offset": 108,
+                        "line": 7,
+                        "column": 15
+                      },
+                      "end": {
+                        "offset": 111,
+                        "line": 7,
+                        "column": 18
+                      },
+                      "text": "=>"
+                    },
+                    {
+                      "kind": "Block",
+                      "pos": {
+                        "offset": 111,
+                        "line": 7,
+                        "column": 18
+                      },
+                      "end": {
+                        "offset": 176,
+                        "line": 12,
+                        "column": 2
+                      },
+                      "children": [
+                        {
+                          "kind": "IfStatement",
+                          "pos": {
+                            "offset": 113,
+                            "line": 7,
+                            "column": 20
+                          },
+                          "end": {
+                            "offset": 163,
+                            "line": 10,
+                            "column": 4
+                          },
+                          "children": [
+                            {
+                              "kind": "BinaryExpression",
+                              "pos": {
+                                "offset": 120,
+                                "line": 8,
+                                "column": 7
+                              },
+                              "end": {
+                                "offset": 139,
+                                "line": 8,
+                                "column": 26
+                              },
+                              "children": [
+                                {
+                                  "kind": "CallExpression",
+                                  "pos": {
+                                    "offset": 120,
+                                    "line": 8,
+                                    "column": 7
+                                  },
+                                  "end": {
+                                    "offset": 133,
+                                    "line": 8,
+                                    "column": 20
+                                  },
+                                  "children": [
+                                    {
+                                      "kind": "PropertyAccessExpression",
+                                      "pos": {
+                                        "offset": 120,
+                                        "line": 8,
+                                        "column": 7
+                                      },
+                                      "end": {
+                                        "offset": 131,
+                                        "line": 8,
+                                        "column": 18
+                                      },
+                                      "children": [
+                                        {
+                                          "kind": "Identifier",
+                                          "pos": {
+                                            "offset": 120,
+                                            "line": 8,
+                                            "column": 7
+                                          },
+                                          "end": {
+                                            "offset": 124,
+                                            "line": 8,
+                                            "column": 11
+                                          },
+                                          "text": "Math"
+                                        },
+                                        {
+                                          "kind": "Identifier",
+                                          "pos": {
+                                            "offset": 125,
+                                            "line": 8,
+                                            "column": 12
+                                          },
+                                          "end": {
+                                            "offset": 131,
+                                            "line": 8,
+                                            "column": 18
+                                          },
+                                          "text": "random"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "GreaterThanToken",
+                                  "pos": {
+                                    "offset": 133,
+                                    "line": 8,
+                                    "column": 20
+                                  },
+                                  "end": {
+                                    "offset": 135,
+                                    "line": 8,
+                                    "column": 22
+                                  },
+                                  "text": ">"
+                                },
+                                {
+                                  "kind": "FirstLiteralToken",
+                                  "pos": {
+                                    "offset": 135,
+                                    "line": 8,
+                                    "column": 22
+                                  },
+                                  "end": {
+                                    "offset": 139,
+                                    "line": 8,
+                                    "column": 26
+                                  },
+                                  "text": "0.5"
+                                }
+                              ]
+                            },
+                            {
+                              "kind": "Block",
+                              "pos": {
+                                "offset": 140,
+                                "line": 8,
+                                "column": 27
+                              },
+                              "end": {
+                                "offset": 163,
+                                "line": 10,
+                                "column": 4
+                              },
+                              "children": [
+                                {
+                                  "kind": "ReturnStatement",
+                                  "pos": {
+                                    "offset": 142,
+                                    "line": 8,
+                                    "column": 29
+                                  },
+                                  "end": {
+                                    "offset": 159,
+                                    "line": 9,
+                                    "column": 17
+                                  },
+                                  "children": [
+                                    {
+                                      "kind": "CallExpression",
+                                      "pos": {
+                                        "offset": 153,
+                                        "line": 9,
+                                        "column": 11
+                                      },
+                                      "end": {
+                                        "offset": 159,
+                                        "line": 9,
+                                        "column": 17
+                                      },
+                                      "children": [
+                                        {
+                                          "kind": "Identifier",
+                                          "pos": {
+                                            "offset": 153,
+                                            "line": 9,
+                                            "column": 11
+                                          },
+                                          "end": {
+                                            "offset": 157,
+                                            "line": 9,
+                                            "column": 15
+                                          },
+                                          "text": "fn1"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "ReturnStatement",
+                          "pos": {
+                            "offset": 163,
+                            "line": 10,
+                            "column": 4
+                          },
+                          "end": {
+                            "offset": 174,
+                            "line": 11,
+                            "column": 11
+                          },
+                          "children": [
+                            {
+                              "kind": "FirstLiteralToken",
+                              "pos": {
+                                "offset": 172,
+                                "line": 11,
+                                "column": 9
+                              },
+                              "end": {
+                                "offset": 174,
+                                "line": 11,
+                                "column": 11
+                              },
+                              "text": "0"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 176,
+        "line": 12,
+        "column": 2
+      },
+      "end": {
+        "offset": 177,
+        "line": 13,
+        "column": 1
+      },
+      "text": ""
+    }
+  ]
+}
