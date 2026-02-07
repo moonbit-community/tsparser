@@ -4,11 +4,12 @@ priv struct Parser {
   mut index : Int
   jsx_mode : Bool
   mut allow_type_colon : Bool
+  errors : Array[ParseError]
 }
 
 ///|
 fn Parser::new(tokens : Array[Token], jsx_mode : Bool) -> Parser {
-  { tokens, index: 0, jsx_mode, allow_type_colon: true }
+  { tokens, index: 0, jsx_mode, allow_type_colon: true, errors: [] }
 }
 
 ///|
@@ -125,6 +126,18 @@ fn Parser::expect_ident(self : Parser) -> (String, Span) raise ParseError {
     }
     _ => raise ParseError::Expected(pos=token.span.start, "identifier")
   }
+}
+
+///|
+fn Parser::record_error(self : Parser, err : ParseError) -> Unit {
+  self.errors.push(err)
+}
+
+///|
+fn Parser::record_expected(self : Parser, expected : String) -> Unit {
+  self.record_error(
+    ParseError::Expected(pos=self.current().span.start, expected),
+  )
 }
 
 ///|
@@ -393,7 +406,8 @@ fn Parser::parse_program(self : Parser) -> Program {
   let stmts : Array[Stmt] = []
   while !self.at_end() {
     stmts.push(self.parse_stmt()) catch {
-      _ => {
+      err => {
+        self.record_error(err)
         while !self.check(TokenKind::Semicolon) &&
               !self.check(TokenKind::RBrace) &&
               !self.at_end() {
@@ -404,7 +418,7 @@ fn Parser::parse_program(self : Parser) -> Program {
     }
   }
   let end = self.current().span.end
-  { stmts, span: span_from(start, end) }
+  { stmts, errors: self.errors, span: span_from(start, end) }
 }
 
 ///|
@@ -786,11 +800,11 @@ fn Parser::parse_function_decl_value(
   }
   let type_params = self.parse_type_params()
   let params = if self.check(TokenKind::LParen) {
-    self.parse_params()
+    self.parse_params(false)
   } else if self.check(TokenKind::LBrace) {
     []
   } else {
-    self.parse_params()
+    self.parse_params(false)
   }
   let mut return_type : TypeNode? = None
   if self.eat(TokenKind::Colon) {
@@ -1312,7 +1326,8 @@ fn Parser::parse_class_decl_value(
       continue
     }
     members.push(self.parse_class_member()) catch {
-      _ => {
+      err => {
+        self.record_error(err)
         while !self.check(TokenKind::Semicolon) &&
               !self.check(TokenKind::Comma) &&
               !self.check(TokenKind::RBrace) &&
@@ -1459,7 +1474,7 @@ fn Parser::parse_class_member(self : Parser) -> ClassMember raise ParseError {
     is_plain_name &&
     name == "constructor" &&
     self.check(TokenKind::LParen) {
-    let params = self.parse_params()
+    let params = self.parse_params(true)
     let body : Block = if self.check(TokenKind::LBrace) {
       self.parse_block()
     } else {
@@ -1482,7 +1497,7 @@ fn Parser::parse_class_member(self : Parser) -> ClassMember raise ParseError {
     }
   }
   if accessor == Some("get") {
-    ignore(self.parse_params())
+    ignore(self.parse_params(false))
     let mut return_type : TypeNode? = None
     if self.eat(TokenKind::Colon) {
       return_type = Some(self.parse_type())
@@ -1509,7 +1524,7 @@ fn Parser::parse_class_member(self : Parser) -> ClassMember raise ParseError {
     }
   }
   if accessor == Some("set") {
-    let params = self.parse_params()
+    let params = self.parse_params(false)
     if self.eat(TokenKind::Colon) {
       ignore(self.parse_type())
     }
@@ -1548,7 +1563,7 @@ fn Parser::parse_class_member(self : Parser) -> ClassMember raise ParseError {
   }
   ignore(self.parse_type_params())
   if self.check(TokenKind::LParen) {
-    let params = self.parse_params()
+    let params = self.parse_params(false)
     let mut return_type : TypeNode? = None
     if self.eat(TokenKind::Colon) {
       return_type = Some(self.parse_type())
@@ -1755,12 +1770,26 @@ fn Parser::parse_array_pattern(
 }
 
 ///|
-fn Parser::parse_params(self : Parser) -> Array[Param] raise ParseError {
+fn Parser::parse_params(
+  self : Parser,
+  allow_param_property_modifiers : Bool,
+) -> Array[Param] raise ParseError {
   ignore(self.expect(TokenKind::LParen, "'('"))
   let params : Array[Param] = []
   if !self.check(TokenKind::RParen) {
     while true {
-      params.push(self.parse_param())
+      let param = self.parse_param(allow_param_property_modifiers)
+      if param.is_rest &&
+        self.check(TokenKind::Comma) &&
+        self.peek_kind(1) != Some(TokenKind::RParen) {
+        self.record_error(
+          ParseError::UnexpectedToken(
+            pos=self.current().span.start,
+            "rest parameter must be last",
+          ),
+        )
+      }
+      params.push(param)
       if self.eat(TokenKind::Comma) {
         if self.check(TokenKind::RParen) {
           break
@@ -1781,7 +1810,10 @@ fn Parser::parse_params(self : Parser) -> Array[Param] raise ParseError {
 }
 
 ///|
-fn Parser::parse_param(self : Parser) -> Param raise ParseError {
+fn Parser::parse_param(
+  self : Parser,
+  allow_param_property_modifiers : Bool,
+) -> Param raise ParseError {
   let mut start_span : Span? = None
   let mut is_rest = false
   while self.check(TokenKind::At) {
@@ -1804,9 +1836,29 @@ fn Parser::parse_param(self : Parser) -> Param raise ParseError {
       TokenKind::Keyword(Keyword::Public)
       | TokenKind::Keyword(Keyword::Private)
       | TokenKind::Keyword(Keyword::Protected)
-      | TokenKind::Keyword(Keyword::Readonly)
-      | TokenKind::Keyword(Keyword::Export) =>
+      | TokenKind::Keyword(Keyword::Readonly) =>
         if next_is_param {
+          if !allow_param_property_modifiers {
+            self.record_error(
+              ParseError::UnexpectedToken(
+                pos=self.current().span.start,
+                "parameter modifiers are only allowed in constructors",
+              ),
+            )
+          }
+          ignore(self.advance())
+          continue
+        } else {
+          break
+        }
+      TokenKind::Keyword(Keyword::Export) =>
+        if next_is_param {
+          self.record_error(
+            ParseError::UnexpectedToken(
+              pos=self.current().span.start,
+              "export modifier is not allowed on parameters",
+            ),
+          )
           ignore(self.advance())
           continue
         } else {
@@ -1821,7 +1873,8 @@ fn Parser::parse_param(self : Parser) -> Param raise ParseError {
   }
   let pattern : BindingPattern = if is_rest &&
     (self.check(TokenKind::RParen) || self.check(TokenKind::Comma)) {
-    { kind: BindingPatternKind::Ident("undefined"), span: self.current().span }
+    self.record_expected("identifier")
+    { kind: BindingPatternKind::Ident(""), span: self.current().span }
   } else {
     self.parse_binding_pattern()
   }
@@ -2351,7 +2404,8 @@ fn Parser::parse_interface_decl(self : Parser) -> Stmt raise ParseError {
   let members : Array[InterfaceMember] = []
   while !self.check(TokenKind::RBrace) && !self.at_end() {
     members.push(self.parse_interface_member()) catch {
-      _ => {
+      err => {
+        self.record_error(err)
         while !self.check(TokenKind::Semicolon) &&
               !self.check(TokenKind::Comma) &&
               !self.check(TokenKind::RBrace) &&
@@ -2377,7 +2431,7 @@ fn Parser::parse_interface_member(
   if self.check_keyword(Keyword::New) {
     let start = self.expect_keyword(Keyword::New)
     ignore(self.parse_type_params())
-    let params = self.parse_params()
+    let params = self.parse_params(false)
     let mut return_type : TypeNode? = None
     if self.eat(TokenKind::Colon) {
       return_type = Some(self.parse_type())
@@ -2412,7 +2466,7 @@ fn Parser::parse_interface_member(
   if self.check(TokenKind::Lt) || self.check(TokenKind::LParen) {
     ignore(self.parse_type_params())
     if self.check(TokenKind::LParen) {
-      let params = self.parse_params()
+      let params = self.parse_params(false)
       let mut return_type : TypeNode? = None
       if self.eat(TokenKind::Colon) {
         return_type = Some(self.parse_type())
@@ -2472,7 +2526,7 @@ fn Parser::parse_interface_member(
   }
   ignore(self.parse_type_params())
   if self.check(TokenKind::LParen) {
-    let params = self.parse_params()
+    let params = self.parse_params(false)
     let mut return_type : TypeNode? = None
     if self.eat(TokenKind::Colon) {
       return_type = Some(self.parse_type())
@@ -2666,7 +2720,7 @@ fn Parser::parse_type_member(self : Parser) -> TypeMember raise ParseError {
   }
   ignore(self.parse_type_params())
   if self.check(TokenKind::LParen) {
-    let params = self.parse_params()
+    let params = self.parse_params(false)
     let mut return_type : TypeNode? = None
     if self.eat(TokenKind::Colon) {
       return_type = Some(self.parse_type())
@@ -2748,7 +2802,10 @@ fn Parser::parse_expression(self : Parser) -> Expr {
     }
     expr
   } catch {
-    _ => self.recover_expression()
+    err => {
+      self.record_error(err)
+      self.recover_expression()
+    }
   }
 }
 
@@ -3342,7 +3399,7 @@ fn Parser::parse_unary(self : Parser) -> Expr raise ParseError {
   }
   if self.check_keyword(Keyword::Yield) || self.check_ident_name("yield") {
     let start = self.advance().span
-    ignore(self.eat(TokenKind::Star))
+    let is_delegated = self.eat(TokenKind::Star)
     let expr : Expr = if self.check(TokenKind::Semicolon) ||
       self.check(TokenKind::RBrace) ||
       self.check(TokenKind::RParen) ||
@@ -3353,7 +3410,14 @@ fn Parser::parse_unary(self : Parser) -> Expr raise ParseError {
       self.parse_unary()
     }
     return {
-      kind: ExprKind::Unary({ op: UnaryOp::Yield, expr }),
+      kind: ExprKind::Unary({
+        op: if is_delegated {
+          UnaryOp::YieldStar
+        } else {
+          UnaryOp::Yield
+        },
+        expr,
+      }),
       span: start.merge(expr.span),
     }
   }
@@ -3794,7 +3858,8 @@ fn Parser::parse_postfix_with_base(
     }
     if self.eat(TokenKind::LBracket) {
       let prop : Expr = if self.check(TokenKind::RBracket) {
-        { kind: ExprKind::Ident("undefined"), span: self.current().span }
+        self.record_expected("expression")
+        { kind: ExprKind::Ident(""), span: self.current().span }
       } else {
         self.parse_expression()
       }
@@ -3875,7 +3940,8 @@ fn Parser::parse_member_base(self : Parser) -> Expr raise ParseError {
     }
     if self.eat(TokenKind::LBracket) {
       let prop : Expr = if self.check(TokenKind::RBracket) {
-        { kind: ExprKind::Ident("undefined"), span: self.current().span }
+        self.record_expected("expression")
+        { kind: ExprKind::Ident(""), span: self.current().span }
       } else {
         self.parse_expression()
       }
@@ -4246,7 +4312,7 @@ fn Parser::parse_arrow_from_paren_with_type_params(
   start_span : Span,
   type_params : Array[TypeParam],
 ) -> Expr raise ParseError {
-  let params = self.parse_params()
+  let params = self.parse_params(false)
   let mut return_type : TypeNode? = None
   if self.eat(TokenKind::Colon) {
     return_type = Some(self.parse_type())
@@ -4436,7 +4502,7 @@ fn Parser::parse_object_literal(self : Parser) -> Expr raise ParseError {
         let type_params = self.parse_type_params()
         ignore(self.eat(TokenKind::Question))
         if self.check(TokenKind::LParen) {
-          let params = self.parse_params()
+          let params = self.parse_params(false)
           let mut return_type : TypeNode? = None
           if self.eat(TokenKind::Colon) {
             return_type = Some(self.parse_type())
@@ -4604,7 +4670,8 @@ fn Parser::parse_template_literal(self : Parser) -> Expr raise ParseError {
   while self.check(TokenKind::TemplateExprStart) {
     ignore(self.advance())
     let expr : Expr = if self.check(TokenKind::RBrace) {
-      { kind: ExprKind::Ident("undefined"), span: self.current().span }
+      self.record_expected("expression")
+      { kind: ExprKind::Ident(""), span: self.current().span }
     } else {
       self.parse_expression()
     }
@@ -4964,18 +5031,25 @@ fn Parser::parse_function_type_param(
   self : Parser,
 ) -> TypeNode raise ParseError {
   ignore(self.eat(TokenKind::Ellipsis))
-  if self.check_keyword(Keyword::Public) ||
-    self.check_keyword(Keyword::Private) ||
-    self.check_keyword(Keyword::Protected) ||
-    self.check_keyword(Keyword::Readonly) ||
-    self.check_keyword(Keyword::Export) {
+  while self.check_keyword(Keyword::Public) ||
+        self.check_keyword(Keyword::Private) ||
+        self.check_keyword(Keyword::Protected) ||
+        self.check_keyword(Keyword::Readonly) ||
+        self.check_keyword(Keyword::Export) {
     let next_is_ident = match self.peek_kind(1) {
       Some(TokenKind::Ident(_)) | Some(TokenKind::Keyword(_)) => true
       _ => false
     }
-    if next_is_ident {
-      ignore(self.advance())
+    if !next_is_ident {
+      break
     }
+    self.record_error(
+      ParseError::UnexpectedToken(
+        pos=self.current().span.start,
+        "parameter modifiers are not allowed in function types",
+      ),
+    )
+    ignore(self.advance())
   }
   if self.check(TokenKind::LBrace) || self.check(TokenKind::LBracket) {
     let open = if self.check(TokenKind::LBrace) {
@@ -5092,6 +5166,34 @@ fn Parser::parse_bracket_member_name(
 }
 
 ///|
+fn Parser::parse_constructor_type_signature(
+  self : Parser,
+  start_span : Span,
+) -> TypeNode raise ParseError {
+  if self.check(TokenKind::Lt) {
+    ignore(self.parse_type_params())
+  }
+  ignore(self.expect(TokenKind::LParen, "'('"))
+  let params : Array[TypeNode] = []
+  if !self.check(TokenKind::RParen) {
+    while true {
+      params.push(self.parse_function_type_param())
+      if self.eat(TokenKind::Comma) {
+        if self.check(TokenKind::RParen) {
+          break
+        }
+        continue
+      }
+      break
+    }
+  }
+  ignore(self.expect(TokenKind::RParen, "')'"))
+  ignore(self.expect(TokenKind::Arrow, "'=>'"))
+  let ret = self.parse_type()
+  { kind: TypeKind::Function(params, ret), span: start_span.merge(ret.span) }
+}
+
+///|
 fn Parser::parse_type_primary(self : Parser) -> TypeNode raise ParseError {
   if self.check(TokenKind::Lt) && self.is_type_args_before_call() {
     ignore(self.parse_type_params())
@@ -5127,48 +5229,14 @@ fn Parser::parse_type_primary(self : Parser) -> TypeNode raise ParseError {
     ) &&
     self.peek_kind(1) == Some(TokenKind::Keyword(Keyword::New)) {
     let abstract_span = self.advance().span
-    let inner = self.parse_type_primary()
-    let span = abstract_span.merge(inner.span)
-    return self.parse_type_postfix({ kind: inner.kind, span })
+    ignore(self.expect_keyword(Keyword::New))
+    let node = self.parse_constructor_type_signature(abstract_span)
+    return self.parse_type_postfix(node)
   }
   if self.check_keyword(Keyword::New) {
     let start = self.expect_keyword(Keyword::New)
-    if self.check(TokenKind::Lt) {
-      ignore(self.parse_type_params())
-    }
-    if self.check(TokenKind::LParen) {
-      ignore(self.expect(TokenKind::LParen, "'('"))
-      let params : Array[TypeNode] = []
-      if !self.check(TokenKind::RParen) {
-        while true {
-          params.push(self.parse_function_type_param())
-          if self.eat(TokenKind::Comma) {
-            if self.check(TokenKind::RParen) {
-              break
-            }
-            continue
-          }
-          break
-        }
-      }
-      let rparen = self.expect(TokenKind::RParen, "')'")
-      if self.eat(TokenKind::Arrow) {
-        let ret = self.parse_type()
-        let span = start.span.merge(ret.span)
-        return self.parse_type_postfix({
-          kind: TypeKind::Function(params, ret),
-          span,
-        })
-      }
-      let span = start.span.merge(rparen.span)
-      return self.parse_type_postfix({
-        kind: TypeKind::Function(params, {
-          kind: TypeKind::Ident("any"),
-          span: rparen.span,
-        }),
-        span,
-      })
-    }
+    let node = self.parse_constructor_type_signature(start.span)
+    return self.parse_type_postfix(node)
   }
   if self.check(TokenKind::LParen) {
     let start = self.expect(TokenKind::LParen, "'('")
@@ -5278,7 +5346,8 @@ fn Parser::parse_type_primary(self : Parser) -> TypeNode raise ParseError {
         continue
       }
       members.push(self.parse_type_member()) catch {
-        _ => {
+        err => {
+          self.record_error(err)
           while !self.check(TokenKind::Semicolon) &&
                 !self.check(TokenKind::Comma) &&
                 !self.check(TokenKind::RBrace) &&
@@ -5487,7 +5556,7 @@ fn Parser::parse_type_primary(self : Parser) -> TypeNode raise ParseError {
     TokenKind::Keyword(Keyword::Undefined) => {
       ignore(self.advance())
       let node : TypeNode = {
-        kind: TypeKind::Ident("undefined"),
+        kind: TypeKind::Literal(TypeLiteral::Undefined),
         span: token.span,
       }
       self.parse_type_postfix(node)

@@ -535,3 +535,131 @@ test "parse type parameters" {
     _ => fail("expected function")
   }
 }
+
+///|
+test "collect statement parse errors" {
+  let program = parse_program("function (x) {}")
+  assert_true(program.errors.length() > 0)
+}
+
+///|
+test "collect expression recovery errors" {
+  let program = parse_program("foo(,);")
+  assert_true(program.errors.length() > 0)
+  assert_true(program.stmts.length() > 0)
+}
+
+///|
+test "invalid rest-only arrow parameter reports error" {
+  let program = parse_program("(... ) => {};")
+  assert_true(program.errors.length() > 0)
+}
+
+///|
+test "invalid accessibility modifier in arrow parameter reports error" {
+  let program = parse_program("(public foo) => {};")
+  assert_true(program.errors.length() > 0)
+}
+
+///|
+test "invalid accessibility modifier in function type reports error" {
+  let program = parse_program("declare const foo: (public bar) => baz;")
+  assert_true(program.errors.length() > 0)
+}
+
+///|
+test "parse undefined type literal" {
+  let program = parse_program("type U = undefined;")
+  match program.stmts[0].kind {
+    StmtKind::TypeAliasDecl(decl) =>
+      match decl.value.kind {
+        TypeKind::Literal(TypeLiteral::Undefined) => ()
+        _ => fail("expected undefined type literal")
+      }
+    _ => fail("expected type alias")
+  }
+}
+
+///|
+test "distinguish yield star from yield" {
+  let source =
+    #|function* g() {
+    #|  yield* source;
+    #|  yield source;
+    #|}
+    #|
+  let program = parse_program(source)
+  match program.stmts[0].kind {
+    StmtKind::FunctionDecl(decl) => {
+      match decl.body.stmts[0].kind {
+        StmtKind::ExprStmt(expr) =>
+          match expr.kind {
+            ExprKind::Unary(unary) => inspect(unary.op, content="YieldStar")
+            _ => fail("expected unary expression")
+          }
+        _ => fail("expected expression statement")
+      }
+      match decl.body.stmts[1].kind {
+        StmtKind::ExprStmt(expr) =>
+          match expr.kind {
+            ExprKind::Unary(unary) => inspect(unary.op, content="Yield")
+            _ => fail("expected unary expression")
+          }
+        _ => fail("expected expression statement")
+      }
+    }
+    _ => fail("expected function declaration")
+  }
+}
+
+///|
+test "empty element access reports error" {
+  let program = parse_program("foo[];")
+  assert_true(program.errors.length() > 0)
+  match program.stmts[0].kind {
+    StmtKind::ExprStmt(expr) =>
+      match expr.kind {
+        ExprKind::Member(member_expr) =>
+          match member_expr.property {
+            MemberProp::Expr(prop) =>
+              match prop.kind {
+                ExprKind::Ident(name) => inspect(name, content="")
+                _ => fail("expected placeholder identifier")
+              }
+            _ => fail("expected computed member")
+          }
+        _ => fail("expected member expression")
+      }
+    _ => fail("expected expression statement")
+  }
+}
+
+///|
+test "empty template interpolation reports error" {
+  let program = parse_program("`${}`;")
+  assert_true(program.errors.length() > 0)
+  match program.stmts[0].kind {
+    StmtKind::ExprStmt(expr) =>
+      match expr.kind {
+        ExprKind::Template(tmpl) =>
+          match tmpl.exprs[0].kind {
+            ExprKind::Ident(name) => inspect(name, content="")
+            _ => fail("expected placeholder identifier")
+          }
+        _ => fail("expected template literal")
+      }
+    _ => fail("expected expression statement")
+  }
+}
+
+///|
+test "rest parameter must be last" {
+  let program = parse_program("function foo(...bar, baz) {}")
+  assert_true(program.errors.length() > 0)
+}
+
+///|
+test "new type must use constructor signature form" {
+  let program = parse_program("type Foo = abstract new Bar;")
+  assert_true(program.errors.length() > 0)
+}

@@ -574,6 +574,7 @@ pub impl ToJson for Position
 
 pub struct Program {
   stmts : Array[Stmt]
+  errors : Array[ParseError]
   span : Span
 }
 pub impl Show for Program
@@ -763,6 +764,7 @@ pub enum TypeLiteral {
   Number(String)
   Bool(Bool)
   Null
+  Undefined
 }
 pub impl Show for TypeLiteral
 pub impl ToJson for TypeLiteral
@@ -809,6 +811,7 @@ pub enum UnaryOp {
   Void
   Await
   Yield
+  YieldStar
 }
 pub impl Show for UnaryOp
 pub impl ToJson for UnaryOp

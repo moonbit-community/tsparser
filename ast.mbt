@@ -1,6 +1,7 @@
 ///|
 pub struct Program {
   stmts : Array[Stmt]
+  errors : Array[ParseError]
   span : Span
 } derive(Show, ToJson)
 
@@ -475,6 +476,7 @@ pub enum UnaryOp {
   Void
   Await
   Yield
+  YieldStar
 } derive(Show, ToJson)
 
 ///|
@@ -601,6 +603,7 @@ pub enum TypeLiteral {
   Number(String)
   Bool(Bool)
   Null
+  Undefined
 } derive(Show, ToJson)
 
 ///|
