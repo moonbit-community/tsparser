@@ -24,16 +24,19 @@ fn check_tsfile(filename : String) -> Unit raise {
   } else {
     fail("\{filename} not a typescript file")
   }
-  if @fs.path_exists("./tsfiles/\{basename}.errors.txt") {
-    let errors = @fs.read_file_to_string("./tsfiles/\{basename}.errors.txt")
-    if errors lexmatch? (_, "error TS1[[:digit:]]{3}", _) {
-      return // contain syntax error, just return
-    }
-  }
   let bytes = @fs.read_file_to_string("./tsfiles/\{filename}")
-  if filename.has_suffix(".tsx") {
-    ignore(parse_program_with_jsx(bytes, true))
+  let (errors, _) = if filename.has_suffix(".tsx") {
+    parse_program_with_jsx(bytes, true)
   } else {
-    ignore(parse_program(bytes))
+    parse_program(bytes)
+  }
+  if @fs.path_exists("./tsfiles/\{basename}.errors.txt") {
+    let expected_errors = @fs.read_file_to_string(
+      "./tsfiles/\{basename}.errors.txt",
+    ).trim()
+    let errors = errors.map(err => err.to_string()).join("\n")[:]
+    assert_eq(errors, expected_errors)
+  } else if !errors.is_empty() {
+    fail("\{errors}")
   }
 }
