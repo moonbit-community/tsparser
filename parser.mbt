@@ -5716,38 +5716,12 @@ fn normalize_source(source : String) -> String {
 }
 
 ///|
-fn decode_source_bytes(bytes : Bytes) -> String {
-  let bom0 : Byte = 0xff
-  let bom1 : Byte = 0xfe
-  if bytes.length() >= 2 && bytes[0] == bom0 && bytes[1] == bom1 {
-    return @utf16.decode_lossy(
-      bytes,
-      ignore_bom=true,
-      endianness=@utf16.Endian::Little,
-    )
-  }
-  if bytes.length() >= 2 && bytes[0] == bom1 && bytes[1] == bom0 {
-    return @utf16.decode_lossy(
-      bytes,
-      ignore_bom=true,
-      endianness=@utf16.Endian::Big,
-    )
-  }
-  @utf8.decode_lossy(bytes)
-}
-
-///|
 pub fn parse_program(source : String) -> Program raise ParseError {
   let normalized = normalize_source(source)
   let tokens = tokenize(normalized)
   let jsx_mode = detect_jsx_mode(normalized)
   let parser = Parser::new(tokens, jsx_mode)
   parser.parse_program()
-}
-
-///|
-pub fn parse_program_bytes(bytes : Bytes) -> Program raise ParseError {
-  parse_program(decode_source_bytes(bytes))
 }
 
 ///|
@@ -5759,12 +5733,4 @@ pub fn parse_program_with_jsx(
   let tokens = tokenize(normalized)
   let parser = Parser::new(tokens, jsx_mode)
   parser.parse_program()
-}
-
-///|
-pub fn parse_program_bytes_with_jsx(
-  bytes : Bytes,
-  jsx_mode : Bool,
-) -> Program raise ParseError {
-  parse_program_with_jsx(decode_source_bytes(bytes), jsx_mode)
 }

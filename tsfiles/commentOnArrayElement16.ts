@@ -1,4 +1,4 @@
-﻿const array = [
+const array = [
     // comment start
     1,
     2,

@@ -1,4 +1,4 @@
-﻿// @skipLibCheck: true
+// @skipLibCheck: true
 // @lib: es2018,dom,dom.asynciterable
 // @target: es2018
 

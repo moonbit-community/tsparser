@@ -30,10 +30,10 @@ fn check_tsfile(filename : String) -> Unit raise {
       return // contain syntax error, just return
     }
   }
-  let bytes = @fs.read_file_to_bytes("./tsfiles/\{filename}")
+  let bytes = @fs.read_file_to_string("./tsfiles/\{filename}")
   if filename.has_suffix(".tsx") {
-    ignore(parse_program_bytes_with_jsx(bytes, true))
+    ignore(parse_program_with_jsx(bytes, true))
   } else {
-    ignore(parse_program_bytes(bytes))
+    ignore(parse_program(bytes))
   }
 }

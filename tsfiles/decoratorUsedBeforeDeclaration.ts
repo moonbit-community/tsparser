@@ -1,4 +1,4 @@
-﻿// @experimentalDecorators: true
+// @experimentalDecorators: true
 @lambda(Enum.No)
 @deco(Enum.No)
 class Greeter {

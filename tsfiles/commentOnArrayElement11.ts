@@ -1,3 +1,3 @@
-﻿const array = [
+const array = [
     , /* comment */
 ];
