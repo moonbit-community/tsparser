@@ -6,10 +6,11 @@ test "parse var and function" {
     #|  return a + b;
     #|}
     #|
-  let program = parse_program(source)
-  inspect(program.stmts.length(), content="2")
+  let (errors, program) = parse_program(source)
+  assert_eq(errors.length(), 0)
+  assert_eq(program.stmts.length(), 2)
   match program.stmts[0].kind {
-    StmtKind::VarDecl(decl) => inspect(decl.decls.length(), content="1")
+    StmtKind::VarDecl(decl) => assert_eq(decl.decls.length(), 1)
     _ => fail("expected var declaration")
   }
 }
@@ -23,15 +24,16 @@ test "parse type alias and interface" {
     #|  age?: number;
     #|}
     #|
-  let program = parse_program(source)
+  let (errors, program) = parse_program(source)
+  assert_eq(errors.length(), 0)
   match program.stmts[0].kind {
-    StmtKind::TypeAliasDecl(decl) => inspect(decl.name, content="ID")
+    StmtKind::TypeAliasDecl(decl) => assert_eq(decl.name, "ID")
     _ => fail("expected type alias")
   }
   match program.stmts[1].kind {
     StmtKind::InterfaceDecl(decl) => {
-      inspect(decl.name, content="Person")
-      inspect(decl.members.length(), content="2")
+      assert_eq(decl.name, "Person")
+      assert_eq(decl.members.length(), 2)
     }
     _ => fail("expected interface")
   }
@@ -39,7 +41,8 @@ test "parse type alias and interface" {
 
 ///|
 test "parse call and member" {
-  let program = parse_program("foo.bar(1, 2)")
+  let (errors, program) = parse_program("foo.bar(1, 2)")
+  assert_eq(errors.length(), 0)
   match program.stmts[0].kind {
     StmtKind::ExprStmt(expr) =>
       match expr.kind {
@@ -47,7 +50,7 @@ test "parse call and member" {
           match call.callee.kind {
             ExprKind::Member(member_expr) =>
               match member_expr.property {
-                MemberProp::Ident(name) => inspect(name, content="bar")
+                MemberProp::Ident(name) => assert_eq(name, "bar")
                 _ => fail("expected identifier member")
               }
             _ => fail("expected member expression")
@@ -69,12 +72,13 @@ test "parse import export class" {
     #|  age: number;
     #|}
     #|
-  let program = parse_program(source)
-  inspect(program.stmts.length(), content="3")
+  let (errors, program) = parse_program(source)
+  assert_eq(errors.length(), 0)
+  assert_eq(program.stmts.length(), 3)
   match program.stmts[0].kind {
     StmtKind::ImportDecl(decl) => {
-      inspect(decl.default_name, content="Some(\"Foo\")")
-      inspect(decl.from, content="mod")
+      assert_eq(decl.default_name, Some("Foo"))
+      assert_eq(decl.from, "mod")
     }
     _ => fail("expected import declaration")
   }
@@ -83,7 +87,7 @@ test "parse import export class" {
     _ => fail("expected export declaration")
   }
   match program.stmts[2].kind {
-    StmtKind::ClassDecl(decl) => inspect(decl.name, content="Some(\"Person\")")
+    StmtKind::ClassDecl(decl) => assert_eq(decl.name, Some("Person"))
     _ => fail("expected class declaration")
   }
 }
@@ -98,8 +102,9 @@ test "parse arrow object array new as" {
     #|let o = { a: 1, b };
     #|let n = new Foo(1) as Bar;
     #|
-  let program = parse_program(source)
-  inspect(program.stmts.length(), content="6")
+  let (errors, program) = parse_program(source)
+  assert_eq(errors.length(), 0)
+  assert_eq(program.stmts.length(), 6)
   match program.stmts[2].kind {
     StmtKind::VarDecl(decl) =>
       match decl.decls[0].init {
@@ -109,7 +114,7 @@ test "parse arrow object array new as" {
               match arrow.params[0].type_ann {
                 Some(ty) =>
                   match ty.kind {
-                    TypeKind::Ident(name) => inspect(name, content="number")
+                    TypeKind::Ident(name) => assert_eq(name, "number")
                     _ => fail("expected identifier type")
                   }
                 None => fail("expected parameter type")
@@ -127,10 +132,10 @@ test "parse arrow object array new as" {
           match expr.kind {
             ExprKind::New(new_expr) => {
               match new_expr.callee.kind {
-                ExprKind::Ident(name) => inspect(name, content="Foo")
+                ExprKind::Ident(name) => assert_eq(name, "Foo")
                 _ => fail("expected new expression callee")
               }
-              inspect(new_expr.args.length(), content="1")
+              assert_eq(new_expr.args.length(), 1)
             }
             _ => fail("expected new expression")
           }
@@ -147,13 +152,13 @@ test "parse export default forms" {
     #|export default class { }
     #|export default 42;
     #|
-  let program = parse_program(source)
-  inspect(program.stmts.length(), content="3")
+  let (errors, program) = parse_program(source)
+  assert_eq(errors.length(), 0)
+  assert_eq(program.stmts.length(), 3)
   match program.stmts[0].kind {
     StmtKind::ExportDecl(ExportDecl::Default(def)) =>
       match def {
-        ExportDefault::Function(decl) =>
-          inspect(decl.name, content="Some(\"greet\")")
+        ExportDefault::Function(decl) => assert_eq(decl.name, Some("greet"))
         _ => fail("expected export default function")
       }
     _ => fail("expected export default declaration")
@@ -161,7 +166,7 @@ test "parse export default forms" {
   match program.stmts[1].kind {
     StmtKind::ExportDecl(ExportDecl::Default(def)) =>
       match def {
-        ExportDefault::Class(decl) => inspect(decl.name, content="None")
+        ExportDefault::Class(decl) => assert_eq(decl.name, None)
         _ => fail("expected export default class")
       }
     _ => fail("expected export default declaration")
@@ -171,7 +176,7 @@ test "parse export default forms" {
       match def {
         ExportDefault::Expr(expr) =>
           match expr.kind {
-            ExprKind::Number(value) => inspect(value, content="42")
+            ExprKind::Number(value) => assert_eq(value, "42")
             _ => fail("expected number literal")
           }
         _ => fail("expected export default expr")
@@ -190,34 +195,44 @@ test "parse class modifiers and accessors" {
     #|  set size(value: number) { this._size = value; }
     #|}
     #|
-  let program = parse_program(source)
+  let (errors, program) = parse_program(source)
+  assert_eq(errors.length(), 0)
   match program.stmts[0].kind {
     StmtKind::ClassDecl(decl) => {
-      inspect(decl.name, content="Some(\"Box\")")
-      inspect(decl.members.length(), content="4")
+      assert_eq(decl.name, Some("Box"))
+      assert_eq(decl.members.length(), 4)
       let id_member = decl.members[0]
-      inspect(id_member.is_readonly, content="true")
-      inspect(id_member.access, content="Some(Public)")
+      assert_eq(id_member.is_readonly, true)
+      match id_member.access {
+        Some(AccessModifier::Public) => ()
+        _ => fail("expected public access")
+      }
       match id_member.kind {
-        ClassMemberKind::Field(name, _, _) => inspect(name, content="id")
+        ClassMemberKind::Field(name, _, _) => assert_eq(name, "id")
         _ => fail("expected field")
       }
       let count_member = decl.members[1]
-      inspect(count_member.is_static, content="true")
-      inspect(count_member.access, content="Some(Private)")
+      assert_eq(count_member.is_static, true)
+      match count_member.access {
+        Some(AccessModifier::Private) => ()
+        _ => fail("expected private access")
+      }
       match count_member.kind {
-        ClassMemberKind::Field(name, _, _) => inspect(name, content="count")
+        ClassMemberKind::Field(name, _, _) => assert_eq(name, "count")
         _ => fail("expected field")
       }
       let getter_member = decl.members[2]
-      inspect(getter_member.access, content="Some(Protected)")
+      match getter_member.access {
+        Some(AccessModifier::Protected) => ()
+        _ => fail("expected protected access")
+      }
       match getter_member.kind {
-        ClassMemberKind::Getter(name, _, _) => inspect(name, content="size")
+        ClassMemberKind::Getter(name, _, _) => assert_eq(name, "size")
         _ => fail("expected getter")
       }
       let setter_member = decl.members[3]
       match setter_member.kind {
-        ClassMemberKind::Setter(name, _, _) => inspect(name, content="size")
+        ClassMemberKind::Setter(name, _, _) => assert_eq(name, "size")
         _ => fail("expected setter")
       }
     }
@@ -233,11 +248,12 @@ test "parse extended types" {
     #|type Both = Foo & Bar;
     #|type Mode = "on" | "off" | 0 | true | null;
     #|
-  let program = parse_program(source)
+  let (errors, program) = parse_program(source)
+  assert_eq(errors.length(), 0)
   match program.stmts[0].kind {
     StmtKind::TypeAliasDecl(decl) =>
       match decl.value.kind {
-        TypeKind::Tuple(elements) => inspect(elements.length(), content="2")
+        TypeKind::Tuple(elements) => assert_eq(elements.length(), 2)
         _ => fail("expected tuple type")
       }
     _ => fail("expected type alias")
@@ -246,11 +262,11 @@ test "parse extended types" {
     StmtKind::TypeAliasDecl(decl) =>
       match decl.value.kind {
         TypeKind::Object(members) => {
-          inspect(members.length(), content="3")
-          inspect(members[1].optional, content="true")
+          assert_eq(members.length(), 3)
+          assert_eq(members[1].optional, true)
           match members[2].type_ann.kind {
             TypeKind::Literal(TypeLiteral::String(value)) =>
-              inspect(value, content="x")
+              assert_eq(value, "x")
             _ => fail("expected string literal type")
           }
         }
@@ -261,7 +277,7 @@ test "parse extended types" {
   match program.stmts[2].kind {
     StmtKind::TypeAliasDecl(decl) =>
       match decl.value.kind {
-        TypeKind::Intersection(types) => inspect(types.length(), content="2")
+        TypeKind::Intersection(types) => assert_eq(types.length(), 2)
         _ => fail("expected intersection type")
       }
     _ => fail("expected type alias")
@@ -269,7 +285,7 @@ test "parse extended types" {
   match program.stmts[3].kind {
     StmtKind::TypeAliasDecl(decl) =>
       match decl.value.kind {
-        TypeKind::Union(types) => inspect(types.length(), content="5")
+        TypeKind::Union(types) => assert_eq(types.length(), 5)
         _ => fail("expected union type")
       }
     _ => fail("expected type alias")
@@ -284,14 +300,15 @@ test "parse for and do while" {
     #|for (key in obj) { }
     #|do { value++; } while (value < 10);
     #|
-  let program = parse_program(source)
-  inspect(program.stmts.length(), content="4")
+  let (errors, program) = parse_program(source)
+  assert_eq(errors.length(), 0)
+  assert_eq(program.stmts.length(), 4)
   match program.stmts[0].kind {
     StmtKind::For(stmt) =>
       match stmt.update {
         Some(expr) =>
           match expr.kind {
-            ExprKind::Update(update) => inspect(update.prefix, content="false")
+            ExprKind::Update(update) => assert_eq(update.prefix, false)
             _ => fail("expected update expression")
           }
         None => fail("expected update expression")
@@ -321,9 +338,10 @@ test "parse switch and try" {
     #|}
     #|try { risky(); } catch (e: Error) { handle(e); } finally { cleanup(); }
     #|
-  let program = parse_program(source)
+  let (errors, program) = parse_program(source)
+  assert_eq(errors.length(), 0)
   match program.stmts[0].kind {
-    StmtKind::Switch(stmt) => inspect(stmt.cases.length(), content="2")
+    StmtKind::Switch(stmt) => assert_eq(stmt.cases.length(), 2)
     _ => fail("expected switch statement")
   }
   match program.stmts[1].kind {
@@ -331,7 +349,7 @@ test "parse switch and try" {
       match stmt.handler {
         Some(handler) =>
           match handler.param {
-            Some(param) => inspect(param.name, content="e")
+            Some(param) => assert_eq(param.name, "e")
             None => fail("expected catch param")
           }
         None => fail("expected catch clause")
@@ -348,17 +366,18 @@ test "parse enum interface extends and conditional" {
     #|let flag = ok ? 1 : 2;
     #|count += 1;
     #|
-  let program = parse_program(source)
-  inspect(program.stmts.length(), content="4")
+  let (errors, program) = parse_program(source)
+  assert_eq(errors.length(), 0)
+  assert_eq(program.stmts.length(), 4)
   match program.stmts[0].kind {
     StmtKind::EnumDecl(decl) => {
-      inspect(decl.is_const, content="true")
-      inspect(decl.members.length(), content="3")
+      assert_eq(decl.is_const, true)
+      assert_eq(decl.members.length(), 3)
     }
     _ => fail("expected enum declaration")
   }
   match program.stmts[1].kind {
-    StmtKind::InterfaceDecl(decl) => inspect(decl.extends.length(), content="2")
+    StmtKind::InterfaceDecl(decl) => assert_eq(decl.extends.length(), 2)
     _ => fail("expected interface declaration")
   }
   match program.stmts[2].kind {
@@ -376,7 +395,11 @@ test "parse enum interface extends and conditional" {
   match program.stmts[3].kind {
     StmtKind::ExprStmt(expr) =>
       match expr.kind {
-        ExprKind::Assign(assign) => inspect(assign.op, content="AddAssign")
+        ExprKind::Assign(assign) =>
+          match assign.op {
+            AssignOp::AddAssign => ()
+            _ => fail("expected add-assign")
+          }
         _ => fail("expected assignment expression")
       }
     _ => fail("expected expression statement")
@@ -386,22 +409,26 @@ test "parse enum interface extends and conditional" {
 ///|
 test "parse optional chaining nullish template" {
   let source = "let value = foo?.bar?.(1) ?? `hi ${name}`;"
-  let program = parse_program(source)
+  let (errors, program) = parse_program(source)
+  assert_eq(errors.length(), 0)
   match program.stmts[0].kind {
     StmtKind::VarDecl(decl) =>
       match decl.decls[0].init {
         Some(expr) =>
           match expr.kind {
             ExprKind::Binary(bin) => {
-              inspect(bin.op, content="Nullish")
+              match bin.op {
+                BinaryOp::Nullish => ()
+                _ => fail("expected nullish operator")
+              }
               match bin.left.kind {
-                ExprKind::Call(call) => inspect(call.optional, content="true")
+                ExprKind::Call(call) => assert_eq(call.optional, true)
                 _ => fail("expected optional call")
               }
               match bin.right.kind {
                 ExprKind::Template(tmpl) => {
-                  inspect(tmpl.quasis.length(), content="2")
-                  inspect(tmpl.exprs.length(), content="1")
+                  assert_eq(tmpl.quasis.length(), 2)
+                  assert_eq(tmpl.exprs.length(), 1)
                 }
                 _ => fail("expected template literal")
               }
@@ -422,13 +449,13 @@ test "parse destructuring and spread" {
     #|let o = { ...base, a: 1, b };
     #|let arr2 = [0, ...xs, , 3];
     #|
-  let program = parse_program(source)
-  inspect(program.stmts.length(), content="4")
+  let (errors, program) = parse_program(source)
+  assert_eq(errors.length(), 0)
+  assert_eq(program.stmts.length(), 4)
   match program.stmts[0].kind {
     StmtKind::VarDecl(decl) =>
       match decl.decls[0].pattern.kind {
-        BindingPatternKind::Object(obj) =>
-          inspect(obj.props.length(), content="3")
+        BindingPatternKind::Object(obj) => assert_eq(obj.props.length(), 3)
         _ => fail("expected object pattern")
       }
     _ => fail("expected var declaration")
@@ -485,22 +512,23 @@ test "parse type-only import export" {
     #|import type Foo, { type Bar as Baz, Qux } from "mod";
     #|export type { Foo, type Bar as Baz };
     #|
-  let program = parse_program(source)
+  let (errors, program) = parse_program(source)
+  assert_eq(errors.length(), 0)
   match program.stmts[0].kind {
     StmtKind::ImportDecl(decl) => {
-      inspect(decl.is_type_only, content="true")
-      inspect(decl.named.length(), content="2")
-      inspect(decl.named[0].is_type_only, content="true")
-      inspect(decl.named[1].is_type_only, content="false")
+      assert_eq(decl.is_type_only, true)
+      assert_eq(decl.named.length(), 2)
+      assert_eq(decl.named[0].is_type_only, true)
+      assert_eq(decl.named[1].is_type_only, false)
     }
     _ => fail("expected import declaration")
   }
   match program.stmts[1].kind {
     StmtKind::ExportDecl(ExportDecl::Named(named)) => {
-      inspect(named.is_type_only, content="true")
-      inspect(named.specs.length(), content="2")
-      inspect(named.specs[0].is_type_only, content="false")
-      inspect(named.specs[1].is_type_only, content="true")
+      assert_eq(named.is_type_only, true)
+      assert_eq(named.specs.length(), 2)
+      assert_eq(named.specs[0].is_type_only, false)
+      assert_eq(named.specs[1].is_type_only, true)
     }
     _ => fail("expected export named declaration")
   }
@@ -514,62 +542,61 @@ test "parse type parameters" {
     #|class Foo<T extends Bar> { }
     #|function id<T>(x: T): T { return x; }
     #|
-  let program = parse_program(source)
+  let (errors, program) = parse_program(source)
+  assert_eq(errors.length(), 0)
   match program.stmts[0].kind {
-    StmtKind::TypeAliasDecl(decl) =>
-      inspect(decl.type_params.length(), content="2")
+    StmtKind::TypeAliasDecl(decl) => assert_eq(decl.type_params.length(), 2)
     _ => fail("expected type alias")
   }
   match program.stmts[1].kind {
-    StmtKind::InterfaceDecl(decl) =>
-      inspect(decl.type_params.length(), content="1")
+    StmtKind::InterfaceDecl(decl) => assert_eq(decl.type_params.length(), 1)
     _ => fail("expected interface")
   }
   match program.stmts[2].kind {
-    StmtKind::ClassDecl(decl) => inspect(decl.type_params.length(), content="1")
+    StmtKind::ClassDecl(decl) => assert_eq(decl.type_params.length(), 1)
     _ => fail("expected class")
   }
   match program.stmts[3].kind {
-    StmtKind::FunctionDecl(decl) =>
-      inspect(decl.type_params.length(), content="1")
+    StmtKind::FunctionDecl(decl) => assert_eq(decl.type_params.length(), 1)
     _ => fail("expected function")
   }
 }
 
 ///|
 test "collect statement parse errors" {
-  let program = parse_program("function (x) {}")
-  assert_true(program.errors.length() > 0)
+  let (errors, _) = parse_program("function (x) {}")
+  assert_true(errors.length() > 0)
 }
 
 ///|
 test "collect expression recovery errors" {
-  let program = parse_program("foo(,);")
-  assert_true(program.errors.length() > 0)
+  let (errors, program) = parse_program("foo(,);")
+  assert_true(errors.length() > 0)
   assert_true(program.stmts.length() > 0)
 }
 
 ///|
 test "invalid rest-only arrow parameter reports error" {
-  let program = parse_program("(... ) => {};")
-  assert_true(program.errors.length() > 0)
+  let (errors, _) = parse_program("(... ) => {};")
+  assert_true(errors.length() > 0)
 }
 
 ///|
 test "invalid accessibility modifier in arrow parameter reports error" {
-  let program = parse_program("(public foo) => {};")
-  assert_true(program.errors.length() > 0)
+  let (errors, _) = parse_program("(public foo) => {};")
+  assert_true(errors.length() > 0)
 }
 
 ///|
 test "invalid accessibility modifier in function type reports error" {
-  let program = parse_program("declare const foo: (public bar) => baz;")
-  assert_true(program.errors.length() > 0)
+  let (errors, _) = parse_program("declare const foo: (public bar) => baz;")
+  assert_true(errors.length() > 0)
 }
 
 ///|
 test "parse undefined type literal" {
-  let program = parse_program("type U = undefined;")
+  let (errors, program) = parse_program("type U = undefined;")
+  assert_eq(errors.length(), 0)
   match program.stmts[0].kind {
     StmtKind::TypeAliasDecl(decl) =>
       match decl.value.kind {
@@ -588,13 +615,18 @@ test "distinguish yield star from yield" {
     #|  yield source;
     #|}
     #|
-  let program = parse_program(source)
+  let (errors, program) = parse_program(source)
+  assert_eq(errors.length(), 0)
   match program.stmts[0].kind {
     StmtKind::FunctionDecl(decl) => {
       match decl.body.stmts[0].kind {
         StmtKind::ExprStmt(expr) =>
           match expr.kind {
-            ExprKind::Unary(unary) => inspect(unary.op, content="YieldStar")
+            ExprKind::Unary(unary) =>
+              match unary.op {
+                UnaryOp::YieldStar => ()
+                _ => fail("expected yield-star")
+              }
             _ => fail("expected unary expression")
           }
         _ => fail("expected expression statement")
@@ -602,7 +634,11 @@ test "distinguish yield star from yield" {
       match decl.body.stmts[1].kind {
         StmtKind::ExprStmt(expr) =>
           match expr.kind {
-            ExprKind::Unary(unary) => inspect(unary.op, content="Yield")
+            ExprKind::Unary(unary) =>
+              match unary.op {
+                UnaryOp::Yield => ()
+                _ => fail("expected yield")
+              }
             _ => fail("expected unary expression")
           }
         _ => fail("expected expression statement")
@@ -614,8 +650,8 @@ test "distinguish yield star from yield" {
 
 ///|
 test "empty element access reports error" {
-  let program = parse_program("foo[];")
-  assert_true(program.errors.length() > 0)
+  let (errors, program) = parse_program("foo[];")
+  assert_true(errors.length() > 0)
   match program.stmts[0].kind {
     StmtKind::ExprStmt(expr) =>
       match expr.kind {
@@ -623,7 +659,7 @@ test "empty element access reports error" {
           match member_expr.property {
             MemberProp::Expr(prop) =>
               match prop.kind {
-                ExprKind::Ident(name) => inspect(name, content="")
+                ExprKind::Ident(name) => assert_eq(name, "")
                 _ => fail("expected placeholder identifier")
               }
             _ => fail("expected computed member")
@@ -636,14 +672,14 @@ test "empty element access reports error" {
 
 ///|
 test "empty template interpolation reports error" {
-  let program = parse_program("`${}`;")
-  assert_true(program.errors.length() > 0)
+  let (errors, program) = parse_program("`${}`;")
+  assert_true(errors.length() > 0)
   match program.stmts[0].kind {
     StmtKind::ExprStmt(expr) =>
       match expr.kind {
         ExprKind::Template(tmpl) =>
           match tmpl.exprs[0].kind {
-            ExprKind::Ident(name) => inspect(name, content="")
+            ExprKind::Ident(name) => assert_eq(name, "")
             _ => fail("expected placeholder identifier")
           }
         _ => fail("expected template literal")
@@ -654,12 +690,12 @@ test "empty template interpolation reports error" {
 
 ///|
 test "rest parameter must be last" {
-  let program = parse_program("function foo(...bar, baz) {}")
-  assert_true(program.errors.length() > 0)
+  let (errors, _) = parse_program("function foo(...bar, baz) {}")
+  assert_true(errors.length() > 0)
 }
 
 ///|
 test "new type must use constructor signature form" {
-  let program = parse_program("type Foo = abstract new Bar;")
-  assert_true(program.errors.length() > 0)
+  let (errors, _) = parse_program("type Foo = abstract new Bar;")
+  assert_true(errors.length() > 0)
 }

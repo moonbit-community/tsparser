@@ -1,8 +1,6 @@
 ///|
 pub struct Program {
   stmts : Array[Stmt]
-  errors : Array[ParseError]
-  span : Span
 } derive(Show, ToJson)
 
 ///|

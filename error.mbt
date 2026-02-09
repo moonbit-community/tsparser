@@ -8,6 +8,7 @@ pub(all) suberror LexError {
 
 ///|
 pub(all) suberror ParseError {
+  LexErr(LexError)
   UnexpectedEof(pos~ : Position)
   UnexpectedToken(pos~ : Position, String)
   Expected(pos~ : Position, String)

@@ -401,8 +401,7 @@ fn Parser::expect_module_specifier(
 }
 
 ///|
-fn Parser::parse_program(self : Parser) -> Program {
-  let start = self.current().span.start
+fn Parser::parse_program(self : Parser) -> (ArrayView[ParseError], Program) {
   let stmts : Array[Stmt] = []
   while !self.at_end() {
     stmts.push(self.parse_stmt()) catch {
@@ -417,8 +416,7 @@ fn Parser::parse_program(self : Parser) -> Program {
       }
     }
   }
-  let end = self.current().span.end
-  { stmts, errors: self.errors, span: span_from(start, end) }
+  (self.errors, Program::{ stmts, })
 }
 
 ///|
@@ -5722,9 +5720,11 @@ fn normalize_source(source : String) -> StringView {
 }
 
 ///|
-pub fn parse_program(source : String) -> Program raise LexError {
+pub fn parse_program(source : String) -> (ArrayView[ParseError], Program) {
   let normalized = normalize_source(source)
-  let tokens = tokenize(normalized)
+  let tokens = tokenize(normalized) catch {
+    err => return ([LexErr(err)], Program::{ stmts: [] })
+  }
   let jsx_mode = detect_jsx_mode(normalized.to_string())
   let parser = Parser::new(tokens, jsx_mode)
   parser.parse_program()
@@ -5734,9 +5734,11 @@ pub fn parse_program(source : String) -> Program raise LexError {
 pub fn parse_program_with_jsx(
   source : String,
   jsx_mode : Bool,
-) -> Program raise LexError {
+) -> (ArrayView[ParseError], Program) {
   let normalized = normalize_source(source)
-  let tokens = tokenize(normalized)
+  let tokens = tokenize(normalized) catch {
+    err => return ([LexErr(err)], Program::{ stmts: [] })
+  }
   let parser = Parser::new(tokens, jsx_mode)
   parser.parse_program()
 }
