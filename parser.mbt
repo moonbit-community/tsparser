@@ -5689,20 +5689,26 @@ fn detect_jsx_mode(source : String) -> Bool {
 }
 
 ///|
-fn normalize_source(source : String) -> String {
+fn normalize_source(source : String) -> StringView {
+  let source_view = source[:]
+  let source_no_bom = if source_view.length() > 0 && source_view[0] == '\uFEFF' {
+    source_view.view(start_offset=1)
+  } else {
+    source_view
+  }
   let mut has_nul = false
-  for c in source {
+  for c in source_no_bom {
     if c == '\u0000' {
       has_nul = true
       break
     }
   }
   if !has_nul {
-    return source
+    return source_no_bom
   }
   let sb = StringBuilder::new()
   let mut wrote = false
-  for c in source {
+  for c in source_no_bom {
     if c == '\u0000' || c == '\uFEFF' {
       continue
     }
@@ -5712,14 +5718,14 @@ fn normalize_source(source : String) -> String {
     sb.write_char(c)
     wrote = true
   }
-  sb.to_string()
+  sb.to_string()[:]
 }
 
 ///|
-pub fn parse_program(source : String) -> Program raise ParseError {
+pub fn parse_program(source : String) -> Program raise LexError {
   let normalized = normalize_source(source)
   let tokens = tokenize(normalized)
-  let jsx_mode = detect_jsx_mode(normalized)
+  let jsx_mode = detect_jsx_mode(normalized.to_string())
   let parser = Parser::new(tokens, jsx_mode)
   parser.parse_program()
 }
@@ -5728,7 +5734,7 @@ pub fn parse_program(source : String) -> Program raise ParseError {
 pub fn parse_program_with_jsx(
   source : String,
   jsx_mode : Bool,
-) -> Program raise ParseError {
+) -> Program raise LexError {
   let normalized = normalize_source(source)
   let tokens = tokenize(normalized)
   let parser = Parser::new(tokens, jsx_mode)

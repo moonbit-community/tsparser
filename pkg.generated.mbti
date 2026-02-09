@@ -2,23 +2,25 @@
 package "moonbit-community/tsparser"
 
 // Values
-pub fn parse_program(String) -> Program raise ParseError
+pub fn parse_program(String) -> Program raise LexError
 
-pub fn parse_program_bytes(Bytes) -> Program raise ParseError
-
-pub fn parse_program_bytes_with_jsx(Bytes, Bool) -> Program raise ParseError
-
-pub fn parse_program_with_jsx(String, Bool) -> Program raise ParseError
+pub fn parse_program_with_jsx(String, Bool) -> Program raise LexError
 
 // Errors
+pub(all) suberror LexError {
+  InvalidChar(pos~ : Position, UInt16)
+  UnterminatedString(pos~ : Position)
+  UnterminatedComment(pos~ : Position)
+  InvalidNumber(pos~ : Position, String)
+}
+pub impl Eq for LexError
+pub impl Show for LexError
+pub impl ToJson for LexError
+
 pub(all) suberror ParseError {
   UnexpectedEof(pos~ : Position)
   UnexpectedToken(pos~ : Position, String)
   Expected(pos~ : Position, String)
-  InvalidChar(pos~ : Position, Byte)
-  UnterminatedString(pos~ : Position)
-  UnterminatedComment(pos~ : Position)
-  InvalidNumber(pos~ : Position, String)
 }
 pub impl Eq for ParseError
 pub impl Show for ParseError
