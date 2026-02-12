@@ -144,7 +144,7 @@ fn is_alpha(b : UInt16) -> Bool {
   (b >= 'A' && b <= 'Z') ||
   b == '_' ||
   b == '$' ||
-  b >= 0x80
+  (b >= 0x80 && b != 0x85)
 }
 
 ///|
@@ -155,6 +155,53 @@ fn is_ident_start(b : UInt16) -> Bool {
 ///|
 fn is_ident_part(b : UInt16) -> Bool {
   is_alpha(b) || is_digit(b)
+}
+
+///|
+fn is_line_break_code_unit(ch : UInt16) -> Bool {
+  ch == '\n' || ch == '\r'
+}
+
+///|
+fn Lexer::backslash_likely_in_regex_literal(
+  self : Lexer,
+  backslash_offset : Int,
+) -> Bool {
+  if backslash_offset < 0 || backslash_offset >= self.source.length() {
+    return false
+  }
+  if self.source[backslash_offset] != '\\' {
+    return false
+  }
+  let mut i = backslash_offset
+  while i > 0 {
+    let prev = self.source[i - 1]
+    if is_line_break_code_unit(prev) {
+      return false
+    }
+    if prev == '/' {
+      if i < self.source.length() {
+        let next = self.source[i]
+        if next == '/' || next == '*' {
+          return false
+        }
+      }
+      let mut j = backslash_offset + 1
+      while j < self.source.length() {
+        let ch = self.source[j]
+        if is_line_break_code_unit(ch) {
+          return false
+        }
+        if ch == '/' {
+          return true
+        }
+        j += 1
+      }
+      return false
+    }
+    i -= 1
+  }
+  false
 }
 
 ///|
@@ -217,6 +264,11 @@ fn Lexer::skip_ws_and_comments(self : Lexer) -> Unit raise LexError {
   let mut progressed = true
   while progressed {
     progressed = false
+    if self.peek() == Some(0x85) {
+      self.bump()
+      progressed = true
+      continue
+    }
     if self.column == 1 {
       let input = self.remaining()
       lexmatch input with longest {
@@ -286,7 +338,7 @@ fn Lexer::slice_to_string(self : Lexer, start : Int, end_ : Int) -> String {
 }
 
 ///|
-fn Lexer::read_ident(self : Lexer) -> String {
+fn Lexer::read_ident(self : Lexer) -> String raise LexError {
   let start = self.pos
   while self.peek() is Some(b) {
     if is_ident_part(b) {
@@ -294,24 +346,55 @@ fn Lexer::read_ident(self : Lexer) -> String {
       continue
     }
     if b == '\\' && self.peek_n(1) == Some('u') {
+      let escape_pos = self.position()
+      let saved_pos = self.pos
+      let saved_line = self.line
+      let saved_column = self.column
       self.bump()
       self.bump()
+      let mut valid_escape = true
       if self.peek() == Some('{') {
         self.bump()
+        let mut saw_hex = false
         while self.peek() is Some(b2) && b2 != '}' {
+          if !is_hex_digit(b2) {
+            valid_escape = false
+            break
+          }
+          saw_hex = true
           self.bump()
         }
-        if self.peek() == Some('}') {
+        if valid_escape && (self.peek() != Some('}') || !saw_hex) {
+          valid_escape = false
+        }
+        if valid_escape {
           self.bump()
         }
       } else {
         let mut count = 0
-        while self.peek() is Some(_) && count < 4 {
-          self.bump()
-          count += 1
+        while valid_escape && count < 4 {
+          match self.peek() {
+            Some(ch) =>
+              if is_hex_digit(ch) {
+                self.bump()
+                count += 1
+              } else {
+                valid_escape = false
+              }
+            None => valid_escape = false
+          }
         }
       }
-      continue
+      if valid_escape {
+        continue
+      }
+      if saved_pos == start {
+        raise LexError::InvalidChar(pos=escape_pos, '\\')
+      }
+      self.pos = saved_pos
+      self.line = saved_line
+      self.column = saved_column
+      break
     }
     break
   }
@@ -319,10 +402,7 @@ fn Lexer::read_ident(self : Lexer) -> String {
 }
 
 ///|
-fn Lexer::read_number(
-  self : Lexer,
-  start_pos : Position,
-) -> String raise LexError {
+fn Lexer::read_number(self : Lexer) -> String {
   let start = self.pos
   if self.peek() == Some('0') {
     match self.peek_n(1) {
@@ -382,15 +462,8 @@ fn Lexer::read_number(
       if self.peek() == Some('+') || self.peek() == Some('-') {
         self.bump()
       }
-      let exp_start = self.pos
       while self.peek() is Some(b) && (is_digit(b) || b == '_') {
         self.bump()
-      }
-      if self.pos == exp_start {
-        raise LexError::InvalidNumber(
-          pos=start_pos,
-          self.slice_to_string(start, self.pos),
-        )
       }
     }
     _ => ()
@@ -402,7 +475,7 @@ fn Lexer::read_number(
 }
 
 ///|
-fn Lexer::read_string(self : Lexer, quote : UInt16) -> String {
+fn Lexer::read_string(self : Lexer, quote : UInt16) -> String raise LexError {
   let content_start = self.pos
   while self.peek() is Some(b) {
     if b == quote {
@@ -410,12 +483,21 @@ fn Lexer::read_string(self : Lexer, quote : UInt16) -> String {
       self.bump()
       return value
     }
+    if b == '\n' || b == '\r' {
+      return self.slice_to_string(content_start, self.pos)
+    }
     if b == '\\' {
       self.bump()
-      if self.peek() is Some(_) {
-        self.bump()
-      } else {
-        return self.slice_to_string(content_start, self.pos)
+      match self.peek() {
+        Some('\r') => {
+          self.bump()
+          if self.peek() == Some('\n') {
+            self.bump()
+          }
+        }
+        Some('\n') => self.bump()
+        Some(_) => self.bump()
+        None => raise LexError::UnexpectedEndOfText(pos=self.position())
       }
     } else {
       self.bump()
@@ -467,7 +549,7 @@ fn Lexer::next_template_token(self : Lexer) -> Token raise LexError {
     }
     self.bump()
   }
-  raise LexError::UnterminatedString(pos=chunk_start_pos)
+  raise LexError::UnterminatedString(pos=self.position())
 }
 
 ///|
@@ -591,7 +673,7 @@ fn Lexer::next_token(self : Lexer) -> Token raise LexError {
             Token::{ kind: TokenKind::Ident(name), span: span_from(start, end) }
         }
       } else if is_digit(b) {
-        let number = self.read_number(start)
+        let number = self.read_number()
         let end = self.position()
         Token::{ kind: TokenKind::Number(number), span: span_from(start, end) }
       } else {
@@ -615,37 +697,74 @@ fn Lexer::next_token(self : Lexer) -> Token raise LexError {
           }
           '\\' => {
             if self.peek_n(1) == Some('u') {
-              let ident = self.read_ident()
-              return Token::{
-                kind: TokenKind::Ident(ident),
-                span: span_from(start, self.position()),
+              let saved_pos = self.pos
+              let saved_line = self.line
+              let saved_column = self.column
+              try {
+                let ident = self.read_ident()
+                return Token::{
+                  kind: TokenKind::Ident(ident),
+                  span: span_from(start, self.position()),
+                }
+              } catch {
+                _ => {
+                  self.pos = saved_pos
+                  self.line = saved_line
+                  self.column = saved_column
+                }
               }
             }
-            self.bump()
-            if self.peek() == Some('\n') {
+            if self.backslash_likely_in_regex_literal(start.offset) {
               self.bump()
-              return self.next_token()
-            }
-            if self.peek() == Some('\r') {
+              Token::{
+                kind: TokenKind::Ident("\\"),
+                span: span_from(start, self.position()),
+              }
+            } else {
               self.bump()
               if self.peek() == Some('\n') {
                 self.bump()
+                return self.next_token()
               }
-              return self.next_token()
-            }
-            Token::{
-              kind: TokenKind::Ident("\\"),
-              span: span_from(start, self.position()),
+              if self.peek() == Some('\r') {
+                self.bump()
+                if self.peek() == Some('\n') {
+                  self.bump()
+                }
+                return self.next_token()
+              }
+              raise LexError::InvalidChar(pos=start, '\\')
             }
           }
           '#' => {
             self.bump()
-            if self.peek() is Some(next_b) && is_ident_start(next_b) {
-              let name = self.read_ident()
-              let end = self.position()
-              Token::{
-                kind: TokenKind::Ident("#\{name}"),
-                span: span_from(start, end),
+            let starts_private_ident = match self.peek() {
+              Some(next_b) =>
+                is_ident_start(next_b) ||
+                (next_b == '\\' && self.peek_n(1) == Some('u'))
+              None => false
+            }
+            if starts_private_ident {
+              let saved_pos = self.pos
+              let saved_line = self.line
+              let saved_column = self.column
+              try {
+                let name = self.read_ident()
+                let end = self.position()
+                Token::{
+                  kind: TokenKind::Ident("#\{name}"),
+                  span: span_from(start, end),
+                }
+              } catch {
+                _ => {
+                  self.pos = saved_pos
+                  self.line = saved_line
+                  self.column = saved_column
+                  Token::{
+                    kind: TokenKind::Ident("#"),
+                    span: span_from(start, self.position()),
+                  }
+                }
               }
             } else {
               Token::{
@@ -666,15 +785,8 @@ fn Lexer::next_token(self : Lexer) -> Token raise LexError {
                   if self.peek() == Some('+') || self.peek() == Some('-') {
                     self.bump()
                   }
-                  let exp_start = self.pos
                   while self.peek() is Some(ch) && (is_digit(ch) || ch == '_') {
                     self.bump()
-                  }
-                  if self.pos == exp_start {
-                    raise LexError::InvalidNumber(
-                      pos=start,
-                      self.slice_to_string(start.offset, self.pos),
-                    )
                   }
                 }
                 _ => ()

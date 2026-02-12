@@ -26,9 +26,9 @@ fn check_tsfile(filename : String) -> Unit raise {
   }
   let bytes = @fs.read_file_to_string("./tsfiles/\{filename}")
   let (errors, _) = if filename.has_suffix(".tsx") {
-    parse_program_with_jsx(bytes, true)
+    parse_program_with_jsx(bytes, true, name=filename)
   } else {
-    parse_program(bytes)
+    parse_program(bytes, name=filename)
   }
   if @fs.path_exists("./tsfiles/\{basename}.errors.txt") {
     let expected_errors = @fs.read_file_to_string(
