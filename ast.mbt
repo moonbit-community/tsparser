@@ -1,19 +1,19 @@
 ///|
 pub struct Program {
   stmts : Array[Stmt]
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct Block {
   stmts : Array[Stmt]
   span : Span
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct Stmt {
   kind : StmtKind
   span : Span
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub enum StmtKind {
@@ -43,64 +43,64 @@ pub enum StmtKind {
   ExprStmt(Expr)
   Block(Block)
   Empty
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct LabeledStmt {
   label : String
   stmt : Stmt
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct NamespaceDecl {
   name : String
   body : Block
   span : Span
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub enum VarKind {
   Let
   Const
   Var
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct VarDecl {
   kind : VarKind
   decls : Array[VarDeclarator]
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct BindingPattern {
   kind : BindingPatternKind
   span : Span
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub enum BindingPatternKind {
   Ident(String)
   Object(ObjectPattern)
   Array(ArrayPattern)
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct BindingElement {
   pattern : BindingPattern
   default_value : Expr?
   span : Span
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct ObjectPattern {
   props : Array[ObjectPatternProp]
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub enum ObjectPatternProp {
   Property(ObjectPatternProperty)
   Rest(BindingPattern)
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct ObjectPatternProperty {
@@ -108,19 +108,19 @@ pub struct ObjectPatternProperty {
   binding : BindingElement
   shorthand : Bool
   span : Span
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct ArrayPattern {
   elems : Array[ArrayPatternElem]
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub enum ArrayPatternElem {
   Elem(BindingElement)
   Rest(BindingPattern)
   Hole
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct VarDeclarator {
@@ -128,19 +128,19 @@ pub struct VarDeclarator {
   type_ann : TypeNode?
   init : Expr?
   span : Span
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub enum ForInit {
   Var(VarDecl)
   Expr(Expr)
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub enum ForInLeft {
   Var(VarDecl)
   Expr(Expr)
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct ForStmt {
@@ -148,59 +148,59 @@ pub struct ForStmt {
   condition : Expr?
   update : Expr?
   body : Stmt
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct ForInStmt {
   left : ForInLeft
   right : Expr
   body : Stmt
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct ForOfStmt {
   left : ForInLeft
   right : Expr
   body : Stmt
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct DoWhileStmt {
   body : Stmt
   condition : Expr
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct SwitchStmt {
   discriminant : Expr
   cases : Array[SwitchCase]
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct SwitchCase {
   case_expr : Expr?
   consequent : Array[Stmt]
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct TryStmt {
   block : Block
   handler : CatchClause?
   finalizer : Block?
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct CatchClause {
   param : CatchParam?
   body : Block
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct CatchParam {
   name : String
   type_ann : TypeNode?
   span : Span
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct TypeParam {
@@ -208,7 +208,7 @@ pub struct TypeParam {
   constraint : TypeNode?
   default_type : TypeNode?
   span : Span
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct FunctionDecl {
@@ -217,7 +217,7 @@ pub struct FunctionDecl {
   params : Array[Param]
   return_type : TypeNode?
   body : Block
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct Param {
@@ -227,7 +227,7 @@ pub struct Param {
   default_value : Expr?
   is_rest : Bool
   span : Span
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct TypeAliasDecl {
@@ -235,7 +235,7 @@ pub struct TypeAliasDecl {
   type_params : Array[TypeParam]
   value : TypeNode
   span : Span
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct InterfaceDecl {
@@ -244,7 +244,7 @@ pub struct InterfaceDecl {
   extends : Array[TypeNode]
   members : Array[InterfaceMember]
   span : Span
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct EnumDecl {
@@ -252,14 +252,14 @@ pub struct EnumDecl {
   members : Array[EnumMember]
   is_const : Bool
   span : Span
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct EnumMember {
   name : String
   init : Expr?
   span : Span
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct InterfaceMember {
@@ -267,7 +267,7 @@ pub struct InterfaceMember {
   optional : Bool
   type_ann : TypeNode
   span : Span
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct ImportDecl {
@@ -277,14 +277,14 @@ pub struct ImportDecl {
   named : Array[ImportSpec]
   from : String
   span : Span
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct ImportAssignDecl {
   name : String
   value : Expr
   span : Span
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct ImportSpec {
@@ -292,7 +292,7 @@ pub struct ImportSpec {
   name : String
   as_name : String?
   span : Span
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub enum ExportDecl {
@@ -300,21 +300,21 @@ pub enum ExportDecl {
   Default(ExportDefault)
   Declaration(Stmt)
   Assign(Expr)
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub enum ExportDefault {
   Expr(Expr)
   Function(FunctionDecl)
   Class(ClassDecl)
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct ExportNamed {
   is_type_only : Bool
   specs : Array[ExportSpec]
   from : String?
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct ExportSpec {
@@ -322,7 +322,7 @@ pub struct ExportSpec {
   name : String
   as_name : String?
   span : Span
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct ClassDecl {
@@ -332,7 +332,7 @@ pub struct ClassDecl {
   implements : Array[TypeNode]
   members : Array[ClassMember]
   span : Span
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct ClassMember {
@@ -341,7 +341,7 @@ pub struct ClassMember {
   access : AccessModifier?
   is_readonly : Bool
   span : Span
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub enum ClassMemberKind {
@@ -350,20 +350,20 @@ pub enum ClassMemberKind {
   Getter(String, TypeNode?, Block)
   Setter(String, Param, Block)
   Field(String, TypeNode?, Expr?)
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub enum AccessModifier {
   Public
   Private
   Protected
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct Expr {
   kind : ExprKind
   span : Span
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub enum ExprKind {
@@ -390,25 +390,25 @@ pub enum ExprKind {
   Assign(AssignExpr)
   Call(CallExpr)
   Member(MemberExpr)
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub enum ArrayElement {
   Expr(Expr)
   Spread(Expr)
   Hole
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct ObjectLiteral {
   props : Array[ObjectProp]
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub enum ObjectProp {
   Property(ObjectPropEntry)
   Spread(Expr)
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct ObjectPropEntry {
@@ -416,7 +416,7 @@ pub struct ObjectPropEntry {
   value : Expr
   shorthand : Bool
   span : Span
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct ArrowFunction {
@@ -424,44 +424,44 @@ pub struct ArrowFunction {
   params : Array[Param]
   return_type : TypeNode?
   body : FunctionBody
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub enum FunctionBody {
   Block(Block)
   Expr(Expr)
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct NewExpr {
   callee : Expr
   args : Array[Expr]
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct TemplateLiteral {
   quasis : Array[String]
   exprs : Array[Expr]
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct TypeAssert {
   expr : Expr
   type_ann : TypeNode
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub enum UpdateOp {
   Increment
   Decrement
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct UpdateExpr {
   op : UpdateOp
   prefix : Bool
   expr : Expr
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub enum UnaryOp {
@@ -475,13 +475,13 @@ pub enum UnaryOp {
   Await
   Yield
   YieldStar
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct UnaryExpr {
   op : UnaryOp
   expr : Expr
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub enum BinaryOp {
@@ -511,21 +511,21 @@ pub enum BinaryOp {
   UShr
   Comma
   Pow
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct BinaryExpr {
   op : BinaryOp
   left : Expr
   right : Expr
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct ConditionalExpr {
   condition : Expr
   consequent : Expr
   alternate : Expr
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub enum AssignOp {
@@ -541,27 +541,27 @@ pub enum AssignOp {
   ShlAssign
   ShrAssign
   UShrAssign
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct AssignExpr {
   op : AssignOp
   target : Expr
   value : Expr
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct CallExpr {
   callee : Expr
   args : Array[Expr]
   optional : Bool
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub enum MemberProp {
   Ident(String)
   Expr(Expr)
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct MemberExpr {
@@ -569,13 +569,13 @@ pub struct MemberExpr {
   property : MemberProp
   computed : Bool
   optional : Bool
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct TypeNode {
   kind : TypeKind
   span : Span
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub enum TypeKind {
@@ -593,7 +593,7 @@ pub enum TypeKind {
   IndexAccess(TypeNode, TypeNode)
   Generic(TypeNode, Array[TypeNode])
   Function(Array[TypeNode], TypeNode)
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub enum TypeLiteral {
@@ -602,7 +602,7 @@ pub enum TypeLiteral {
   Bool(Bool)
   Null
   Undefined
-} derive(Show, ToJson)
+} derive(Debug)
 
 ///|
 pub struct TypeMember {
@@ -610,4 +610,4 @@ pub struct TypeMember {
   optional : Bool
   type_ann : TypeNode
   span : Span
-} derive(Show, ToJson)
+} derive(Debug)

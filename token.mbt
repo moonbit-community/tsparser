@@ -48,7 +48,7 @@ pub enum Keyword {
   Catch
   Finally
   Throw
-} derive(Eq, Show, ToJson)
+} derive(Eq, Debug)
 
 ///|
 pub enum TokenKind {
@@ -106,10 +106,10 @@ pub enum TokenKind {
   Bang
   Tilde
   Eof
-} derive(Eq, Show, ToJson)
+} derive(Eq, Debug)
 
 ///|
 pub struct Token {
   kind : TokenKind
   span : Span
-} derive(Eq, Show, ToJson)
+} derive(Eq, Debug)

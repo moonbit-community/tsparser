@@ -1,6 +1,10 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "moonbit-community/tsparser"
 
+import {
+  "moonbitlang/core/debug",
+}
+
 // Values
 pub fn parse_program(String, name? : String) -> (ArrayView[ParseError], Program)
 
@@ -15,8 +19,7 @@ pub(all) suberror LexError {
   InvalidNumber(pos~ : Position, String)
 }
 pub impl Eq for LexError
-pub impl Show for LexError
-pub impl ToJson for LexError
+pub impl @debug.Debug for LexError
 
 pub(all) suberror ParseError {
   LexErr(LexError)
@@ -27,7 +30,7 @@ pub(all) suberror ParseError {
 }
 pub impl Eq for ParseError
 pub impl Show for ParseError
-pub impl ToJson for ParseError
+pub impl @debug.Debug for ParseError
 
 // Types and methods
 pub enum AccessModifier {
@@ -35,30 +38,26 @@ pub enum AccessModifier {
   Private
   Protected
 }
-pub impl Show for AccessModifier
-pub impl ToJson for AccessModifier
+pub impl @debug.Debug for AccessModifier
 
 pub enum ArrayElement {
   Expr(Expr)
   Spread(Expr)
   Hole
 }
-pub impl Show for ArrayElement
-pub impl ToJson for ArrayElement
+pub impl @debug.Debug for ArrayElement
 
 pub struct ArrayPattern {
   elems : Array[ArrayPatternElem]
 }
-pub impl Show for ArrayPattern
-pub impl ToJson for ArrayPattern
+pub impl @debug.Debug for ArrayPattern
 
 pub enum ArrayPatternElem {
   Elem(BindingElement)
   Rest(BindingPattern)
   Hole
 }
-pub impl Show for ArrayPatternElem
-pub impl ToJson for ArrayPatternElem
+pub impl @debug.Debug for ArrayPatternElem
 
 pub struct ArrowFunction {
   type_params : Array[TypeParam]
@@ -66,16 +65,14 @@ pub struct ArrowFunction {
   return_type : TypeNode?
   body : FunctionBody
 }
-pub impl Show for ArrowFunction
-pub impl ToJson for ArrowFunction
+pub impl @debug.Debug for ArrowFunction
 
 pub struct AssignExpr {
   op : AssignOp
   target : Expr
   value : Expr
 }
-pub impl Show for AssignExpr
-pub impl ToJson for AssignExpr
+pub impl @debug.Debug for AssignExpr
 
 pub enum AssignOp {
   Assign
@@ -91,16 +88,14 @@ pub enum AssignOp {
   ShrAssign
   UShrAssign
 }
-pub impl Show for AssignOp
-pub impl ToJson for AssignOp
+pub impl @debug.Debug for AssignOp
 
 pub struct BinaryExpr {
   op : BinaryOp
   left : Expr
   right : Expr
 }
-pub impl Show for BinaryExpr
-pub impl ToJson for BinaryExpr
+pub impl @debug.Debug for BinaryExpr
 
 pub enum BinaryOp {
   Add
@@ -130,61 +125,53 @@ pub enum BinaryOp {
   Comma
   Pow
 }
-pub impl Show for BinaryOp
-pub impl ToJson for BinaryOp
+pub impl @debug.Debug for BinaryOp
 
 pub struct BindingElement {
   pattern : BindingPattern
   default_value : Expr?
   span : Span
 }
-pub impl Show for BindingElement
-pub impl ToJson for BindingElement
+pub impl @debug.Debug for BindingElement
 
 pub struct BindingPattern {
   kind : BindingPatternKind
   span : Span
 }
-pub impl Show for BindingPattern
-pub impl ToJson for BindingPattern
+pub impl @debug.Debug for BindingPattern
 
 pub enum BindingPatternKind {
   Ident(String)
   Object(ObjectPattern)
   Array(ArrayPattern)
 }
-pub impl Show for BindingPatternKind
-pub impl ToJson for BindingPatternKind
+pub impl @debug.Debug for BindingPatternKind
 
 pub struct Block {
   stmts : Array[Stmt]
   span : Span
 }
-pub impl Show for Block
-pub impl ToJson for Block
+pub impl @debug.Debug for Block
 
 pub struct CallExpr {
   callee : Expr
   args : Array[Expr]
   optional : Bool
 }
-pub impl Show for CallExpr
-pub impl ToJson for CallExpr
+pub impl @debug.Debug for CallExpr
 
 pub struct CatchClause {
   param : CatchParam?
   body : Block
 }
-pub impl Show for CatchClause
-pub impl ToJson for CatchClause
+pub impl @debug.Debug for CatchClause
 
 pub struct CatchParam {
   name : String
   type_ann : TypeNode?
   span : Span
 }
-pub impl Show for CatchParam
-pub impl ToJson for CatchParam
+pub impl @debug.Debug for CatchParam
 
 pub struct ClassDecl {
   name : String?
@@ -194,8 +181,7 @@ pub struct ClassDecl {
   members : Array[ClassMember]
   span : Span
 }
-pub impl Show for ClassDecl
-pub impl ToJson for ClassDecl
+pub impl @debug.Debug for ClassDecl
 
 pub struct ClassMember {
   kind : ClassMemberKind
@@ -204,8 +190,7 @@ pub struct ClassMember {
   is_readonly : Bool
   span : Span
 }
-pub impl Show for ClassMember
-pub impl ToJson for ClassMember
+pub impl @debug.Debug for ClassMember
 
 pub enum ClassMemberKind {
   Constructor(Array[Param], Block)
@@ -214,23 +199,20 @@ pub enum ClassMemberKind {
   Setter(String, Param, Block)
   Field(String, TypeNode?, Expr?)
 }
-pub impl Show for ClassMemberKind
-pub impl ToJson for ClassMemberKind
+pub impl @debug.Debug for ClassMemberKind
 
 pub struct ConditionalExpr {
   condition : Expr
   consequent : Expr
   alternate : Expr
 }
-pub impl Show for ConditionalExpr
-pub impl ToJson for ConditionalExpr
+pub impl @debug.Debug for ConditionalExpr
 
 pub struct DoWhileStmt {
   body : Stmt
   condition : Expr
 }
-pub impl Show for DoWhileStmt
-pub impl ToJson for DoWhileStmt
+pub impl @debug.Debug for DoWhileStmt
 
 pub struct EnumDecl {
   name : String
@@ -238,16 +220,14 @@ pub struct EnumDecl {
   is_const : Bool
   span : Span
 }
-pub impl Show for EnumDecl
-pub impl ToJson for EnumDecl
+pub impl @debug.Debug for EnumDecl
 
 pub struct EnumMember {
   name : String
   init : Expr?
   span : Span
 }
-pub impl Show for EnumMember
-pub impl ToJson for EnumMember
+pub impl @debug.Debug for EnumMember
 
 pub enum ExportDecl {
   Named(ExportNamed)
@@ -255,24 +235,21 @@ pub enum ExportDecl {
   Declaration(Stmt)
   Assign(Expr)
 }
-pub impl Show for ExportDecl
-pub impl ToJson for ExportDecl
+pub impl @debug.Debug for ExportDecl
 
 pub enum ExportDefault {
   Expr(Expr)
   Function(FunctionDecl)
   Class(ClassDecl)
 }
-pub impl Show for ExportDefault
-pub impl ToJson for ExportDefault
+pub impl @debug.Debug for ExportDefault
 
 pub struct ExportNamed {
   is_type_only : Bool
   specs : Array[ExportSpec]
   from : String?
 }
-pub impl Show for ExportNamed
-pub impl ToJson for ExportNamed
+pub impl @debug.Debug for ExportNamed
 
 pub struct ExportSpec {
   is_type_only : Bool
@@ -280,15 +257,13 @@ pub struct ExportSpec {
   as_name : String?
   span : Span
 }
-pub impl Show for ExportSpec
-pub impl ToJson for ExportSpec
+pub impl @debug.Debug for ExportSpec
 
 pub struct Expr {
   kind : ExprKind
   span : Span
 }
-pub impl Show for Expr
-pub impl ToJson for Expr
+pub impl @debug.Debug for Expr
 
 pub enum ExprKind {
   Ident(String)
@@ -315,38 +290,33 @@ pub enum ExprKind {
   Call(CallExpr)
   Member(MemberExpr)
 }
-pub impl Show for ExprKind
-pub impl ToJson for ExprKind
+pub impl @debug.Debug for ExprKind
 
 pub enum ForInLeft {
   Var(VarDecl)
   Expr(Expr)
 }
-pub impl Show for ForInLeft
-pub impl ToJson for ForInLeft
+pub impl @debug.Debug for ForInLeft
 
 pub struct ForInStmt {
   left : ForInLeft
   right : Expr
   body : Stmt
 }
-pub impl Show for ForInStmt
-pub impl ToJson for ForInStmt
+pub impl @debug.Debug for ForInStmt
 
 pub enum ForInit {
   Var(VarDecl)
   Expr(Expr)
 }
-pub impl Show for ForInit
-pub impl ToJson for ForInit
+pub impl @debug.Debug for ForInit
 
 pub struct ForOfStmt {
   left : ForInLeft
   right : Expr
   body : Stmt
 }
-pub impl Show for ForOfStmt
-pub impl ToJson for ForOfStmt
+pub impl @debug.Debug for ForOfStmt
 
 pub struct ForStmt {
   init : ForInit?
@@ -354,15 +324,13 @@ pub struct ForStmt {
   update : Expr?
   body : Stmt
 }
-pub impl Show for ForStmt
-pub impl ToJson for ForStmt
+pub impl @debug.Debug for ForStmt
 
 pub enum FunctionBody {
   Block(Block)
   Expr(Expr)
 }
-pub impl Show for FunctionBody
-pub impl ToJson for FunctionBody
+pub impl @debug.Debug for FunctionBody
 
 pub struct FunctionDecl {
   name : String?
@@ -371,16 +339,14 @@ pub struct FunctionDecl {
   return_type : TypeNode?
   body : Block
 }
-pub impl Show for FunctionDecl
-pub impl ToJson for FunctionDecl
+pub impl @debug.Debug for FunctionDecl
 
 pub struct ImportAssignDecl {
   name : String
   value : Expr
   span : Span
 }
-pub impl Show for ImportAssignDecl
-pub impl ToJson for ImportAssignDecl
+pub impl @debug.Debug for ImportAssignDecl
 
 pub struct ImportDecl {
   is_type_only : Bool
@@ -390,8 +356,7 @@ pub struct ImportDecl {
   from : String
   span : Span
 }
-pub impl Show for ImportDecl
-pub impl ToJson for ImportDecl
+pub impl @debug.Debug for ImportDecl
 
 pub struct ImportSpec {
   is_type_only : Bool
@@ -399,8 +364,7 @@ pub struct ImportSpec {
   as_name : String?
   span : Span
 }
-pub impl Show for ImportSpec
-pub impl ToJson for ImportSpec
+pub impl @debug.Debug for ImportSpec
 
 pub struct InterfaceDecl {
   name : String
@@ -409,8 +373,7 @@ pub struct InterfaceDecl {
   members : Array[InterfaceMember]
   span : Span
 }
-pub impl Show for InterfaceDecl
-pub impl ToJson for InterfaceDecl
+pub impl @debug.Debug for InterfaceDecl
 
 pub struct InterfaceMember {
   name : String
@@ -418,8 +381,7 @@ pub struct InterfaceMember {
   type_ann : TypeNode
   span : Span
 }
-pub impl Show for InterfaceMember
-pub impl ToJson for InterfaceMember
+pub impl @debug.Debug for InterfaceMember
 
 pub enum Keyword {
   Let
@@ -472,15 +434,13 @@ pub enum Keyword {
   Throw
 }
 pub impl Eq for Keyword
-pub impl Show for Keyword
-pub impl ToJson for Keyword
+pub impl @debug.Debug for Keyword
 
 pub struct LabeledStmt {
   label : String
   stmt : Stmt
 }
-pub impl Show for LabeledStmt
-pub impl ToJson for LabeledStmt
+pub impl @debug.Debug for LabeledStmt
 
 pub struct MemberExpr {
   object : Expr
@@ -488,49 +448,42 @@ pub struct MemberExpr {
   computed : Bool
   optional : Bool
 }
-pub impl Show for MemberExpr
-pub impl ToJson for MemberExpr
+pub impl @debug.Debug for MemberExpr
 
 pub enum MemberProp {
   Ident(String)
   Expr(Expr)
 }
-pub impl Show for MemberProp
-pub impl ToJson for MemberProp
+pub impl @debug.Debug for MemberProp
 
 pub struct NamespaceDecl {
   name : String
   body : Block
   span : Span
 }
-pub impl Show for NamespaceDecl
-pub impl ToJson for NamespaceDecl
+pub impl @debug.Debug for NamespaceDecl
 
 pub struct NewExpr {
   callee : Expr
   args : Array[Expr]
 }
-pub impl Show for NewExpr
-pub impl ToJson for NewExpr
+pub impl @debug.Debug for NewExpr
 
 pub struct ObjectLiteral {
   props : Array[ObjectProp]
 }
-pub impl Show for ObjectLiteral
-pub impl ToJson for ObjectLiteral
+pub impl @debug.Debug for ObjectLiteral
 
 pub struct ObjectPattern {
   props : Array[ObjectPatternProp]
 }
-pub impl Show for ObjectPattern
-pub impl ToJson for ObjectPattern
+pub impl @debug.Debug for ObjectPattern
 
 pub enum ObjectPatternProp {
   Property(ObjectPatternProperty)
   Rest(BindingPattern)
 }
-pub impl Show for ObjectPatternProp
-pub impl ToJson for ObjectPatternProp
+pub impl @debug.Debug for ObjectPatternProp
 
 pub struct ObjectPatternProperty {
   key : String
@@ -538,15 +491,13 @@ pub struct ObjectPatternProperty {
   shorthand : Bool
   span : Span
 }
-pub impl Show for ObjectPatternProperty
-pub impl ToJson for ObjectPatternProperty
+pub impl @debug.Debug for ObjectPatternProperty
 
 pub enum ObjectProp {
   Property(ObjectPropEntry)
   Spread(Expr)
 }
-pub impl Show for ObjectProp
-pub impl ToJson for ObjectProp
+pub impl @debug.Debug for ObjectProp
 
 pub struct ObjectPropEntry {
   name : String
@@ -554,8 +505,7 @@ pub struct ObjectPropEntry {
   shorthand : Bool
   span : Span
 }
-pub impl Show for ObjectPropEntry
-pub impl ToJson for ObjectPropEntry
+pub impl @debug.Debug for ObjectPropEntry
 
 pub struct Param {
   pattern : BindingPattern
@@ -565,8 +515,7 @@ pub struct Param {
   is_rest : Bool
   span : Span
 }
-pub impl Show for Param
-pub impl ToJson for Param
+pub impl @debug.Debug for Param
 
 pub struct Position {
   offset : Int
@@ -574,14 +523,12 @@ pub struct Position {
   column : Int
 }
 pub impl Eq for Position
-pub impl Show for Position
-pub impl ToJson for Position
+pub impl @debug.Debug for Position
 
 pub struct Program {
   stmts : Array[Stmt]
 }
-pub impl Show for Program
-pub impl ToJson for Program
+pub impl @debug.Debug for Program
 
 pub struct Span {
   start : Position
@@ -589,15 +536,13 @@ pub struct Span {
 }
 pub fn Span::merge(Self, Self) -> Self
 pub impl Eq for Span
-pub impl Show for Span
-pub impl ToJson for Span
+pub impl @debug.Debug for Span
 
 pub struct Stmt {
   kind : StmtKind
   span : Span
 }
-pub impl Show for Stmt
-pub impl ToJson for Stmt
+pub impl @debug.Debug for Stmt
 
 pub enum StmtKind {
   ImportDecl(ImportDecl)
@@ -627,37 +572,32 @@ pub enum StmtKind {
   Block(Block)
   Empty
 }
-pub impl Show for StmtKind
-pub impl ToJson for StmtKind
+pub impl @debug.Debug for StmtKind
 
 pub struct SwitchCase {
   case_expr : Expr?
   consequent : Array[Stmt]
 }
-pub impl Show for SwitchCase
-pub impl ToJson for SwitchCase
+pub impl @debug.Debug for SwitchCase
 
 pub struct SwitchStmt {
   discriminant : Expr
   cases : Array[SwitchCase]
 }
-pub impl Show for SwitchStmt
-pub impl ToJson for SwitchStmt
+pub impl @debug.Debug for SwitchStmt
 
 pub struct TemplateLiteral {
   quasis : Array[String]
   exprs : Array[Expr]
 }
-pub impl Show for TemplateLiteral
-pub impl ToJson for TemplateLiteral
+pub impl @debug.Debug for TemplateLiteral
 
 pub struct Token {
   kind : TokenKind
   span : Span
 }
 pub impl Eq for Token
-pub impl Show for Token
-pub impl ToJson for Token
+pub impl @debug.Debug for Token
 
 pub enum TokenKind {
   Ident(String)
@@ -716,16 +656,14 @@ pub enum TokenKind {
   Eof
 }
 pub impl Eq for TokenKind
-pub impl Show for TokenKind
-pub impl ToJson for TokenKind
+pub impl @debug.Debug for TokenKind
 
 pub struct TryStmt {
   block : Block
   handler : CatchClause?
   finalizer : Block?
 }
-pub impl Show for TryStmt
-pub impl ToJson for TryStmt
+pub impl @debug.Debug for TryStmt
 
 pub struct TypeAliasDecl {
   name : String
@@ -733,15 +671,13 @@ pub struct TypeAliasDecl {
   value : TypeNode
   span : Span
 }
-pub impl Show for TypeAliasDecl
-pub impl ToJson for TypeAliasDecl
+pub impl @debug.Debug for TypeAliasDecl
 
 pub struct TypeAssert {
   expr : Expr
   type_ann : TypeNode
 }
-pub impl Show for TypeAssert
-pub impl ToJson for TypeAssert
+pub impl @debug.Debug for TypeAssert
 
 pub enum TypeKind {
   Ident(String)
@@ -759,8 +695,7 @@ pub enum TypeKind {
   Generic(TypeNode, Array[TypeNode])
   Function(Array[TypeNode], TypeNode)
 }
-pub impl Show for TypeKind
-pub impl ToJson for TypeKind
+pub impl @debug.Debug for TypeKind
 
 pub enum TypeLiteral {
   String(String)
@@ -769,8 +704,7 @@ pub enum TypeLiteral {
   Null
   Undefined
 }
-pub impl Show for TypeLiteral
-pub impl ToJson for TypeLiteral
+pub impl @debug.Debug for TypeLiteral
 
 pub struct TypeMember {
   name : String
@@ -778,15 +712,13 @@ pub struct TypeMember {
   type_ann : TypeNode
   span : Span
 }
-pub impl Show for TypeMember
-pub impl ToJson for TypeMember
+pub impl @debug.Debug for TypeMember
 
 pub struct TypeNode {
   kind : TypeKind
   span : Span
 }
-pub impl Show for TypeNode
-pub impl ToJson for TypeNode
+pub impl @debug.Debug for TypeNode
 
 pub struct TypeParam {
   name : String
@@ -794,15 +726,13 @@ pub struct TypeParam {
   default_type : TypeNode?
   span : Span
 }
-pub impl Show for TypeParam
-pub impl ToJson for TypeParam
+pub impl @debug.Debug for TypeParam
 
 pub struct UnaryExpr {
   op : UnaryOp
   expr : Expr
 }
-pub impl Show for UnaryExpr
-pub impl ToJson for UnaryExpr
+pub impl @debug.Debug for UnaryExpr
 
 pub enum UnaryOp {
   Plus
@@ -816,30 +746,26 @@ pub enum UnaryOp {
   Yield
   YieldStar
 }
-pub impl Show for UnaryOp
-pub impl ToJson for UnaryOp
+pub impl @debug.Debug for UnaryOp
 
 pub struct UpdateExpr {
   op : UpdateOp
   prefix : Bool
   expr : Expr
 }
-pub impl Show for UpdateExpr
-pub impl ToJson for UpdateExpr
+pub impl @debug.Debug for UpdateExpr
 
 pub enum UpdateOp {
   Increment
   Decrement
 }
-pub impl Show for UpdateOp
-pub impl ToJson for UpdateOp
+pub impl @debug.Debug for UpdateOp
 
 pub struct VarDecl {
   kind : VarKind
   decls : Array[VarDeclarator]
 }
-pub impl Show for VarDecl
-pub impl ToJson for VarDecl
+pub impl @debug.Debug for VarDecl
 
 pub struct VarDeclarator {
   pattern : BindingPattern
@@ -847,16 +773,14 @@ pub struct VarDeclarator {
   init : Expr?
   span : Span
 }
-pub impl Show for VarDeclarator
-pub impl ToJson for VarDeclarator
+pub impl @debug.Debug for VarDeclarator
 
 pub enum VarKind {
   Let
   Const
   Var
 }
-pub impl Show for VarKind
-pub impl ToJson for VarKind
+pub impl @debug.Debug for VarKind
 
 // Type aliases
 

@@ -3,13 +3,13 @@ pub struct Position {
   offset : Int
   line : Int
   column : Int
-} derive(Eq, Show, ToJson)
+} derive(Eq, Debug)
 
 ///|
 pub struct Span {
   start : Position
   end : Position
-} derive(Eq, Show, ToJson)
+} derive(Eq, Debug)
 
 ///|
 fn span_from(start : Position, end : Position) -> Span {

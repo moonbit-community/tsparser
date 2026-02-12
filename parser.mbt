@@ -320,7 +320,10 @@ fn Parser::expect_keyword(
   if self.check_keyword(kw) {
     self.advance()
   } else {
-    raise ParseError::Expected(pos=self.current().span.start, "keyword \{kw}")
+    raise ParseError::Expected(
+      pos=self.current().span.start,
+      "keyword \{@debug.to_string(kw)}",
+    )
   }
 }
 
