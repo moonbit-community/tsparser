@@ -13,7 +13,13 @@ pub(all) suberror ParseError {
   UnexpectedEof(pos~ : Position)
   UnexpectedToken(pos~ : Position, String)
   Expected(pos~ : Position, String)
-  Diagnostic(String)
+  Diagnostic(
+    filename~ : String,
+    line~ : Int,
+    column~ : Int,
+    error_code~ : Int,
+    error_msg~ : String
+  )
 } derive(Eq, Debug)
 
 ///|
@@ -26,7 +32,8 @@ fn parse_error_to_string(err : ParseError) -> String {
       "UnexpectedToken(pos=\{@debug.to_string(pos)}, \{found.escape()})"
     ParseError::Expected(pos~, expected) =>
       "Expected(pos=\{@debug.to_string(pos)}, \{expected.escape()})"
-    ParseError::Diagnostic(text) => text
+    ParseError::Diagnostic(filename~, line~, column~, error_code~, error_msg~) =>
+      "\{filename}(\{line},\{column}): error TS\{error_code}: \{error_msg}"
   }
 }
 

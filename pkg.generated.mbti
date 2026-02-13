@@ -26,7 +26,7 @@ pub(all) suberror ParseError {
   UnexpectedEof(pos~ : Position)
   UnexpectedToken(pos~ : Position, String)
   Expected(pos~ : Position, String)
-  Diagnostic(String)
+  Diagnostic(filename~ : String, line~ : Int, column~ : Int, error_code~ : Int, error_msg~ : String)
 }
 pub impl Eq for ParseError
 pub impl Show for ParseError

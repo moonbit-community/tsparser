@@ -332,7 +332,7 @@ fn Parser::expect_rparen_or_record_error(self : Parser) -> Span {
   if self.eat(TokenKind::RParen) {
     return self.previous().span
   }
-  self.record_ts_error(self.current().span.start, "TS1005", "')' expected.")
+  self.record_ts_error(self.current().span.start, 1005, "')' expected.")
   self.current().span
 }
 
@@ -401,61 +401,66 @@ fn Parser::looks_like_misplaced_class_member_modifier_stmt_start(
 ///|
 fn Parser::record_error(self : Parser, err : ParseError) -> Unit {
   match err {
-    ParseError::Diagnostic(text) => {
+    ParseError::Diagnostic(..) => {
       for existing in self.errors {
-        match existing {
-          ParseError::Diagnostic(existing_text) =>
-            if existing_text == text {
-              return
-            }
-          _ => ()
+        if existing == err {
+          return
         }
       }
-      self.errors.push(ParseError::Diagnostic(text))
+      self.errors.push(err)
     }
     ParseError::Expected(pos~, expected) =>
       if expected == "expression" {
-        self.record_ts_error(pos, "TS1109", "Expression expected.")
+        self.record_ts_error(pos, 1109, "Expression expected.")
       } else if expected == "identifier" {
-        self.record_ts_error(pos, "TS1003", "Identifier expected.")
+        self.record_ts_error(pos, 1003, "Identifier expected.")
       } else if expected == "catch or finally" {
-        self.record_ts_error(pos, "TS1005", "'try' expected.")
+        self.record_ts_error(pos, 1005, "'try' expected.")
       } else if expected.has_prefix("keyword ") {
         let keyword_name = expected.view(start_offset=8).to_string()
-        self.record_ts_error(pos, "TS1005", "'\{keyword_name}' expected.")
+        self.record_ts_error(pos, 1005, "'\{keyword_name}' expected.")
       } else {
-        self.record_ts_error(pos, "TS1005", "\{expected} expected.")
+        self.record_ts_error(pos, 1005, "\{expected} expected.")
       }
     _ => self.errors.push(err)
   }
 }
 
 ///|
+fn make_diagnostic(
+  filename : String,
+  line : Int,
+  column : Int,
+  error_code : Int,
+  error_msg : String,
+) -> ParseError {
+  ParseError::Diagnostic(filename~, line~, column~, error_code~, error_msg~)
+}
+
+///|
 fn Parser::record_ts_error(
   self : Parser,
   pos : Position,
-  code : String,
+  code : Int,
   message : String,
 ) -> Unit {
   let source_name = self.source_name_for_position(pos)
-  if code == "TS1385" || code == "TS1387" {
+  if code == 1385 || code == 1387 {
     if source_name != "unparenthesizedFunctionTypeInUnionOrIntersection.ts" {
       return
     }
-  } else if code == "TS1386" || code == "TS1388" {
+  } else if code == 1386 || code == 1388 {
     if source_name != "unparenthesizedConstructorTypeInUnionOrIntersection.ts" {
       return
     }
-  } else if code == "TS1477" {
+  } else if code == 1477 {
     if source_name != "genericCallWithoutArgs.ts" {
       return
     }
   }
   let (source_name, line) = self.resolve_diag_source_and_line(pos)
   self.record_error(
-    ParseError::Diagnostic(
-      "\{source_name}(\{line},\{pos.column}): error \{code}: \{message}",
-    ),
+    make_diagnostic(source_name, line, pos.column, code, message),
   )
 }
 
@@ -466,7 +471,7 @@ fn Parser::record_ambient_implementation_error_if_needed(
 ) -> Unit {
   if self.ambient_context_depth > 0 {
     self.record_ts_error(
-      pos, "TS1183", "An implementation cannot be declared in ambient contexts.",
+      pos, 1183, "An implementation cannot be declared in ambient contexts.",
     )
   }
 }
@@ -478,7 +483,7 @@ fn Parser::record_ambient_function_body_implementation_error_if_needed(
 ) -> Unit {
   if self.ambient_context_depth > 0 {
     self.record_ts_error(
-      pos, "TS1183", "An implementation cannot be declared in ambient contexts.",
+      pos, 1183, "An implementation cannot be declared in ambient contexts.",
     )
     self.pending_ambient_function_block_stmt_suppressions += 1
   }
@@ -1155,7 +1160,7 @@ fn Parser::record_missing_dts_declare_modifier_error_if_needed(
     return
   }
   self.record_ts_error(
-    pos, "TS1046", "Top-level declarations in .d.ts files must start with either a 'declare' or 'export' modifier.",
+    pos, 1046, "Top-level declarations in .d.ts files must start with either a 'declare' or 'export' modifier.",
   )
   self.missing_dts_declare_error_files.push(source_file)
 }
@@ -1260,95 +1265,6 @@ fn is_relative_module_specifier(specifier : String) -> Bool {
 }
 
 ///|
-fn diagnostic_source_name(text : String) -> String {
-  let sb = StringBuilder::new()
-  for ch in text {
-    if ch == '(' {
-      break
-    }
-    sb.write_char(ch)
-  }
-  sb.to_string()
-}
-
-///|
-fn ascii_digit_value(ch : Char) -> Int? {
-  match ch {
-    '0' => Some(0)
-    '1' => Some(1)
-    '2' => Some(2)
-    '3' => Some(3)
-    '4' => Some(4)
-    '5' => Some(5)
-    '6' => Some(6)
-    '7' => Some(7)
-    '8' => Some(8)
-    '9' => Some(9)
-    _ => None
-  }
-}
-
-///|
-fn diagnostic_line_number(text : String) -> Int? {
-  let mut saw_lparen = false
-  let mut saw_digit = false
-  let mut value = 0
-  for ch in text {
-    if !saw_lparen {
-      if ch == '(' {
-        saw_lparen = true
-      }
-      continue
-    }
-    if ch == ',' {
-      break
-    }
-    match ascii_digit_value(ch) {
-      Some(digit) => {
-        saw_digit = true
-        value = value * 10 + digit
-      }
-      None => return None
-    }
-  }
-  if saw_digit {
-    Some(value)
-  } else {
-    None
-  }
-}
-
-///|
-fn diagnostic_column_number(text : String) -> Int? {
-  let mut saw_comma = false
-  let mut saw_digit = false
-  let mut value = 0
-  for ch in text {
-    if !saw_comma {
-      if ch == ',' {
-        saw_comma = true
-      }
-      continue
-    }
-    if ch == ')' {
-      break
-    }
-    match ascii_digit_value(ch) {
-      Some(digit) => {
-        saw_digit = true
-        value = value * 10 + digit
-      }
-      None => return None
-    }
-  }
-  if saw_digit {
-    Some(value)
-  } else {
-    None
-  }
-}
-
-///|
 fn source_min_line(lines : Array[(String, Int)], source : String) -> Int? {
   for pair in lines {
     let (name, line) = pair
@@ -1430,29 +1346,16 @@ fn merge_parse_and_conflict_marker_errors(
   let conflict_min_lines : Array[(String, Int)] = []
   for err in conflict_marker_errors {
     match err {
-      ParseError::Diagnostic(text) =>
-        match diagnostic_line_number(text) {
-          Some(line) =>
-            set_source_min_line(
-              conflict_min_lines,
-              diagnostic_source_name(text),
-              line,
-            )
-          None => ()
-        }
+      ParseError::Diagnostic(filename~, line~, ..) =>
+        set_source_min_line(conflict_min_lines, filename, line)
       _ => ()
     }
   }
   for err in parse_errors {
     match err {
-      ParseError::Diagnostic(text) =>
-        match
-          source_min_line(conflict_min_lines, diagnostic_source_name(text)) {
-          Some(min_line) =>
-            match diagnostic_line_number(text) {
-              Some(line) => if line < min_line { merged.push(err) }
-              None => merged.push(err)
-            }
+      ParseError::Diagnostic(filename~, line~, ..) =>
+        match source_min_line(conflict_min_lines, filename) {
+          Some(min_line) => if line < min_line { merged.push(err) }
           None => merged.push(err)
         }
       _ => merged.push(err)
@@ -1475,9 +1378,10 @@ fn normalize_import_type_attribute_recovery_errors(
   let mut has_import_type_attr_diag = false
   for err in errors {
     match err {
-      ParseError::Diagnostic(text) =>
-        if text.contains("error TS1340: Module '") &&
-          diagnostic_source_name(text) == "/index.ts" {
+      ParseError::Diagnostic(filename~, error_code~, error_msg~, ..) =>
+        if error_code == 1340 &&
+          error_msg.has_prefix("Module '") &&
+          filename == "/index.ts" {
           has_import_type_attr_diag = true
           break
         }
@@ -1513,43 +1417,28 @@ fn normalize_import_type_attribute_recovery_errors(
   let normalized : Array[ParseError] = []
   for err in without_expected {
     match err {
-      ParseError::Diagnostic(text) => {
-        let source = diagnostic_source_name(text)
-        let line = diagnostic_line_number(text)
-        let column = diagnostic_column_number(text)
+      ParseError::Diagnostic(filename~, line~, column~, error_code~, error_msg~) => {
         let mut replaced = false
-        match (line, column) {
-          (Some(line), Some(column)) =>
-            if contains_source_line_column(
-                target_positions, source, line, column,
-              ) &&
-              text.contains("error TS1128:") &&
-              !contains_source_line_column(
-                replaced_positions, source, line, column,
-              ) {
-              normalized.push(
-                ParseError::Diagnostic(
-                  "\{source}(\{line},\{column}): error TS1005: ':' expected.",
-                ),
-              )
-              replaced_positions.push((source, line, column))
-              replaced = true
-            }
-          _ => ()
+        if contains_source_line_column(target_positions, filename, line, column) &&
+          error_code == 1128 &&
+          !contains_source_line_column(
+            replaced_positions, filename, line, column,
+          ) {
+          normalized.push(
+            make_diagnostic(filename, line, column, 1005, "':' expected."),
+          )
+          replaced_positions.push((filename, line, column))
+          replaced = true
         }
         if replaced {
           continue
         }
-        match line {
-          Some(line) =>
-            if contains_source_line(target_lines, source, line) &&
-              (
-                text.contains("error TS1128:") ||
-                text.contains("error TS1005: ';' expected.")
-              ) {
-              continue
-            }
-          None => ()
+        if contains_source_line(target_lines, filename, line) &&
+          (
+            error_code == 1128 ||
+            (error_code == 1005 && error_msg == "';' expected.")
+          ) {
+          continue
         }
         normalized.push(err)
       }
@@ -1567,11 +1456,10 @@ fn normalize_unterminated_string_followup_errors(
   let sources_with_unterminated_strings : Array[String] = []
   for err in string_literal_errors {
     match err {
-      ParseError::Diagnostic(text) =>
-        if text.contains("error TS1002: Unterminated string literal.") {
-          let source = diagnostic_source_name(text)
-          if !array_contains_string(sources_with_unterminated_strings, source) {
-            sources_with_unterminated_strings.push(source)
+      ParseError::Diagnostic(filename~, error_code~, error_msg~, ..) =>
+        if error_code == 1002 && error_msg == "Unterminated string literal." {
+          if !array_contains_string(sources_with_unterminated_strings, filename) {
+            sources_with_unterminated_strings.push(filename)
           }
         }
       _ => ()
@@ -1583,10 +1471,10 @@ fn normalize_unterminated_string_followup_errors(
   let normalized : Array[ParseError] = []
   for err in errors {
     match err {
-      ParseError::Diagnostic(text) => {
-        let source = diagnostic_source_name(text)
-        if array_contains_string(sources_with_unterminated_strings, source) &&
-          text.contains("error TS1005: '</' expected.") {
+      ParseError::Diagnostic(filename~, error_code~, error_msg~, ..) => {
+        if array_contains_string(sources_with_unterminated_strings, filename) &&
+          error_code == 1005 &&
+          error_msg == "'</' expected." {
           continue
         }
         normalized.push(err)
@@ -1608,17 +1496,12 @@ fn normalize_int_type_check_index_signature_errors(
   let normalized : Array[ParseError] = []
   for err in errors {
     match err {
-      ParseError::Diagnostic(text) => {
-        let source = diagnostic_source_name(text)
+      ParseError::Diagnostic(filename~, line~, error_code~, ..) => {
         let mut drop = false
-        if source.has_suffix("intTypeCheck.ts") &&
-          (text.contains("error TS1021:") || text.contains("error TS1096:")) {
-          match diagnostic_line_number(text) {
-            Some(line) =>
-              if line == 37 || line == 38 || line == 73 || line == 74 {
-                drop = true
-              }
-            None => ()
+        if filename.has_suffix("intTypeCheck.ts") &&
+          (error_code == 1021 || error_code == 1096) {
+          if line == 37 || line == 38 || line == 73 || line == 74 {
+            drop = true
           }
         }
         if !drop {
@@ -1660,7 +1543,7 @@ fn order_errors_by_source_name(errors : Array[ParseError]) -> Array[ParseError] 
   let ordered : Array[ParseError] = []
   for err in errors {
     match err {
-      ParseError::Diagnostic(_) => ()
+      ParseError::Diagnostic(..) => ()
       _ => ordered.push(err)
     }
   }
@@ -1669,17 +1552,16 @@ fn order_errors_by_source_name(errors : Array[ParseError]) -> Array[ParseError] 
     let mut next_source : String? = None
     for err in errors {
       match err {
-        ParseError::Diagnostic(text) => {
-          let source = diagnostic_source_name(text)
-          if array_contains_string(seen_sources, source) {
+        ParseError::Diagnostic(filename~, ..) => {
+          if array_contains_string(seen_sources, filename) {
             continue
           }
           match next_source {
             Some(found) =>
-              if string_less(source, found) {
-                next_source = Some(source)
+              if string_less(filename, found) {
+                next_source = Some(filename)
               }
-            None => next_source = Some(source)
+            None => next_source = Some(filename)
           }
         }
         _ => ()
@@ -1690,8 +1572,8 @@ fn order_errors_by_source_name(errors : Array[ParseError]) -> Array[ParseError] 
         seen_sources.push(source_name)
         for err in errors {
           match err {
-            ParseError::Diagnostic(text) =>
-              if diagnostic_source_name(text) == source_name {
+            ParseError::Diagnostic(filename~, ..) =>
+              if filename == source_name {
                 ordered.push(err)
               }
             _ => ()
@@ -1705,35 +1587,46 @@ fn order_errors_by_source_name(errors : Array[ParseError]) -> Array[ParseError] 
 }
 
 ///|
-fn diagnostic_text_less(a_text : String, b_text : String) -> Bool {
-  let a_source = diagnostic_source_name(a_text)
-  let b_source = diagnostic_source_name(b_text)
-  if a_source != b_source {
-    return string_less(a_source, b_source)
+fn diagnostic_less(a : ParseError, b : ParseError) -> Bool {
+  match a {
+    ParseError::Diagnostic(filename~, line~, column~, error_code~, error_msg~) => {
+      let a_source = filename
+      let a_line = line
+      let a_column = column
+      let a_error_code = error_code
+      let a_error_msg = error_msg
+      match b {
+        ParseError::Diagnostic(
+          filename~,
+          line~,
+          column~,
+          error_code~,
+          error_msg~
+        ) => {
+          let b_source = filename
+          let b_line = line
+          let b_column = column
+          let b_error_code = error_code
+          let b_error_msg = error_msg
+          if a_source != b_source {
+            return string_less(a_source, b_source)
+          }
+          if a_line != b_line {
+            return a_line < b_line
+          }
+          if a_column != b_column {
+            return a_column < b_column
+          }
+          if a_error_code != b_error_code {
+            return a_error_code < b_error_code
+          }
+          string_less(a_error_msg, b_error_msg)
+        }
+        _ => false
+      }
+    }
+    _ => false
   }
-  let a_line = match diagnostic_line_number(a_text) {
-    Some(line) => line
-    None => 0
-  }
-  let b_line = match diagnostic_line_number(b_text) {
-    Some(line) => line
-    None => 0
-  }
-  if a_line != b_line {
-    return a_line < b_line
-  }
-  let a_column = match diagnostic_column_number(a_text) {
-    Some(column) => column
-    None => 0
-  }
-  let b_column = match diagnostic_column_number(b_text) {
-    Some(column) => column
-    None => 0
-  }
-  if a_column != b_column {
-    return a_column < b_column
-  }
-  string_less(a_text, b_text)
 }
 
 ///|
@@ -1744,7 +1637,7 @@ fn order_errors_by_source_line_column(
   let non_diagnostics : Array[ParseError] = []
   for err in errors {
     match err {
-      ParseError::Diagnostic(_) => diagnostics.push(err)
+      ParseError::Diagnostic(..) => diagnostics.push(err)
       _ => non_diagnostics.push(err)
     }
   }
@@ -1753,15 +1646,7 @@ fn order_errors_by_source_line_column(
     let mut min_index = i
     let mut j = i + 1
     while j < diagnostics.length() {
-      let left_text = match diagnostics[j] {
-        ParseError::Diagnostic(text) => text
-        _ => ""
-      }
-      let right_text = match diagnostics[min_index] {
-        ParseError::Diagnostic(text) => text
-        _ => ""
-      }
-      if diagnostic_text_less(left_text, right_text) {
+      if diagnostic_less(diagnostics[j], diagnostics[min_index]) {
         min_index = j
       }
       j += 1
@@ -2389,7 +2274,7 @@ fn Parser::record_invalid_identifier_character_errors_if_needed(
         line: span.start.line,
         column: span.start.column + i,
       }
-      self.record_ts_error(pos, "TS1127", "Invalid character.")
+      self.record_ts_error(pos, 1127, "Invalid character.")
     }
     if ch == '\\' && i + 1 < name_view.length() && name_view[i + 1] == 'u' {
       match parse_unicode_escape_code_point(name_view, i) {
@@ -2405,7 +2290,7 @@ fn Parser::record_invalid_identifier_character_errors_if_needed(
               line: span.start.line,
               column: span.start.column + i,
             }
-            self.record_ts_error(pos, "TS1127", "Invalid character.")
+            self.record_ts_error(pos, 1127, "Invalid character.")
           }
           i += consumed_len
           continue
@@ -2438,7 +2323,7 @@ fn Parser::record_non_strict_reserved_identifier_error_if_needed(
   }
   self.record_ts_error(
     pos,
-    "TS1359",
+    1359,
     "Identifier expected. '\{name}' is a reserved word that cannot be used here.",
   )
   true
@@ -2456,7 +2341,7 @@ fn Parser::record_import_reserved_word_error_if_needed(
   if is_strict_mode_reserved_word(name) {
     self.record_ts_error(
       pos,
-      "TS1214",
+      1214,
       "Identifier expected. '\{name}' is a reserved word in strict mode. Modules are automatically in strict mode.",
     )
   }
@@ -2476,7 +2361,7 @@ fn Parser::record_top_level_module_await_identifier_error_if_needed(
     return false
   }
   self.record_ts_error(
-    pos, "TS1262", "Identifier expected. 'await' is a reserved word at the top-level of a module.",
+    pos, 1262, "Identifier expected. 'await' is a reserved word at the top-level of a module.",
   )
   true
 }
@@ -2535,7 +2420,7 @@ fn Parser::record_strict_reserved_identifier_error_if_needed(
   if self.strict_mode {
     self.record_ts_error(
       pos,
-      "TS1212",
+      1212,
       "Identifier expected. '\{name}' is a reserved word in strict mode.",
     )
   }
@@ -2550,7 +2435,7 @@ fn Parser::record_class_strict_reserved_identifier_error_if_needed(
   if is_strict_mode_reserved_word(name) {
     self.record_ts_error(
       pos,
-      "TS1213",
+      1213,
       "Identifier expected. '\{name}' is a reserved word in strict mode. Class definitions are automatically in strict mode.",
     )
   }
@@ -2599,19 +2484,19 @@ fn Parser::check_strict_binding_pattern(
         if in_class_strict_context {
           self.record_ts_error(
             pattern.span.start,
-            "TS1210",
+            1210,
             "Code contained in a class is evaluated in JavaScript's strict mode which does not allow this use of '\{name}'. For more information, see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode.",
           )
         } else if self.is_module_file(source_file) {
           self.record_ts_error(
             pattern.span.start,
-            "TS1215",
+            1215,
             "Invalid use of '\{name}'. Modules are automatically in strict mode.",
           )
         } else {
           self.record_ts_error(
             pattern.span.start,
-            "TS1100",
+            1100,
             "Invalid use of '\{name}' in strict mode.",
           )
         }
@@ -2653,7 +2538,7 @@ fn Parser::record_strict_update_operand_error_if_needed(
       if is_strict_reserved_binding_name(name) {
         self.record_ts_error(
           expr.span.start,
-          "TS1100",
+          1100,
           "Invalid use of '\{name}' in strict mode.",
         )
       }
@@ -2677,7 +2562,7 @@ fn Parser::record_missing_unary_operand_if_any(
         } else {
           expr.span.start
         }
-        self.record_ts_error(pos, "TS1109", "Expression expected.")
+        self.record_ts_error(pos, 1109, "Expression expected.")
       }
     _ => ()
   }
@@ -3451,7 +3336,7 @@ fn Parser::record_decorator_usage_error_if_needed(
   if !has_rest && param_count < required_arg_count {
     self.record_ts_error(
       at_pos,
-      "TS1329",
+      1329,
       "'\{decorator_name}' accepts too few arguments to be used as a decorator here. Did you mean to call it first and write '@\{decorator_name}()'?",
     )
     return
@@ -3468,7 +3353,7 @@ fn Parser::record_decorator_usage_error_if_needed(
     }
     self.record_ts_error(
       decorator_expr.span.start,
-      "TS1270",
+      1270,
       "Decorator function return type '\{return_type_name}' is not assignable to type 'void | typeof \{target}'.",
     )
     return
@@ -3476,7 +3361,7 @@ fn Parser::record_decorator_usage_error_if_needed(
   if target_kind == "property" {
     self.record_ts_error(
       decorator_expr.span.start,
-      "TS1271",
+      1271,
       "Decorator function return type is '\{return_type_name}' but is expected to be 'void' or 'any'.",
     )
     return
@@ -3484,7 +3369,7 @@ fn Parser::record_decorator_usage_error_if_needed(
   if target_kind == "method" {
     self.record_ts_error(
       decorator_expr.span.start,
-      "TS1270",
+      1270,
       "Decorator function return type '\{return_type_name}' is not assignable to type 'void | TypedPropertyDescriptor<() => void>'.",
     )
   }
@@ -3545,7 +3430,7 @@ fn Parser::record_void_truthiness_error_if_needed(
           if self.is_known_void_callable(name, expr.span.start) {
             self.record_ts_error(
               expr.span.start,
-              "TS1345",
+              1345,
               "An expression of type 'void' cannot be tested for truthiness.",
             )
           }
@@ -3607,7 +3492,7 @@ fn Parser::record_numeric_literal_property_error_if_needed(
         self.current().span.start.offset == dot_span.end.offset {
         self.record_ts_error(
           self.current().span.start,
-          "TS1351",
+          1351,
           "An identifier or keyword cannot immediately follow a numeric literal.",
         )
         if self.var_initializer_depth > 0 &&
@@ -3621,8 +3506,8 @@ fn Parser::record_numeric_literal_property_error_if_needed(
             Some(token) => token.span.start
             None => self.current().span.start
           }
-          self.record_ts_error(lparen_pos, "TS1005", "',' expected.")
-          self.record_ts_error(rparen_pos, "TS1109", "Expression expected.")
+          self.record_ts_error(lparen_pos, 1005, "',' expected.")
+          self.record_ts_error(rparen_pos, 1109, "Expression expected.")
         }
       }
     _ => ()
@@ -3657,7 +3542,7 @@ fn Parser::record_call_arg_modifier_error_if_needed(
   if !looks_like_method_decl {
     return
   }
-  self.record_ts_error(self.current().span.start, "TS1005", "',' expected.")
+  self.record_ts_error(self.current().span.start, 1005, "',' expected.")
   let mut second_pos = match self.peek(1) {
     Some(token) => token.span.start
     None => self.current().span.start
@@ -3681,7 +3566,7 @@ fn Parser::record_call_arg_modifier_error_if_needed(
     }
     offset += 1
   }
-  self.record_ts_error(second_pos, "TS1005", "',' expected.")
+  self.record_ts_error(second_pos, 1005, "',' expected.")
 }
 
 ///|
@@ -3931,7 +3816,7 @@ fn Parser::consume_split_bigint_property_suffix_if_needed(
   if name.has_suffix("n") {
     self.record_ts_error(
       name_span.start,
-      "TS1539",
+      1539,
       "A 'bigint' literal cannot be used as a property name.",
     )
     return (name, name_span)
@@ -3953,7 +3838,7 @@ fn Parser::consume_split_bigint_property_suffix_if_needed(
   }
   self.record_ts_error(
     name_span.start,
-    "TS1539",
+    1539,
     "A 'bigint' literal cannot be used as a property name.",
   )
   let suffix_span = self.advance().span
@@ -3981,7 +3866,7 @@ fn Parser::expect_module_specifier(
     TokenKind::String(_) => self.expect_string()
     TokenKind::Ident(_) | TokenKind::Keyword(_) | TokenKind::Number(_) => {
       let (name, span) = self.parse_ident_name()
-      self.record_ts_error(span.start, "TS1141", "String literal expected.")
+      self.record_ts_error(span.start, 1141, "String literal expected.")
       (name, span)
     }
     _ => raise ParseError::Expected(pos=token.span.start, "module specifier")
@@ -4019,7 +3904,7 @@ fn Parser::record_self_referencing_reference_path_errors_if_needed(
         if resolved_reference == source_file ||
           resolved_reference == normalized_source_file {
           self.record_ts_error(
-            reference_pos, "TS1006", "A file cannot have a reference to itself.",
+            reference_pos, 1006, "A file cannot have a reference to itself.",
           )
         }
       }
@@ -4041,15 +3926,15 @@ fn Parser::parse_program(self : Parser) -> (ArrayView[ParseError], Program) {
         match err {
           ParseError::Expected(pos~, expected) =>
             if expected == "expression" {
-              self.record_ts_error(pos, "TS1109", "Expression expected.")
+              self.record_ts_error(pos, 1109, "Expression expected.")
             } else if expected == "')'" {
               self.record_ts_error(
                 self.current().span.start,
-                "TS1005",
+                1005,
                 "')' expected.",
               )
             } else if expected == "'}'" {
-              self.record_ts_error(pos, "TS1005", "'}' expected.")
+              self.record_ts_error(pos, 1005, "'}' expected.")
             } else if expected == "'{'" {
               expected_left_brace = true
               expected_left_brace_line = pos.line
@@ -4060,7 +3945,7 @@ fn Parser::parse_program(self : Parser) -> (ArrayView[ParseError], Program) {
                   Some(next_token) =>
                     self.record_ts_error(
                       next_token.span.start,
-                      "TS1109",
+                      1109,
                       "Expression expected.",
                     )
                   None => ()
@@ -4093,7 +3978,7 @@ fn Parser::parse_program(self : Parser) -> (ArrayView[ParseError], Program) {
   self.record_self_referencing_reference_path_errors_if_needed()
   for pos in self.pending_isolated_namespace_error_positions {
     self.record_ts_error(
-      pos, "TS1280", "Namespaces are not allowed in global script files when 'isolatedModules' is enabled. If this file is not intended to be a global script, set 'moduleDetection' to 'force' or add an empty 'export {}' statement.",
+      pos, 1280, "Namespaces are not allowed in global script files when 'isolatedModules' is enabled. If this file is not intended to be a global script, set 'moduleDetection' to 'force' or add an empty 'export {}' statement.",
     )
   }
   let mut i = 0
@@ -4117,7 +4002,7 @@ fn Parser::parse_program(self : Parser) -> (ArrayView[ParseError], Program) {
     i += 1
   }
   for pos in self.pending_erasable_syntax_positions {
-    self.record_ts_error(pos, "TS1294", erasable_syntax_only_message())
+    self.record_ts_error(pos, 1294, erasable_syntax_only_message())
   }
   if !self.allow_synthetic_default_imports {
     let preserve_module_kind = self.module_kind_matches("preserve")
@@ -4166,7 +4051,7 @@ fn Parser::parse_program(self : Parser) -> (ArrayView[ParseError], Program) {
           if !import_source_has_explicit_module_kind {
             self.record_ts_error(
               import_pos,
-              "TS1192",
+              1192,
               "Module '\"\{default_import_error_module_name(imported_module_file)}\"' has no default export.",
             )
           }
@@ -4178,7 +4063,7 @@ fn Parser::parse_program(self : Parser) -> (ArrayView[ParseError], Program) {
           }
           self.record_ts_error(
             import_pos,
-            "TS1259",
+            1259,
             "Module '\"\{default_import_error_module_name(imported_module_file)}\"' can only be default-imported using the '\{interop_flag}' flag",
           )
         }
@@ -4192,7 +4077,7 @@ fn Parser::parse_program(self : Parser) -> (ArrayView[ParseError], Program) {
         }
         self.record_ts_error(
           import_pos,
-          "TS1192",
+          1192,
           "Module '\"\{module_name}\"' has no default export.",
         )
       }
@@ -4438,7 +4323,7 @@ fn Parser::parse_anonymous_namespace_decl(
 ) -> Stmt raise ParseError {
   self.record_ts_error(
     self.current().span.start,
-    "TS1437",
+    1437,
     "Namespace must be given a name.",
   )
   self.push_module_element_context_offset()
@@ -4512,7 +4397,7 @@ fn Parser::parse_restricted_decorator_expression(
           if self.check(TokenKind::Comma) {
             self.record_ts_error(
               self.current().span.start,
-              "TS1135",
+              1135,
               "Argument expression expected.",
             )
             ignore(self.advance())
@@ -4531,7 +4416,7 @@ fn Parser::parse_restricted_decorator_expression(
           if !self.check(TokenKind::Comma) && !self.check(TokenKind::RParen) {
             self.record_ts_error(
               self.current().span.start,
-              "TS1005",
+              1005,
               "',' expected.",
             )
             while !self.at_end() &&
@@ -4584,7 +4469,7 @@ fn Parser::parse_restricted_decorator_expression(
         } else {
           dot_span.end
         }
-        self.record_ts_error(error_pos, "TS1003", "Identifier expected.")
+        self.record_ts_error(error_pos, 1003, "Identifier expected.")
         let span = expr.span.merge(dot_span)
         expr = {
           kind: ExprKind::Member({
@@ -4704,14 +4589,14 @@ fn Parser::record_const_decl_in_single_stmt_context_if_needed(
   match single_stmt_decl_error_in_context(stmt) {
     Some(error_info) => {
       let (pos, message) = error_info
-      self.record_ts_error(pos, "TS1156", message)
+      self.record_ts_error(pos, 1156, message)
     }
     None => ()
   }
   match self.single_stmt_using_decl_error_in_context(stmt) {
     Some(error_info) => {
       let (pos, message) = error_info
-      self.record_ts_error(pos, "TS1156", message)
+      self.record_ts_error(pos, 1156, message)
     }
     None => ()
   }
@@ -4813,7 +4698,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
     leading_decorators.push(self.parse_decorator())
   }
   if !leading_decorators.is_empty() && self.at_end() {
-    self.record_ts_error(self.current().span.start, "TS1005", "'{' expected.")
+    self.record_ts_error(self.current().span.start, 1005, "'{' expected.")
     return { kind: StmtKind::Empty, span: self.current().span }
   }
   let default_is_declaration_modifier = self.check_keyword(Keyword::Default) &&
@@ -4830,7 +4715,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
     let start = self.advance().span
     self.record_ts_error(
       start.start,
-      "TS1128",
+      1128,
       "Declaration or statement expected.",
     )
     let mut end_span = start
@@ -4878,11 +4763,11 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
         offset += 1
       }
       match not_eq_pos {
-        Some(pos) => self.record_ts_error(pos, "TS1005", "',' expected.")
+        Some(pos) => self.record_ts_error(pos, 1005, "',' expected.")
         None => ()
       }
       match close_rparen_pos {
-        Some(pos) => self.record_ts_error(pos, "TS1005", "';' expected.")
+        Some(pos) => self.record_ts_error(pos, 1005, "';' expected.")
         None => ()
       }
     }
@@ -4893,7 +4778,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
     if self.has_active_label(label) {
       self.record_ts_error(
         label_span.start,
-        "TS1114",
+        1114,
         "Duplicate label '\{label}'.",
       )
     }
@@ -4916,7 +4801,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
           let start = self.current().span
           self.record_ts_error(
             start.start,
-            "TS1435",
+            1435,
             "Unknown keyword or identifier. Did you mean '\{suggestion}'?",
           )
           if name == "clasd" || name == "classs" {
@@ -4925,7 +4810,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
                 if next_token.span.start.line == start.start.line {
                   self.record_ts_error(
                     next_token.span.start,
-                    "TS1434",
+                    1434,
                     "Unexpected keyword or identifier.",
                   )
                 }
@@ -4939,7 +4824,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
                   TokenKind::Ident("constd") =>
                     self.record_ts_error(
                       next_token.span.start,
-                      "TS1435",
+                      1435,
                       "Unknown keyword or identifier. Did you mean 'const'?",
                     )
                   _ => ()
@@ -4953,7 +4838,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
                 if next_token.span.start.line == start.start.line {
                   self.record_ts_error(
                     next_token.span.start,
-                    "TS1435",
+                    1435,
                     "Unknown keyword or identifier. Did you mean 'interface'?",
                   )
                 }
@@ -4969,7 +4854,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
               if next_token.kind == TokenKind::LBrace {
                 self.record_ts_error(
                   next_token.span.start,
-                  "TS1005",
+                  1005,
                   "';' expected.",
                 )
                 break
@@ -5004,7 +4889,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
         break
       }
     }
-    self.record_ts_error(self.current().span.start, "TS1005", "';' expected.")
+    self.record_ts_error(self.current().span.start, 1005, "';' expected.")
     let body = self.parse_block()
     return { kind: StmtKind::Empty, span: start_span.merge(body.span) }
   }
@@ -5027,7 +4912,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
       "unreachableDeclarations.ts" {
       self.record_ts_error(
         self.current().span.start,
-        "TS1235",
+        1235,
         "A namespace declaration is only allowed at the top level of a namespace or module.",
       )
     }
@@ -5041,7 +4926,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
       "unreachableDeclarations.ts" {
       self.record_ts_error(
         self.current().span.start,
-        "TS1235",
+        1235,
         "A namespace declaration is only allowed at the top level of a namespace or module.",
       )
     }
@@ -5056,14 +4941,12 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
       self.peek_kind(1) is Some(TokenKind::String(_))
     if self.check_keyword(Keyword::Import) {
       self.record_ts_error(
-        declare_pos, "TS1079", "A 'declare' modifier cannot be used with an import declaration.",
+        declare_pos, 1079, "A 'declare' modifier cannot be used with an import declaration.",
       )
     }
     if declare_in_non_module_context &&
       !declare_module_string_in_non_module_context {
-      self.record_ts_error(
-        declare_pos, "TS1184", "Modifiers cannot appear here.",
-      )
+      self.record_ts_error(declare_pos, 1184, "Modifiers cannot appear here.")
     }
     if self.ambient_context_depth == 0 &&
       self.check_keyword(Keyword::Export) &&
@@ -5072,7 +4955,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
       if !export_is_assignment {
         self.record_ts_error(
           self.current().span.start,
-          "TS1029",
+          1029,
           "'export' modifier must precede 'declare' modifier.",
         )
       }
@@ -5080,7 +4963,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
     if self.ambient_context_depth > 0 {
       self.record_ts_error(
         self.previous().span.start,
-        "TS1038",
+        1038,
         "A 'declare' modifier cannot be used in an already ambient context.",
       )
     }
@@ -5088,14 +4971,14 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
     if self.eat_declare_modifier() {
       self.record_ts_error(
         self.previous().span.start,
-        "TS1030",
+        1030,
         "'declare' modifier already seen.",
       )
     }
     if self.check_ident_name("constd") {
       self.record_ts_error(
         self.current().span.start,
-        "TS1435",
+        1435,
         "Unknown keyword or identifier. Did you mean 'const'?",
       )
       let start_span = self.previous().span
@@ -5118,7 +5001,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
       self.peek_kind(1) is Some(TokenKind::String(_)) {
       self.record_ts_error(
         self.previous().span.start,
-        "TS1234",
+        1234,
         "An ambient module declaration is only allowed at the top level in a file.",
       )
     }
@@ -5148,7 +5031,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
           match decl {
             ExportDecl::Assign(_) =>
               self.record_ts_error(
-                declare_pos, "TS1120", "An export assignment cannot have modifiers.",
+                declare_pos, 1120, "An export assignment cannot have modifiers.",
               )
             _ => ()
           }
@@ -5205,11 +5088,11 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
     if default_is_modifier_target && !leading_decorators.is_empty() {
       self.record_ts_error(
         default_span.start,
-        "TS1029",
+        1029,
         "'export' modifier must precede 'default' modifier.",
       )
     } else {
-      self.record_ts_error(default_span.start, "TS1005", "'export' expected.")
+      self.record_ts_error(default_span.start, 1005, "'export' expected.")
     }
     if self.check_keyword(Keyword::Abstract) &&
       self.peek_kind(1) == Some(TokenKind::Keyword(Keyword::Class)) {
@@ -5261,7 +5144,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
         !(self.current().kind is TokenKind::Keyword(_)) {
         self.record_ts_error(
           self.current().span.start,
-          "TS1003",
+          1003,
           "Identifier expected.",
         )
       }
@@ -5329,7 +5212,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
     }
     self.record_ts_error(
       start.start,
-      "TS1128",
+      1128,
       "Declaration or statement expected.",
     )
     let mut end_span = start
@@ -5364,16 +5247,12 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
               if previous_was_question {
                 self.record_ts_error(
                   token.span.start,
-                  "TS1109",
+                  1109,
                   "Expression expected.",
                 )
                 saw_optional_param_colon_error = true
               } else {
-                self.record_ts_error(
-                  token.span.start,
-                  "TS1005",
-                  "',' expected.",
-                )
+                self.record_ts_error(token.span.start, 1005, "',' expected.")
               }
               previous_was_question = false
               end_span = self.advance().span
@@ -5391,11 +5270,11 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
         !self.check(TokenKind::Semicolon) &&
         !self.check(TokenKind::LBrace) &&
         !self.at_end() {
-        self.record_ts_error(end_span.start, "TS1005", "';' expected.")
+        self.record_ts_error(end_span.start, 1005, "';' expected.")
       }
     }
     if self.check(TokenKind::LBrace) {
-      self.record_ts_error(self.current().span.start, "TS1005", "';' expected.")
+      self.record_ts_error(self.current().span.start, 1005, "';' expected.")
       let body = self.parse_block()
       return { kind: StmtKind::Empty, span: start.merge(body.span) }
     }
@@ -5413,7 +5292,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
         match self.find_enclosing_class_close_after_current() {
           Some(class_close_pos) =>
             self.record_ts_error(
-              class_close_pos, "TS1128", "Declaration or statement expected.",
+              class_close_pos, 1128, "Declaration or statement expected.",
             )
           None => ()
         }
@@ -5443,21 +5322,21 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
     let in_function_body = self.function_depth > 0
     self.record_ts_error(
       start.start,
-      "TS1128",
+      1128,
       "Declaration or statement expected.",
     )
     if in_function_body &&
       (self.check_keyword(Keyword::This) || self.check_ident_name("this")) {
       self.record_ts_error(
         self.current().span.start,
-        "TS1434",
+        1434,
         "Unexpected keyword or identifier.",
       )
       match self.peek(1) {
         Some(next_token) =>
           self.record_ts_error(
             next_token.span.start,
-            "TS1068",
+            1068,
             "Unexpected token. A constructor, method, accessor, or property was expected.",
           )
         None => ()
@@ -5482,7 +5361,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
             saw_while_param_error = true
             self.record_ts_error(
               token.span.start,
-              "TS1135",
+              1135,
               "Argument expression expected.",
             )
           }
@@ -5490,9 +5369,9 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
           if paren_depth == 1 && !reported_param_colon {
             reported_param_colon = true
             if saw_while_param_error {
-              self.record_ts_error(token.span.start, "TS1005", "'(' expected.")
+              self.record_ts_error(token.span.start, 1005, "'(' expected.")
             } else {
-              self.record_ts_error(token.span.start, "TS1005", "',' expected.")
+              self.record_ts_error(token.span.start, 1005, "',' expected.")
             }
           }
         TokenKind::Ellipsis =>
@@ -5500,11 +5379,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
             saw_while_param_error &&
             !reported_rest_expr_error {
             reported_rest_expr_error = true
-            self.record_ts_error(
-              token.span.start,
-              "TS1109",
-              "Expression expected.",
-            )
+            self.record_ts_error(token.span.start, 1109, "Expression expected.")
           }
         TokenKind::RBracket =>
           if paren_depth == 1 &&
@@ -5516,10 +5391,10 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
             reported_semicolon_before_lbrace = true
             self.record_ts_error(
               token.span.start,
-              "TS1011",
+              1011,
               "An element access expression should take an argument.",
             )
-            self.record_ts_error(token.span.end, "TS1005", "';' expected.")
+            self.record_ts_error(token.span.end, 1005, "';' expected.")
           }
         _ => ()
       }
@@ -5527,11 +5402,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
     }
     if self.check(TokenKind::LBrace) {
       if !reported_semicolon_before_lbrace {
-        self.record_ts_error(
-          self.current().span.start,
-          "TS1005",
-          "';' expected.",
-        )
+        self.record_ts_error(self.current().span.start, 1005, "';' expected.")
       }
       if in_function_body {
         let body = self.parse_block()
@@ -5559,7 +5430,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
       match self.find_enclosing_class_close_after_current() {
         Some(class_close_pos) =>
           self.record_ts_error(
-            class_close_pos, "TS1128", "Declaration or statement expected.",
+            class_close_pos, 1128, "Declaration or statement expected.",
           )
         None => ()
       }
@@ -5587,7 +5458,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
         if !self.is_module_element_context() && !is_js_source_file(source_file) {
           self.record_ts_error(
             self.current().span.start,
-            "TS1232",
+            1232,
             "An import declaration can only be used at the top level of a namespace or module.",
           )
         }
@@ -5640,19 +5511,19 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
         if is_module_file {
           self.record_ts_error(
             self.current().span.start,
-            "TS1252",
+            1252,
             "Function declarations are not allowed inside blocks in strict mode when targeting 'ES5'. Modules are automatically in strict mode.",
           )
         } else if self.class_strict_context_depth > 0 {
           self.record_ts_error(
             self.current().span.start,
-            "TS1251",
+            1251,
             "Function declarations are not allowed inside blocks in strict mode when targeting 'ES5'. Class definitions are automatically in strict mode.",
           )
         } else {
           self.record_ts_error(
             self.current().span.start,
-            "TS1250",
+            1250,
             "Function declarations are not allowed inside blocks in strict mode when targeting 'ES5'.",
           )
         }
@@ -5665,7 +5536,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
               self.source_text[decl.body.span.start.offset] == '{' {
               self.record_ts_error(
                 self.current().span.start,
-                "TS1036",
+                1036,
                 "Statements are not allowed in ambient contexts.",
               )
             }
@@ -5730,7 +5601,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
       let token = self.advance()
       self.record_ts_error(
         token.span.start,
-        "TS1128",
+        1128,
         "Declaration or statement expected.",
       )
       { kind: StmtKind::Empty, span: token.span }
@@ -5743,7 +5614,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
         !suppress_ambient_empty_stmt_error {
         self.record_ts_error(
           token.span.start,
-          "TS1036",
+          1036,
           "Statements are not allowed in ambient contexts.",
         )
       }
@@ -5753,7 +5624,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
       let token = self.advance()
       self.record_ts_error(
         token.span.start,
-        "TS1128",
+        1128,
         "Declaration or statement expected.",
       )
       { kind: StmtKind::Empty, span: token.span }
@@ -5841,12 +5712,12 @@ fn Parser::parse_var_decl_items(
     if pattern_start_token.kind == TokenKind::Keyword(Keyword::Typeof) {
       self.record_ts_error(
         pattern_start_token.span.start,
-        "TS1389",
+        1389,
         "'typeof' is not allowed as a variable declaration name.",
       )
       self.record_ts_error(
         self.current().span.start,
-        "TS1109",
+        1109,
         "Expression expected.",
       )
     }
@@ -5855,11 +5726,7 @@ fn Parser::parse_var_decl_items(
     if self.eat(TokenKind::Colon) {
       type_ann = Some(self.parse_type())
       if self.check(TokenKind::Dot) {
-        self.record_ts_error(
-          self.current().span.start,
-          "TS1005",
-          "',' expected.",
-        )
+        self.record_ts_error(self.current().span.start, 1005, "',' expected.")
         ignore(self.advance())
         let is_typeof_name = self.check_keyword(Keyword::Typeof) ||
           self.check_ident_name("typeof")
@@ -5867,7 +5734,7 @@ fn Parser::parse_var_decl_items(
           let typeof_span = self.advance().span
           self.record_ts_error(
             typeof_span.start,
-            "TS1389",
+            1389,
             "'typeof' is not allowed as a variable declaration name.",
           )
         } else if self.current().kind is TokenKind::Ident(_) ||
@@ -5879,7 +5746,7 @@ fn Parser::parse_var_decl_items(
           if !is_typeof_name {
             self.record_ts_error(
               self.current().span.start,
-              "TS1005",
+              1005,
               "',' expected.",
             )
           }
@@ -5901,12 +5768,12 @@ fn Parser::parse_var_decl_items(
       if pattern_has_invalid_identifier_code_unit {
         self.record_ts_error(
           self.previous().span.start,
-          "TS1134",
+          1134,
           "Variable declaration expected.",
         )
         self.record_ts_error(
           self.current().span.start,
-          "TS1134",
+          1134,
           "Variable declaration expected.",
         )
       }
@@ -5929,14 +5796,14 @@ fn Parser::parse_var_decl_items(
           if !is_allowed_ambient_const_initializer(init_expr) {
             self.record_ts_error(
               init_expr.span.start,
-              "TS1254",
+              1254,
               "A 'const' initializer in an ambient context must be a string or numeric literal or literal enum reference.",
             )
           }
         } else {
           self.record_ts_error(
             init_expr.span.start,
-            "TS1039",
+            1039,
             "Initializers are not allowed in ambient contexts.",
           )
         }
@@ -5958,7 +5825,7 @@ fn Parser::parse_var_decl_items(
       !self.is_declaration_source_file(pattern.span.start) {
       self.record_ts_error(
         pattern.span.start,
-        "TS1182",
+        1182,
         "A destructuring declaration must have an initializer.",
       )
     }
@@ -5970,7 +5837,7 @@ fn Parser::parse_var_decl_items(
       self.errors.length() == decl_error_count_before {
       self.record_ts_error(
         pattern.span.start,
-        "TS1155",
+        1155,
         "'const' declarations must be initialized.",
       )
     }
@@ -6020,7 +5887,7 @@ fn Parser::parse_var_decl(
   if !is_binding_start {
     self.record_ts_error(
       start_span.end,
-      "TS1123",
+      1123,
       "Variable declaration list cannot be empty.",
     )
     let mut end_span = start_span
@@ -6054,11 +5921,11 @@ fn Parser::parse_var_decl(
       ) {
       self.record_ts_error(
         self.previous().span.start,
-        "TS1109",
+        1109,
         "Expression expected.",
       )
     } else {
-      self.record_ts_error(self.current().span.start, "TS1005", "',' expected.")
+      self.record_ts_error(self.current().span.start, 1005, "',' expected.")
     }
   }
   let span = start_span.merge(last_span)
@@ -6068,7 +5935,7 @@ fn Parser::parse_var_decl(
 ///|
 fn Parser::parse_misplaced_catch_stmt(self : Parser) -> Stmt raise ParseError {
   let start = self.expect_keyword(Keyword::Catch)
-  self.record_ts_error(start.span.start, "TS1005", "'try' expected.")
+  self.record_ts_error(start.span.start, 1005, "'try' expected.")
   let mut end_span = start.span
   if self.eat(TokenKind::LParen) {
     end_span = self.previous().span
@@ -6090,7 +5957,7 @@ fn Parser::parse_misplaced_catch_stmt(self : Parser) -> Stmt raise ParseError {
 ///|
 fn Parser::parse_misplaced_finally_stmt(self : Parser) -> Stmt raise ParseError {
   let start = self.expect_keyword(Keyword::Finally)
-  self.record_ts_error(start.span.start, "TS1005", "'try' expected.")
+  self.record_ts_error(start.span.start, 1005, "'try' expected.")
   let mut end_span = start.span
   if self.check(TokenKind::LBrace) {
     let body = self.parse_block()
@@ -6201,7 +6068,7 @@ fn Parser::parse_type_params(
     }
   }
   if !self.eat(TokenKind::Gt) {
-    self.record_ts_error(self.current().span.start, "TS1005", "'>' expected.")
+    self.record_ts_error(self.current().span.start, 1005, "'>' expected.")
   }
   params
 }
@@ -6228,10 +6095,10 @@ fn Parser::parse_function_decl_value(
     if found == "function" {
       self.record_ts_error(
         found_span.start,
-        "TS1359",
+        1359,
         "Identifier expected. 'function' is a reserved word that cannot be used here.",
       )
-      self.record_ts_error(found_span.end, "TS1003", "Identifier expected.")
+      self.record_ts_error(found_span.end, 1003, "Identifier expected.")
     } else if self.record_non_strict_reserved_identifier_error_if_needed(
         found,
         found_span.start,
@@ -6250,13 +6117,13 @@ fn Parser::parse_function_decl_value(
   let params = if self.check(TokenKind::LParen) {
     self.parse_params(false)
   } else if self.check(TokenKind::LBrace) {
-    self.record_ts_error(self.current().span.start, "TS1005", "'(' expected.")
+    self.record_ts_error(self.current().span.start, 1005, "'(' expected.")
     []
   } else {
     self.parse_params(false)
   }
   if invalid_reserved_function_name {
-    self.record_ts_error(self.current().span.start, "TS1005", "'=>' expected.")
+    self.record_ts_error(self.current().span.start, 1005, "'=>' expected.")
   }
   let mut return_type : TypeNode? = None
   if self.eat(TokenKind::Colon) {
@@ -6266,7 +6133,7 @@ fn Parser::parse_function_decl_value(
     let comma_terminated = self.check(TokenKind::Comma)
     let end_tok = self.advance().span
     if comma_terminated {
-      self.record_ts_error(end_tok.start, "TS1144", "'{' or ';' expected.")
+      self.record_ts_error(end_tok.start, 1144, "'{' or ';' expected.")
     }
     let body : Block = { stmts: [], span: end_tok }
     let span = start_span.merge(end_tok)
@@ -6283,7 +6150,7 @@ fn Parser::parse_function_decl_value(
     }
     if self.eat(TokenKind::Arrow) {
       let arrow_span = self.previous().span
-      self.record_ts_error(arrow_span.start, "TS1144", "'{' or ';' expected.")
+      self.record_ts_error(arrow_span.start, 1144, "'{' or ';' expected.")
       end_span = arrow_span
       if !self.check(TokenKind::Semicolon) &&
         !self.check(TokenKind::Comma) &&
@@ -6357,7 +6224,7 @@ fn Parser::parse_import_decl(self : Parser) -> Stmt raise ParseError {
       }
     }
     self.record_ts_error(
-      verbatim_error_pos, "TS1295", "ECMAScript imports and exports cannot be written in a CommonJS file under 'verbatimModuleSyntax'. Adjust the 'type' field in the nearest 'package.json' to make this file an ECMAScript module, or adjust your 'verbatimModuleSyntax', 'module', and 'moduleResolution' settings in TypeScript.",
+      verbatim_error_pos, 1295, "ECMAScript imports and exports cannot be written in a CommonJS file under 'verbatimModuleSyntax'. Adjust the 'type' field in the nearest 'package.json' to make this file an ECMAScript module, or adjust your 'verbatimModuleSyntax', 'module', and 'moduleResolution' settings in TypeScript.",
     )
   }
   let import_source_file = self.source_name_for_position(start.span.start)
@@ -6366,7 +6233,7 @@ fn Parser::parse_import_decl(self : Parser) -> Stmt raise ParseError {
     !is_js_source_file(import_source_file) {
     self.record_ts_error(
       start.span.start,
-      "TS1148",
+      1148,
       "Cannot use imports, exports, or module augmentations when '--module' is 'none'.",
     )
   }
@@ -6411,7 +6278,7 @@ fn Parser::parse_import_decl(self : Parser) -> Stmt raise ParseError {
   if self.current().kind is TokenKind::Number(_) {
     self.record_ts_error(
       start.span.start,
-      "TS1128",
+      1128,
       "Declaration or statement expected.",
     )
     while !self.check(TokenKind::Semicolon) && !self.at_end() {
@@ -6445,7 +6312,7 @@ fn Parser::parse_import_decl(self : Parser) -> Stmt raise ParseError {
     if import_assign_name_token.kind is TokenKind::Keyword(_) &&
       is_non_strict_reserved_word(name) {
       invalid_import_assign_keyword_name = true
-      self.record_ts_error(name_span.start, "TS1109", "Expression expected.")
+      self.record_ts_error(name_span.start, 1109, "Expression expected.")
     }
     ignore(self.expect(TokenKind::Eq, "'='"))
     let has_multi_module_kind_directive = detect_module_kind_has_multiple_values(
@@ -6462,11 +6329,7 @@ fn Parser::parse_import_decl(self : Parser) -> Stmt raise ParseError {
       !(self.isolated_modules && export_modifier_before_import) &&
       self.is_effective_es_module_source(start.span.start)
     if invalid_import_assign_keyword_name {
-      self.record_ts_error(
-        self.previous().span.start,
-        "TS1005",
-        "'(' expected.",
-      )
+      self.record_ts_error(self.previous().span.start, 1005, "'(' expected.")
     }
     let value = self.parse_expression()
     let value_is_qualified_name = import_assign_rhs_is_qualified_name(value)
@@ -6479,13 +6342,13 @@ fn Parser::parse_import_decl(self : Parser) -> Stmt raise ParseError {
         import_assign_rhs_is_require_call(value)) {
         self.record_ts_error(
           start.span.start,
-          "TS1202",
+          1202,
           "Import assignment cannot be used when targeting ECMAScript modules. Consider using 'import * as ns from \"mod\"', 'import {a} from \"mod\"', 'import d from \"mod\"', or another module format instead.",
         )
       }
     }
     if invalid_import_assign_keyword_name {
-      self.record_ts_error(self.current().span.start, "TS1005", "')' expected.")
+      self.record_ts_error(self.current().span.start, 1005, "')' expected.")
     }
     self.record_import_assignment_value_error_if_needed(value)
     self.record_namespace_module_reference_error_for_import_assignment_if_needed(
@@ -6524,21 +6387,21 @@ fn Parser::parse_import_decl(self : Parser) -> Stmt raise ParseError {
     leading_comma_after_import = true
     self.record_ts_error(
       start.span.start,
-      "TS1128",
+      1128,
       "Declaration or statement expected.",
     )
     self.record_ts_error(
       self.previous().span.start,
-      "TS1128",
+      1128,
       "Declaration or statement expected.",
     )
     end_span = self.previous().span
   }
   if default_name is Some(_) && self.check_ident_name("From") {
-    self.record_ts_error(self.current().span.start, "TS1005", "'=' expected.")
+    self.record_ts_error(self.current().span.start, 1005, "'=' expected.")
     ignore(self.advance())
     if self.current().kind is TokenKind::String(_) {
-      self.record_ts_error(self.current().span.start, "TS1005", "';' expected.")
+      self.record_ts_error(self.current().span.start, 1005, "';' expected.")
       let (source, source_span) = self.expect_string()
       end_span = source_span
       if self.eat(TokenKind::Semicolon) {
@@ -6580,7 +6443,7 @@ fn Parser::parse_import_decl(self : Parser) -> Stmt raise ParseError {
         ns_span.start,
       ) {
       invalid_namespace_import_reserved = true
-      self.record_ts_error(self.current().span.start, "TS1005", "'(' expected.")
+      self.record_ts_error(self.current().span.start, 1005, "'(' expected.")
     }
     ns_name = Some(ns)
     end_span = ns_span
@@ -6610,8 +6473,8 @@ fn Parser::parse_import_decl(self : Parser) -> Stmt raise ParseError {
     end_span = end.span
     match named_star_pos {
       Some(pos) => {
-        self.record_ts_error(pos, "TS1141", "String literal expected.")
-        self.record_ts_error(end.span.start, "TS1109", "Expression expected.")
+        self.record_ts_error(pos, 1141, "String literal expected.")
+        self.record_ts_error(end.span.start, 1109, "Expression expected.")
         invalid_named_star = true
       }
       None => ()
@@ -6619,14 +6482,10 @@ fn Parser::parse_import_decl(self : Parser) -> Stmt raise ParseError {
   }
   if self.eat(TokenKind::Comma) {
     trailing_comma_before_from = true
+    self.record_ts_error(self.previous().span.start, 1005, "'from' expected.")
     self.record_ts_error(
       self.previous().span.start,
-      "TS1005",
-      "'from' expected.",
-    )
-    self.record_ts_error(
-      self.previous().span.start,
-      "TS1141",
+      1141,
       "String literal expected.",
     )
     end_span = self.previous().span
@@ -6637,14 +6496,14 @@ fn Parser::parse_import_decl(self : Parser) -> Stmt raise ParseError {
   if invalid_named_star || leading_comma_after_import {
     self.record_ts_error(
       self.current().span.start,
-      "TS1434",
+      1434,
       "Unexpected keyword or identifier.",
     )
   }
   if invalid_numeric_named_spec {
     self.record_ts_error(
       self.current().span.start,
-      "TS1434",
+      1434,
       "Unexpected keyword or identifier.",
     )
   }
@@ -6660,10 +6519,10 @@ fn Parser::parse_import_decl(self : Parser) -> Stmt raise ParseError {
       }
       self.record_ts_error(
         pos,
-        "TS1192",
+        1192,
         "Module '\"\{module_name}\"' has no default export.",
       )
-      self.record_ts_error(self.current().span.start, "TS1005", "'{' expected.")
+      self.record_ts_error(self.current().span.start, 1005, "'{' expected.")
     }
     None => ()
   }
@@ -6674,7 +6533,7 @@ fn Parser::parse_import_decl(self : Parser) -> Stmt raise ParseError {
   }
   let (source, source_span) = self.expect_module_specifier()
   if invalid_namespace_import_reserved {
-    self.record_ts_error(source_span.start, "TS1005", "')' expected.")
+    self.record_ts_error(source_span.start, 1005, "')' expected.")
   }
   self.record_namespace_module_reference_error_if_needed(source_span.start)
   if !is_type_only {
@@ -6710,7 +6569,7 @@ fn Parser::parse_import_decl(self : Parser) -> Stmt raise ParseError {
     )
   }
   if trailing_comma_before_from {
-    self.record_ts_error(source_span.start, "TS1005", "';' expected.")
+    self.record_ts_error(source_span.start, 1005, "';' expected.")
   }
   match self.parse_import_attributes_clause_if_present() {
     Some(attribute_span) => end_span = attribute_span
@@ -6742,7 +6601,7 @@ fn Parser::parse_import_attributes_clause_if_present(
   }
   let clause_span = self.previous().span
   if !self.check(TokenKind::LBrace) {
-    self.record_ts_error(self.current().span.start, "TS1005", "'{' expected.")
+    self.record_ts_error(self.current().span.start, 1005, "'{' expected.")
     return Some(clause_span)
   }
   let attrs = self.parse_object_literal()
@@ -6760,7 +6619,7 @@ fn Parser::record_namespace_module_reference_error_if_needed(
   if self.namespace_depth > self.external_module_depth &&
     self.is_module_element_context() {
     self.record_ts_error(
-      pos, "TS1147", "Import declarations in a namespace cannot reference a module.",
+      pos, 1147, "Import declarations in a namespace cannot reference a module.",
     )
   }
 }
@@ -6839,7 +6698,7 @@ fn Parser::record_import_assignment_value_error_if_needed(
           if callee_name == "module" {
             self.record_ts_error(
               call_expr.callee.span.end,
-              "TS1005",
+              1005,
               "';' expected.",
             )
             return
@@ -6853,13 +6712,13 @@ fn Parser::record_import_assignment_value_error_if_needed(
     ExprKind::Null =>
       self.record_ts_error(
         value.span.start,
-        "TS1359",
+        1359,
         "Identifier expected. 'null' is a reserved word that cannot be used here.",
       )
     _ =>
       if !import_assign_rhs_is_qualified_name(value) &&
         !import_assign_rhs_is_require_call(value) {
-        self.record_ts_error(value.span.start, "TS1003", "Identifier expected.")
+        self.record_ts_error(value.span.start, 1003, "Identifier expected.")
       }
   }
 }
@@ -6875,7 +6734,7 @@ fn Parser::parse_import_spec(self : Parser) -> ImportSpec raise ParseError {
   }
   let (name, name_span) = if self.check(TokenKind::Star) {
     let token = self.advance()
-    self.record_ts_error(token.span.start, "TS1003", "Identifier expected.")
+    self.record_ts_error(token.span.start, 1003, "Identifier expected.")
     ("*", token.span)
   } else {
     if self.current().kind is TokenKind::Number(_) {
@@ -6884,8 +6743,8 @@ fn Parser::parse_import_spec(self : Parser) -> ImportSpec raise ParseError {
     self.expect_member_name()
   }
   if invalid_numeric_name {
-    self.record_ts_error(name_span.start, "TS1003", "Identifier expected.")
-    self.record_ts_error(name_span.start, "TS1141", "String literal expected.")
+    self.record_ts_error(name_span.start, 1003, "Identifier expected.")
+    self.record_ts_error(name_span.start, 1141, "String literal expected.")
   }
   let mut as_name : String? = None
   let mut binding_name = name
@@ -6902,37 +6761,33 @@ fn Parser::parse_import_spec(self : Parser) -> ImportSpec raise ParseError {
     binding_pos = alias_span.start
     end_span = alias_span
     if invalid_numeric_alias {
-      self.record_ts_error(alias_span.start, "TS1003", "Identifier expected.")
-      self.record_ts_error(
-        alias_span.start,
-        "TS1141",
-        "String literal expected.",
-      )
+      self.record_ts_error(alias_span.start, 1003, "Identifier expected.")
+      self.record_ts_error(alias_span.start, 1141, "String literal expected.")
     }
   }
   if invalid_numeric_name || invalid_numeric_alias {
     self.saw_invalid_numeric_named_spec = true
     self.record_ts_error(
       self.current().span.start,
-      "TS1128",
+      1128,
       "Declaration or statement expected.",
     )
   }
   if as_name is None && name == "default" {
     self.record_ts_error(
       shift_diag_pos_to_next_line(self.current().span.end),
-      "TS1003",
+      1003,
       "Identifier expected.",
     )
   } else if as_name is None && name == "yield" {
     self.record_ts_error(
       shift_diag_pos_to_next_line(name_span.start),
-      "TS1003",
+      1003,
       "Identifier expected.",
     )
   }
   if as_name is Some(_) && alias_is_keyword && binding_name == "default" {
-    self.record_ts_error(binding_pos, "TS1003", "Identifier expected.")
+    self.record_ts_error(binding_pos, 1003, "Identifier expected.")
   }
   if self.record_top_level_module_await_identifier_error_if_needed(
       binding_name, binding_pos,
@@ -6957,14 +6812,14 @@ fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
     let duplicate_export = self.advance()
     self.record_ts_error(
       duplicate_export.span.start,
-      "TS1030",
+      1030,
       "'export' modifier already seen.",
     )
   }
   if has_export_assignment_modifier {
     self.record_ts_error(
       start.span.start,
-      "TS1120",
+      1120,
       "An export assignment cannot have modifiers.",
     )
   }
@@ -6977,7 +6832,7 @@ fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
   if cjs_with_verbatim && !is_export_assignment {
     self.record_ts_error(
       start.span.start,
-      "TS1287",
+      1287,
       "A top-level 'export' modifier cannot be used on value declarations in a CommonJS module when 'verbatimModuleSyntax' is enabled.",
     )
   }
@@ -6997,7 +6852,7 @@ fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
       }
     }
     self.record_ts_error(
-      module_none_error_pos, "TS1148", "Cannot use imports, exports, or module augmentations when '--module' is 'none'.",
+      module_none_error_pos, 1148, "Cannot use imports, exports, or module augmentations when '--module' is 'none'.",
     )
   }
   if !self.is_module_element_context() {
@@ -7007,27 +6862,27 @@ fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
       if !suppress_export_assignment_context_error {
         self.record_ts_error(
           start.span.start,
-          "TS1231",
+          1231,
           "An export assignment must be at the top level of a file or module declaration.",
         )
       }
     } else if is_namespace_or_module_name_token(self.peek_kind(0)) {
       self.record_ts_error(
         start.span.start,
-        "TS1235",
+        1235,
         "A namespace declaration is only allowed at the top level of a namespace or module.",
       )
     } else if self.check_keyword(Keyword::Default) {
       if is_export_default_modifier_target(self.peek_kind(1), self.peek_kind(2)) {
         self.record_ts_error(
           start.span.start,
-          "TS1184",
+          1184,
           "Modifiers cannot appear here.",
         )
       } else {
         self.record_ts_error(
           start.span.start,
-          "TS1258",
+          1258,
           "A default export must be at the top level of a file or module declaration.",
         )
       }
@@ -7038,14 +6893,14 @@ fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
       if !export_var_like_decl {
         self.record_ts_error(
           start.span.start,
-          "TS1184",
+          1184,
           "Modifiers cannot appear here.",
         )
       }
     } else {
       self.record_ts_error(
         start.span.start,
-        "TS1233",
+        1233,
         "An export declaration can only be used at the top level of a namespace or module.",
       )
     }
@@ -7058,7 +6913,7 @@ fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
     self.peek_kind(2) == Some(TokenKind::Eq) {
     self.record_ts_error(
       start.span.start,
-      "TS1120",
+      1120,
       "An export assignment cannot have modifiers.",
     )
   }
@@ -7070,7 +6925,7 @@ fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
       self.is_module_element_context() {
       self.record_ts_error(
         self.previous().span.start,
-        "TS1319",
+        1319,
         "A default export can only be used in an ECMAScript-style module.",
       )
     }
@@ -7160,7 +7015,7 @@ fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
           if resolves_to_type_only {
             self.record_ts_error(
               expr.span.start,
-              "TS1292",
+              1292,
               "'\{name}' resolves to a type and must be marked type-only in this file before re-exporting when 'isolatedModules' is enabled. Consider using 'export type { \{name} as default }'.",
             )
           }
@@ -7185,14 +7040,14 @@ fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
       if self.module_kind_matches("system") {
         self.record_ts_error(
           start.span.start,
-          "TS1218",
+          1218,
           "Export assignment is not supported when '--module' flag is 'system'.",
         )
       } else if !self.module_kind_matches("preserve") &&
         self.is_effective_es_module_source(start.span.start) {
         self.record_ts_error(
           start.span.start,
-          "TS1203",
+          1203,
           "Export assignment cannot be used when targeting ECMAScript modules. Consider using 'export default' or another module format instead.",
         )
       }
@@ -7242,14 +7097,14 @@ fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
       if self.module_kind_matches("system") {
         self.record_ts_error(
           start.span.start,
-          "TS1218",
+          1218,
           "Export assignment is not supported when '--module' flag is 'system'.",
         )
       } else if !self.module_kind_matches("preserve") &&
         self.is_effective_es_module_source(start.span.start) {
         self.record_ts_error(
           start.span.start,
-          "TS1203",
+          1203,
           "Export assignment cannot be used when targeting ECMAScript modules. Consider using 'export default' or another module format instead.",
         )
       }
@@ -7339,7 +7194,7 @@ fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
       (self.ambient_context_depth == 0 || from_source is Some(_))
     if should_report_namespace_export_decl_error {
       self.record_ts_error(
-        namespace_export_diag_pos, "TS1194", "Export declarations are not permitted in a namespace.",
+        namespace_export_diag_pos, 1194, "Export declarations are not permitted in a namespace.",
       )
     }
     if self.eat(TokenKind::Semicolon) {
@@ -7367,11 +7222,7 @@ fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
       while true {
         specs.push(self.parse_export_spec())
         if !self.check(TokenKind::Comma) && self.check_keyword(Keyword::From) {
-          self.record_ts_error(
-            self.current().span.start,
-            "TS1005",
-            "',' expected.",
-          )
+          self.record_ts_error(self.current().span.start, 1005, "',' expected.")
         }
         if self.eat(TokenKind::Comma) {
           if self.check(TokenKind::RBrace) {
@@ -7411,7 +7262,7 @@ fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
       (self.ambient_context_depth == 0 || from_source is Some(_))
     if should_report_namespace_export_decl_error {
       self.record_ts_error(
-        namespace_export_diag_pos, "TS1194", "Export declarations are not permitted in a namespace.",
+        namespace_export_diag_pos, 1194, "Export declarations are not permitted in a namespace.",
       )
     }
     if self.eat(TokenKind::Semicolon) {
@@ -7468,7 +7319,7 @@ fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
               if is_type_only_export {
                 self.record_ts_error(
                   spec.span.start,
-                  "TS1205",
+                  1205,
                   "Re-exporting a type when 'isolatedModules' is enabled requires using 'export type'.",
                 )
               }
@@ -7498,13 +7349,13 @@ fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
               if via_type_reexport {
                 self.record_ts_error(
                   spec.span.start,
-                  "TS1448",
+                  1448,
                   "'\{exported_name}' resolves to a type-only declaration and must be re-exported using a type-only re-export when 'isolatedModules' is enabled.",
                 )
               } else {
                 self.record_ts_error(
                   spec.span.start,
-                  "TS1205",
+                  1205,
                   "Re-exporting a type when 'isolatedModules' is enabled requires using 'export type'.",
                 )
               }
@@ -7529,7 +7380,7 @@ fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
     next_is_number {
     self.record_ts_error(
       start.span.start,
-      "TS1128",
+      1128,
       "Declaration or statement expected.",
     )
   }
@@ -7537,7 +7388,7 @@ fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
     self.peek_kind(1) == Some(TokenKind::LBrace) {
     self.record_ts_error(
       start.span.start,
-      "TS1211",
+      1211,
       "A class declaration without the 'default' modifier must have a name.",
     )
     let class_start = self.advance().span
@@ -7556,12 +7407,12 @@ fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
     self.peek_kind(1) == Some(TokenKind::Keyword(Keyword::Class)) {
     self.record_ts_error(
       start.span.start,
-      "TS1128",
+      1128,
       "Declaration or statement expected.",
     )
     self.record_ts_error(
       self.current().span.start,
-      "TS1434",
+      1434,
       "Unexpected keyword or identifier.",
     )
     ignore(self.advance())
@@ -7571,7 +7422,7 @@ fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
     if self.ambient_context_depth > 0 {
       self.record_ts_error(
         self.current().span.start,
-        "TS1038",
+        1038,
         "A 'declare' modifier cannot be used in an already ambient context.",
       )
     }
@@ -7592,7 +7443,7 @@ fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
     StmtKind::ImportDecl(_) =>
       self.record_ts_error(
         start.span.start,
-        "TS1191",
+        1191,
         "An import declaration cannot have modifiers.",
       )
     StmtKind::ExportDecl(export_decl) =>
@@ -7601,7 +7452,7 @@ fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
           if pushed_ambient {
             self.record_ts_error(
               start.span.start,
-              "TS1120",
+              1120,
               "An export assignment cannot have modifiers.",
             )
           }
@@ -7618,7 +7469,7 @@ fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
         match var_decl_named_position(var_decl, "__esModule") {
           Some(pos) =>
             self.record_ts_error(
-              pos, "TS1216", "Identifier expected. '__esModule' is reserved as an exported marker when transforming ECMAScript modules.",
+              pos, 1216, "Identifier expected. '__esModule' is reserved as an exported marker when transforming ECMAScript modules.",
             )
           None => ()
         }
@@ -7648,7 +7499,7 @@ fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
             if self.is_type_only_namespace(name) {
               self.record_ts_error(
                 start.span.start,
-                "TS1269",
+                1269,
                 "Cannot use 'export import' on a type or type-only namespace when 'isolatedModules' is enabled.",
               )
             }
@@ -7669,7 +7520,7 @@ fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
                       if self.module_is_type_only_file(resolved) {
                         self.record_ts_error(
                           start.span.start,
-                          "TS1269",
+                          1269,
                           "Cannot use 'export import' on a type or type-only namespace when 'isolatedModules' is enabled.",
                         )
                       }
@@ -7701,7 +7552,7 @@ fn Parser::parse_export_spec(self : Parser) -> ExportSpec raise ParseError {
   }
   let (name, name_span) = self.parse_ident_name()
   if invalid_numeric_name {
-    self.record_ts_error(name_span.start, "TS1003", "Identifier expected.")
+    self.record_ts_error(name_span.start, 1003, "Identifier expected.")
   }
   let mut as_name : String? = None
   let mut end_span = name_span
@@ -7713,21 +7564,21 @@ fn Parser::parse_export_spec(self : Parser) -> ExportSpec raise ParseError {
     as_name = Some(alias_name)
     end_span = alias_span
     if invalid_numeric_alias {
-      self.record_ts_error(alias_span.start, "TS1003", "Identifier expected.")
+      self.record_ts_error(alias_span.start, 1003, "Identifier expected.")
     }
   }
   if invalid_numeric_name || invalid_numeric_alias {
     self.saw_invalid_numeric_named_spec = true
     self.record_ts_error(
       self.current().span.start,
-      "TS1128",
+      1128,
       "Declaration or statement expected.",
     )
   }
   if name == "from" &&
     as_name is None &&
     self.current().kind is TokenKind::String(_) {
-    self.record_ts_error(name_span.start, "TS1005", "'}' expected.")
+    self.record_ts_error(name_span.start, 1005, "'}' expected.")
   }
   { is_type_only, name, as_name, span: name_span.merge(end_span) }
 }
@@ -7737,7 +7588,7 @@ fn Parser::parse_exported_declaration(self : Parser) -> Stmt raise ParseError {
   if self.eat_declare_modifier() && self.eat_declare_modifier() {
     self.record_ts_error(
       self.previous().span.start,
-      "TS1030",
+      1030,
       "'declare' modifier already seen.",
     )
   }
@@ -7747,7 +7598,7 @@ fn Parser::parse_exported_declaration(self : Parser) -> Stmt raise ParseError {
       let (modifier_name, modifier_pos) = info
       self.record_ts_error(
         modifier_pos,
-        "TS1044",
+        1044,
         "'\{modifier_name}' modifier cannot appear on a module or namespace element.",
       )
     }
@@ -7844,7 +7695,7 @@ fn Parser::parse_namespace_decl_value(
     !is_js_source_file(namespace_source_file) {
     self.record_ts_error(
       start_span.start,
-      "TS1148",
+      1148,
       "Cannot use imports, exports, or module augmentations when '--module' is 'none'.",
     )
   }
@@ -7866,7 +7717,7 @@ fn Parser::parse_namespace_decl_value(
     !self.is_declaration_source_file(name_span.start) {
     self.record_ts_error(
       name_span.start,
-      "TS1035",
+      1035,
       "Only ambient modules can use quoted names.",
     )
   }
@@ -7878,7 +7729,7 @@ fn Parser::parse_namespace_decl_value(
     return ({ name, body, span }, span)
   }
   if name_is_number && self.check(TokenKind::LBrace) {
-    self.record_ts_error(self.current().span.start, "TS1005", "';' expected.")
+    self.record_ts_error(self.current().span.start, 1005, "';' expected.")
   }
   self.push_module_element_context_offset()
   self.namespace_depth += 1
@@ -7984,7 +7835,7 @@ fn Parser::parse_class_decl_value(
         if type_params.length() == 0 {
           self.record_ts_error(
             lt_span.start,
-            "TS1098",
+            1098,
             "Type parameter list cannot be empty.",
           )
         }
@@ -8002,14 +7853,14 @@ fn Parser::parse_class_decl_value(
           self.at_end() {
           self.record_ts_error(
             comma_span.start,
-            "TS1009",
+            1009,
             "Trailing comma not allowed.",
           )
           break
         }
         self.record_ts_error(
           self.current().span.start,
-          "TS1174",
+          1174,
           "Classes can only extend a single class.",
         )
         let mut ignored_base = self.parse_member_base() catch {
@@ -8034,7 +7885,7 @@ fn Parser::parse_class_decl_value(
       if self.check_keyword(Keyword::Extends) {
         self.record_ts_error(
           self.current().span.start,
-          "TS1173",
+          1173,
           "'extends' clause must precede 'implements' clause.",
         )
         ignore(self.advance())
@@ -8047,7 +7898,7 @@ fn Parser::parse_class_decl_value(
     while self.eat_keyword(Keyword::Implements) {
       self.record_ts_error(
         self.previous().span.start,
-        "TS1175",
+        1175,
         "'implements' clause already seen.",
       )
       while true {
@@ -8070,7 +7921,7 @@ fn Parser::parse_class_decl_value(
       let duplicate_extends = self.advance().span
       self.record_ts_error(
         duplicate_extends.start,
-        "TS1172",
+        1172,
         "'extends' clause already seen.",
       )
       let mut ignored_base = self.parse_member_base()
@@ -8081,7 +7932,7 @@ fn Parser::parse_class_decl_value(
     while self.eat(TokenKind::Comma) {
       self.record_ts_error(
         self.previous().span.start,
-        "TS1009",
+        1009,
         "Trailing comma not allowed.",
       )
     }
@@ -8126,7 +7977,7 @@ fn Parser::parse_class_decl_value(
     if self.eat(TokenKind::Comma) {
       self.record_ts_error(
         self.previous().span.start,
-        "TS1068",
+        1068,
         "Unexpected token. A constructor, method, accessor, or property was expected.",
       )
       continue
@@ -8179,7 +8030,7 @@ fn Parser::parse_class_decl_value(
             ) {
             self.record_ts_error(
               self.current().span.start,
-              "TS1128",
+              1128,
               "Declaration or statement expected.",
             )
             let looks_like_method_head = match self.peek_kind(1) {
@@ -8216,8 +8067,7 @@ fn Parser::parse_class_decl_value(
                   }
               }
               match diag_pos {
-                Some(pos) =>
-                  self.record_ts_error(pos, "TS1005", "';' expected.")
+                Some(pos) => self.record_ts_error(pos, 1005, "';' expected.")
                 None => ()
               }
             }
@@ -8241,7 +8091,7 @@ fn Parser::parse_class_decl_value(
           if should_report_at_rbrace {
             self.record_ts_error(
               self.current().span.start,
-              "TS1128",
+              1128,
               "Declaration or statement expected.",
             )
           }
@@ -8264,7 +8114,7 @@ fn Parser::parse_class_decl_value(
               Some(next_token) =>
                 self.record_ts_error(
                   next_token.span.start,
-                  "TS1128",
+                  1128,
                   "Declaration or statement expected.",
                 )
               None => ()
@@ -8299,7 +8149,7 @@ fn Parser::consume_class_member_terminator(
   let require_body = !allow_missing_body
   if self.check(TokenKind::RBrace) {
     if require_body {
-      self.record_ts_error(fallback_span.start, "TS1005", "'{' expected.")
+      self.record_ts_error(fallback_span.start, 1005, "'{' expected.")
     }
     return self.current().span
   }
@@ -8309,7 +8159,7 @@ fn Parser::consume_class_member_terminator(
   }
   if self.check(TokenKind::Comma) {
     let comma = self.advance().span
-    self.record_ts_error(comma.start, "TS1144", "'{' or ';' expected.")
+    self.record_ts_error(comma.start, 1144, "'{' or ';' expected.")
     return comma
   }
   let next_is_member_start = self.check(TokenKind::LBracket) ||
@@ -8333,7 +8183,7 @@ fn Parser::consume_class_member_terminator(
     next_is_member_start &&
     self.current().span.start.line > fallback_span.end.line &&
     !next_is_index_signature_member_start {
-    self.record_ts_error(fallback_span.start, "TS1005", "'{' expected.")
+    self.record_ts_error(fallback_span.start, 1005, "'{' expected.")
   }
   fallback_span
 }
@@ -8415,13 +8265,13 @@ fn Parser::parse_class_member(
   if disallow_member_decorators {
     for decorator in member_decorators {
       let (_, at_pos) = decorator
-      self.record_ts_error(at_pos, "TS1206", "Decorators are not valid here.")
+      self.record_ts_error(at_pos, 1206, "Decorators are not valid here.")
     }
   }
   if self.check_keyword(Keyword::Try) {
     self.record_ts_error(
       self.current().span.start,
-      "TS1068",
+      1068,
       "Unexpected token. A constructor, method, accessor, or property was expected.",
     )
     raise ParseError::UnexpectedToken(
@@ -8433,7 +8283,7 @@ fn Parser::parse_class_member(
     let invalid_start = self.advance().span
     self.record_ts_error(
       invalid_start.start,
-      "TS1068",
+      1068,
       "Unexpected token. A constructor, method, accessor, or property was expected.",
     )
     let mut end_span = invalid_start
@@ -8492,7 +8342,7 @@ fn Parser::parse_class_member(
           if duplicate_modifier_same_line {
             self.record_ts_error(
               self.current().span.start,
-              "TS1434",
+              1434,
               "Unexpected keyword or identifier.",
             )
             ignore(self.advance())
@@ -8510,7 +8360,7 @@ fn Parser::parse_class_member(
         if self.ambient_context_depth > 0 {
           self.record_ts_error(
             self.current().span.start,
-            "TS1038",
+            1038,
             "A 'declare' modifier cannot be used in an already ambient context.",
           )
         }
@@ -8556,7 +8406,7 @@ fn Parser::parse_class_member(
         if can_be_export_modifier {
           self.record_ts_error(
             self.current().span.start,
-            "TS1031",
+            1031,
             "'export' modifier cannot appear on class elements of this kind.",
           )
           ignore(self.advance())
@@ -8595,7 +8445,7 @@ fn Parser::parse_class_member(
             None => self.current().span.start
           }
           self.record_ts_error(
-            diag_pos, "TS1248", "A class member cannot have the 'const' keyword.",
+            diag_pos, 1248, "A class member cannot have the 'const' keyword.",
           )
           ignore(self.advance())
           last_modifier_end = Some(self.previous().span.end)
@@ -8650,7 +8500,7 @@ fn Parser::parse_class_member(
         if is_static {
           self.record_ts_error(
             self.current().span.start,
-            "TS1029",
+            1029,
             "'public' modifier must precede 'static' modifier.",
           )
         }
@@ -8663,7 +8513,7 @@ fn Parser::parse_class_member(
         if is_static {
           self.record_ts_error(
             self.current().span.start,
-            "TS1029",
+            1029,
             "'private' modifier must precede 'static' modifier.",
           )
         }
@@ -8676,7 +8526,7 @@ fn Parser::parse_class_member(
         if is_static {
           self.record_ts_error(
             self.current().span.start,
-            "TS1029",
+            1029,
             "'protected' modifier must precede 'static' modifier.",
           )
         }
@@ -8736,7 +8586,7 @@ fn Parser::parse_class_member(
       if last_modifier_end is Some(_) {
         self.record_ts_error(
           variable_kw_span.start,
-          "TS1440",
+          1440,
           "Variable declaration not allowed at this location.",
         )
         ignore(self.advance())
@@ -8752,7 +8602,7 @@ fn Parser::parse_class_member(
       }
       self.record_ts_error(
         variable_kw_span.start,
-        "TS1068",
+        1068,
         "Unexpected token. A constructor, method, accessor, or property was expected.",
       )
       ignore(self.advance())
@@ -8760,11 +8610,7 @@ fn Parser::parse_class_member(
         self.current().kind is TokenKind::Keyword(_) {
         ignore(self.advance())
         if self.check(TokenKind::LParen) {
-          self.record_ts_error(
-            self.current().span.start,
-            "TS1005",
-            "',' expected.",
-          )
+          self.record_ts_error(self.current().span.start, 1005, "',' expected.")
           ignore(self.advance())
           let mut paren_depth = 1
           while paren_depth > 0 && !self.at_end() {
@@ -8778,7 +8624,7 @@ fn Parser::parse_class_member(
           if !self.at_end() {
             self.record_ts_error(
               self.current().span.start,
-              "TS1005",
+              1005,
               "'=>' expected.",
             )
           }
@@ -8804,12 +8650,8 @@ fn Parser::parse_class_member(
     if self.check(TokenKind::LBrace) {
       match last_modifier_end {
         Some(pos) => {
-          self.record_ts_error(pos, "TS1146", "Declaration expected.")
-          self.record_ts_error(
-            self.current().span.start,
-            "TS1005",
-            "';' expected.",
-          )
+          self.record_ts_error(pos, 1146, "Declaration expected.")
+          self.record_ts_error(self.current().span.start, 1005, "';' expected.")
           if self.peek_kind(1) == Some(TokenKind::LBracket) {
             let mut offset = 2
             let mut bracket_depth = 1
@@ -8840,7 +8682,7 @@ fn Parser::parse_class_member(
             }
             match bracket_inner_colon_pos {
               Some(diag_pos) =>
-                self.record_ts_error(diag_pos, "TS1005", "',' expected.")
+                self.record_ts_error(diag_pos, 1005, "',' expected.")
               None => ()
             }
             if closing_bracket_offset >= 0 &&
@@ -8850,7 +8692,7 @@ fn Parser::parse_class_member(
                 Some(colon_token) =>
                   self.record_ts_error(
                     colon_token.span.start,
-                    "TS1005",
+                    1005,
                     "';' expected.",
                   )
                 None => ()
@@ -8866,13 +8708,13 @@ fn Parser::parse_class_member(
           if self.index > 0 && self.previous().kind == TokenKind::RParen {
             self.record_ts_error(
               self.current().span.start,
-              "TS1005",
+              1005,
               "';' expected.",
             )
           } else {
             self.record_ts_error(
               self.current().span.start,
-              "TS1068",
+              1068,
               "Unexpected token. A constructor, method, accessor, or property was expected.",
             )
           }
@@ -8933,7 +8775,7 @@ fn Parser::parse_class_member(
       }
       if self.should_report_optional_index_signature_param_error(question_pos) {
         self.record_ts_error(
-          question_pos, "TS1019", "An index signature parameter cannot have a question mark.",
+          question_pos, 1019, "An index signature parameter cannot have a question mark.",
         )
       }
     }
@@ -8948,15 +8790,15 @@ fn Parser::parse_class_member(
       self.peek_kind_after_matching_bracket() != Some(TokenKind::Colon) {
       self.record_ts_error(
         self.current().span.start,
-        "TS1021",
+        1021,
         "An index signature must have a type annotation.",
       )
     }
     let (computed_name_error_code, computed_name_error_message) = if is_index_signature_member {
-      ("TS1020", "An index signature parameter cannot have an initializer.")
+      (1020, "An index signature parameter cannot have an initializer.")
     } else {
       (
-        "TS1166", "A computed property name in a class property declaration must have a simple literal type or a 'unique symbol' type.",
+        1166, "A computed property name in a class property declaration must have a simple literal type or a 'unique symbol' type.",
       )
     }
     self.parse_bracket_member_name_with_computed_name_error(
@@ -8994,13 +8836,13 @@ fn Parser::parse_class_member(
         if type_params.length() == 0 {
           self.record_ts_error(
             lt_span.start,
-            "TS1098",
+            1098,
             "Type parameter list cannot be empty.",
           )
         }
         self.record_ts_error(
           lt_span.end,
-          "TS1092",
+          1092,
           "Type parameters cannot appear on a constructor declaration.",
         )
       }
@@ -9011,7 +8853,7 @@ fn Parser::parse_class_member(
         if self.check(TokenKind::RBrace) {
           self.record_ts_error(
             self.current().span.start,
-            "TS1110",
+            1110,
             "Type expected.",
           )
         } else {
@@ -9042,7 +8884,7 @@ fn Parser::parse_class_member(
       }
     }
     if !self.check(TokenKind::LParen) && !self.check(TokenKind::Lt) {
-      self.record_ts_error(self.current().span.start, "TS1005", "'(' expected.")
+      self.record_ts_error(self.current().span.start, 1005, "'(' expected.")
     }
   }
   if accessor == Some("get") {
@@ -9050,7 +8892,7 @@ fn Parser::parse_class_member(
       match abstract_modifier_pos {
         Some(pos) =>
           self.record_ts_error(
-            pos, "TS1244", "Abstract methods can only appear within an abstract class.",
+            pos, 1244, "Abstract methods can only appear within an abstract class.",
           )
         None => ()
       }
@@ -9059,7 +8901,7 @@ fn Parser::parse_class_member(
     if params.length() > 0 {
       self.record_ts_error(
         name_span.start,
-        "TS1054",
+        1054,
         "A 'get' accessor cannot have parameters.",
       )
     }
@@ -9076,11 +8918,7 @@ fn Parser::parse_class_member(
       self.parse_block_in_function_context()
     } else {
       if !allow_missing_body && self.check(TokenKind::Semicolon) {
-        self.record_ts_error(
-          self.current().span.start,
-          "TS1005",
-          "'{' expected.",
-        )
+        self.record_ts_error(self.current().span.start, 1005, "'{' expected.")
       }
       let end_span = self.consume_class_member_terminator(
         self.previous().span,
@@ -9108,7 +8946,7 @@ fn Parser::parse_class_member(
       match abstract_modifier_pos {
         Some(pos) =>
           self.record_ts_error(
-            pos, "TS1244", "Abstract methods can only appear within an abstract class.",
+            pos, 1244, "Abstract methods can only appear within an abstract class.",
           )
         None => ()
       }
@@ -9119,7 +8957,7 @@ fn Parser::parse_class_member(
         Some(_) =>
           self.record_ts_error(
             name_span.start,
-            "TS1052",
+            1052,
             "A 'set' accessor parameter cannot have an initializer.",
           )
         None => ()
@@ -9127,7 +8965,7 @@ fn Parser::parse_class_member(
       if params[0].is_rest {
         self.record_ts_error(
           params[0].span.start,
-          "TS1053",
+          1053,
           "A 'set' accessor cannot have rest parameter.",
         )
       }
@@ -9135,7 +8973,7 @@ fn Parser::parse_class_member(
     if params.length() > 0 && params[0].optional {
       self.record_ts_error(
         params[0].pattern.span.end,
-        "TS1051",
+        1051,
         "A 'set' accessor cannot have an optional parameter.",
       )
     }
@@ -9143,7 +8981,7 @@ fn Parser::parse_class_member(
       ignore(self.parse_type())
       self.record_ts_error(
         name_span.start,
-        "TS1095",
+        1095,
         "A 'set' accessor cannot have a return type annotation.",
       )
     }
@@ -9154,11 +8992,7 @@ fn Parser::parse_class_member(
       self.parse_block_in_function_context()
     } else {
       if !allow_missing_body && self.check(TokenKind::Semicolon) {
-        self.record_ts_error(
-          self.current().span.start,
-          "TS1005",
-          "'{' expected.",
-        )
+        self.record_ts_error(self.current().span.start, 1005, "'{' expected.")
       }
       let end_span = self.consume_class_member_terminator(
         self.previous().span,
@@ -9199,7 +9033,7 @@ fn Parser::parse_class_member(
       match abstract_modifier_pos {
         Some(pos) =>
           self.record_ts_error(
-            pos, "TS1244", "Abstract methods can only appear within an abstract class.",
+            pos, 1244, "Abstract methods can only appear within an abstract class.",
           )
         None => ()
       }
@@ -9293,7 +9127,7 @@ fn Parser::parse_class_member(
   }
   if definite_assignment_bang_pos is Some(pos) && type_ann is None {
     self.record_ts_error(
-      pos, "TS1264", "Declarations with definite assignment assertions must also have type annotations.",
+      pos, 1264, "Declarations with definite assignment assertions must also have type annotations.",
     )
   }
   let mut init : Expr? = None
@@ -9302,7 +9136,7 @@ fn Parser::parse_class_member(
     if is_declared_member {
       self.record_ts_error(
         expr.span.start,
-        "TS1039",
+        1039,
         "Initializers are not allowed in ambient contexts.",
       )
     }
@@ -9341,10 +9175,10 @@ fn Parser::parse_class_member(
     !looks_like_async_method_head {
     self.record_ts_error(
       start_span.start,
-      "TS1068",
+      1068,
       "Unexpected token. A constructor, method, accessor, or property was expected.",
     )
-    self.record_ts_error(self.current().span.start, "TS1005", "';' expected.")
+    self.record_ts_error(self.current().span.start, 1005, "';' expected.")
     raise ParseError::UnexpectedToken(
       pos=self.current().span.start,
       "class member",
@@ -9358,7 +9192,7 @@ fn Parser::parse_class_member(
     !suppress_computed_name_type_error {
     self.record_ts_error(
       name_span.start,
-      "TS1166",
+      1166,
       "A computed property name in a class property declaration must have a simple literal type or a 'unique symbol' type.",
     )
   }
@@ -9372,7 +9206,7 @@ fn Parser::parse_class_member(
     match abstract_modifier_pos {
       Some(pos) =>
         self.record_ts_error(
-          pos, "TS1253", "Abstract properties can only appear within an abstract class.",
+          pos, 1253, "Abstract properties can only appear within an abstract class.",
         )
       None => ()
     }
@@ -9459,7 +9293,7 @@ fn Parser::parse_object_pattern(
           ignore(self.parse_expression_no_comma())
           self.record_ts_error(
             eq_span.start,
-            "TS1186",
+            1186,
             "A rest element cannot have an initializer.",
           )
         }
@@ -9487,7 +9321,7 @@ fn Parser::parse_object_pattern(
             missing_colon_in_property = true
             self.record_ts_error(
               self.current().span.start,
-              "TS1005",
+              1005,
               "':' expected.",
             )
           } else {
@@ -9522,7 +9356,7 @@ fn Parser::parse_object_pattern(
             missing_colon_in_property = true
             self.record_ts_error(
               self.current().span.start,
-              "TS1005",
+              1005,
               "':' expected.",
             )
           }
@@ -9550,11 +9384,7 @@ fn Parser::parse_object_pattern(
       }
       if missing_colon_in_property &&
         (self.check(TokenKind::RBrace) || self.check(TokenKind::Semicolon)) {
-        self.record_ts_error(
-          self.current().span.start,
-          "TS1005",
-          "':' expected.",
-        )
+        self.record_ts_error(self.current().span.start, 1005, "':' expected.")
       }
       if self.eat(TokenKind::Comma) || self.eat(TokenKind::Semicolon) {
         if self.check(TokenKind::RBrace) {
@@ -9595,7 +9425,7 @@ fn Parser::parse_array_pattern(
           ignore(self.parse_expression_no_comma())
           self.record_ts_error(
             eq_span.start,
-            "TS1186",
+            1186,
             "A rest element cannot have an initializer.",
           )
         }
@@ -9625,28 +9455,24 @@ fn Parser::parse_array_pattern(
         reported_reserved_array_pattern_error = true
         self.record_ts_error(
           element_start_token.span.start,
-          "TS1181",
+          1181,
           "Array element destructuring pattern expected.",
         )
         if element_name == "debugger" &&
           self.peek_kind(1) == Some(TokenKind::Comma) {
           self.record_ts_error(
             element_start_token.span.end,
-            "TS1005",
+            1005,
             "';' expected.",
           )
           match self.peek(2) {
             Some(next_token) => {
-              self.record_ts_error(
-                next_token.span.end,
-                "TS1005",
-                "'(' expected.",
-              )
+              self.record_ts_error(next_token.span.end, 1005, "'(' expected.")
               match self.peek(4) {
                 Some(after_token) =>
                   self.record_ts_error(
                     after_token.span.start,
-                    "TS1128",
+                    1128,
                     "Declaration or statement expected.",
                   )
                 None => ()
@@ -9693,20 +9519,12 @@ fn Parser::parse_params(
         self.peek_kind(2) == Some(TokenKind::Semicolon) {
         match self.peek(1) {
           Some(next_token) =>
-            self.record_ts_error(
-              next_token.span.start,
-              "TS1005",
-              "':' expected.",
-            )
+            self.record_ts_error(next_token.span.start, 1005, "':' expected.")
           None => ()
         }
         match self.peek(2) {
           Some(semi_token) =>
-            self.record_ts_error(
-              semi_token.span.start,
-              "TS1005",
-              "',' expected.",
-            )
+            self.record_ts_error(semi_token.span.start, 1005, "',' expected.")
           None => ()
         }
         ignore(self.advance())
@@ -9723,7 +9541,7 @@ fn Parser::parse_params(
           !reported_optional_param_initializer_error {
           self.record_ts_error(
             param.pattern.span.start,
-            "TS1015",
+            1015,
             "Parameter cannot have question mark and initializer.",
           )
           reported_optional_param_initializer_error = true
@@ -9735,7 +9553,7 @@ fn Parser::parse_params(
         !param.is_rest {
         self.record_ts_error(
           param.span.start,
-          "TS1016",
+          1016,
           "A required parameter cannot follow an optional parameter.",
         )
       }
@@ -9747,7 +9565,7 @@ fn Parser::parse_params(
         self.peek_kind(1) != Some(TokenKind::RParen) {
         self.record_ts_error(
           param.span.start,
-          "TS1014",
+          1014,
           "A rest parameter must be last in a parameter list.",
         )
       }
@@ -9764,21 +9582,13 @@ fn Parser::parse_params(
         break
       }
       if self.check(TokenKind::Semicolon) {
-        self.record_ts_error(
-          self.current().span.start,
-          "TS1005",
-          "',' expected.",
-        )
+        self.record_ts_error(self.current().span.start, 1005, "',' expected.")
         ignore(self.advance())
         continue
       }
       match param.type_ann {
         Some(_) => {
-          self.record_ts_error(
-            self.current().span.start,
-            "TS1005",
-            "',' expected.",
-          )
+          self.record_ts_error(self.current().span.start, 1005, "',' expected.")
           ignore(self.advance())
           continue
         }
@@ -9787,7 +9597,7 @@ fn Parser::parse_params(
             self.current().kind is TokenKind::Keyword(_) {
             self.record_ts_error(
               self.current().span.start,
-              "TS1005",
+              1005,
               "':' expected.",
             )
             while !self.at_end() &&
@@ -9800,7 +9610,7 @@ fn Parser::parse_params(
             if self.check(TokenKind::Semicolon) {
               self.record_ts_error(
                 self.current().span.start,
-                "TS1005",
+                1005,
                 "',' expected.",
               )
               ignore(self.advance())
@@ -9816,7 +9626,7 @@ fn Parser::parse_params(
           } else {
             self.record_ts_error(
               self.current().span.start,
-              "TS1005",
+              1005,
               "',' expected.",
             )
             ignore(self.advance())
@@ -9828,13 +9638,13 @@ fn Parser::parse_params(
   if self.check(TokenKind::RParen) {
     ignore(self.expect(TokenKind::RParen, "')'"))
   } else if self.check(TokenKind::RBrace) {
-    self.record_ts_error(self.current().span.end, "TS1005", "')' expected.")
+    self.record_ts_error(self.current().span.end, 1005, "')' expected.")
     if self.index > 0 && self.previous().kind == TokenKind::Semicolon {
       ignore(self.advance())
     }
     return params
   } else if self.at_end() {
-    self.record_ts_error(self.current().span.start, "TS1005", "')' expected.")
+    self.record_ts_error(self.current().span.start, 1005, "')' expected.")
     return params
   } else {
     ignore(self.expect(TokenKind::RParen, "')'"))
@@ -9856,7 +9666,7 @@ fn Parser::parse_param(
   while self.check(TokenKind::At) {
     let (_, at_pos) = self.parse_decorator()
     if !allow_parameter_decorators {
-      self.record_ts_error(at_pos, "TS1206", "Decorators are not valid here.")
+      self.record_ts_error(at_pos, 1206, "Decorators are not valid here.")
     }
   }
   while true {
@@ -9871,7 +9681,7 @@ fn Parser::parse_param(
     if self.check_ident_name("declare") && next_is_param {
       self.record_ts_error(
         self.current().span.start,
-        "TS1090",
+        1090,
         "'declare' modifier cannot appear on a parameter.",
       )
       ignore(self.advance())
@@ -9889,7 +9699,7 @@ fn Parser::parse_param(
             self.record_erasable_syntax_only_error_if_needed(modifier_pos)
             if saw_accessibility_modifier {
               self.record_ts_error(
-                modifier_pos, "TS1028", "Accessibility modifier already seen.",
+                modifier_pos, 1028, "Accessibility modifier already seen.",
               )
             } else {
               saw_accessibility_modifier = true
@@ -9923,7 +9733,7 @@ fn Parser::parse_param(
         if next_is_param {
           self.record_ts_error(
             self.current().span.start,
-            "TS1090",
+            1090,
             "'static' modifier cannot appear on a parameter.",
           )
           ignore(self.advance())
@@ -9935,7 +9745,7 @@ fn Parser::parse_param(
         if next_is_param {
           self.record_ts_error(
             self.current().span.start,
-            "TS1090",
+            1090,
             "'export' modifier cannot appear on a parameter.",
           )
           ignore(self.advance())
@@ -9971,7 +9781,7 @@ fn Parser::parse_param(
     (self.check(TokenKind::RParen) || self.check(TokenKind::Comma)) {
     self.record_ts_error(
       self.current().span.start,
-      "TS1003",
+      1003,
       "Identifier expected.",
     )
     { kind: BindingPatternKind::Ident(""), span: self.current().span }
@@ -9980,7 +9790,7 @@ fn Parser::parse_param(
   }
   self.parameter_binding_pattern_depth -= 1
   match rest_modifier_split_name_error_pos {
-    Some(pos) => self.record_ts_error(pos, "TS1005", "',' expected.")
+    Some(pos) => self.record_ts_error(pos, 1005, "',' expected.")
     None => ()
   }
   self.check_strict_binding_pattern(pattern)
@@ -9990,7 +9800,7 @@ fn Parser::parse_param(
         BindingPatternKind::Ident(_) => ()
         _ =>
           self.record_ts_error(
-            modifier_pos, "TS1187", "A parameter property may not be declared using a binding pattern.",
+            modifier_pos, 1187, "A parameter property may not be declared using a binding pattern.",
           )
       }
     None => ()
@@ -10001,26 +9811,26 @@ fn Parser::parse_param(
         if is_parameter_reserved_word_with_ts1390(name) {
           self.record_ts_error(
             binding_start_token.span.start,
-            "TS1390",
+            1390,
             "'\{name}' is not allowed as a parameter name.",
           )
           match name {
             "enum" | "function" =>
               self.record_ts_error(
                 binding_start_token.span.end,
-                "TS1003",
+                1003,
                 "Identifier expected.",
               )
             "class" =>
               self.record_ts_error(
                 binding_start_token.span.end,
-                "TS1005",
+                1005,
                 "'{' expected.",
               )
             "while" | "for" =>
               self.record_ts_error(
                 binding_start_token.span.end,
-                "TS1005",
+                1005,
                 "'(' expected.",
               )
             _ => ()
@@ -10033,7 +9843,7 @@ fn Parser::parse_param(
           if name == "null" {
             self.record_ts_error(
               binding_start_token.span.end,
-              "TS1138",
+              1138,
               "Parameter declaration expected.",
             )
           }
@@ -10063,13 +9873,13 @@ fn Parser::parse_param(
       Some(span) => span.start
       None => pattern.span.end
     }
-    self.record_ts_error(pos, "TS1047", "A rest parameter cannot be optional.")
+    self.record_ts_error(pos, 1047, "A rest parameter cannot be optional.")
   }
   if is_rest {
     match param_property_modifier_pos {
       Some(modifier_pos) =>
         self.record_ts_error(
-          modifier_pos, "TS1317", "A parameter property cannot be declared using a rest parameter.",
+          modifier_pos, 1317, "A parameter property cannot be declared using a rest parameter.",
         )
       None => ()
     }
@@ -10077,7 +9887,7 @@ fn Parser::parse_param(
       Some(_) => {
         let pos = pattern.span.start
         self.record_ts_error(
-          pos, "TS1048", "A rest parameter cannot have an initializer.",
+          pos, 1048, "A rest parameter cannot have an initializer.",
         )
       }
       None => ()
@@ -10150,7 +9960,7 @@ fn Parser::parse_block_in_function_context(
     !suppress_ambient_statement_error {
     self.record_ts_error(
       block.stmts[0].span.start,
-      "TS1036",
+      1036,
       "Statements are not allowed in ambient contexts.",
     )
   }
@@ -10187,11 +9997,7 @@ fn Parser::parse_block(self : Parser) -> Block raise ParseError {
       unreachable_before_stmt &&
       stmt_is_unreachable_error_target(stmt) &&
       !is_js_source_file(self.source_name_for_position(stmt.span.start)) {
-      self.record_ts_error(
-        stmt.span.start,
-        "TS7027",
-        "Unreachable code detected.",
-      )
+      self.record_ts_error(stmt.span.start, 7027, "Unreachable code detected.")
     }
     if in_directive_prologue {
       match stmt.kind {
@@ -10217,7 +10023,7 @@ fn Parser::parse_block(self : Parser) -> Block raise ParseError {
     (self.check_keyword(Keyword::Catch) || self.check_keyword(Keyword::Finally)) {
     self.current().span
   } else if self.at_end() {
-    self.record_ts_error(self.current().span.start, "TS1005", "'}' expected.")
+    self.record_ts_error(self.current().span.start, 1005, "'}' expected.")
     self.current().span
   } else {
     self.expect(TokenKind::RBrace, "'}'").span
@@ -10235,7 +10041,7 @@ fn Parser::parse_return_stmt(self : Parser) -> Stmt raise ParseError {
     self.suppress_return_outside_function_depth == 0 {
     self.record_ts_error(
       start.span.start,
-      "TS1108",
+      1108,
       "A 'return' statement can only be used within a function body.",
     )
   }
@@ -10271,18 +10077,14 @@ fn Parser::parse_if_stmt(self : Parser) -> Stmt raise ParseError {
     while i + 1 < self.index {
       if self.tokens[i].kind == TokenKind::Caret &&
         self.tokens[i + 1].kind == TokenKind::Eq {
-        self.record_ts_error(
-          self.tokens[i].span.start,
-          "TS1005",
-          "')' expected.",
-        )
+        self.record_ts_error(self.tokens[i].span.start, 1005, "')' expected.")
         recorded_missing_rparen = true
         break
       }
       i += 1
     }
     if !recorded_missing_rparen {
-      self.record_ts_error(self.current().span.start, "TS1005", "')' expected.")
+      self.record_ts_error(self.current().span.start, 1005, "')' expected.")
     }
   }
   let then_branch = self.parse_stmt()
@@ -10291,7 +10093,7 @@ fn Parser::parse_if_stmt(self : Parser) -> Stmt raise ParseError {
       if !missing_rparen_after_condition {
         self.record_ts_error(
           then_branch.span.start,
-          "TS1313",
+          1313,
           "The body of an 'if' statement cannot be the empty statement.",
         )
       }
@@ -10318,7 +10120,7 @@ fn Parser::parse_while_stmt(self : Parser) -> Stmt raise ParseError {
   if self.ambient_context_depth > 0 {
     self.record_ts_error(
       start.span.start,
-      "TS1036",
+      1036,
       "Statements are not allowed in ambient contexts.",
     )
   }
@@ -10397,11 +10199,11 @@ fn Parser::parse_for_stmt(self : Parser) -> Stmt raise ParseError {
         self.is_module_file(source_file)
       if !in_async_function && !in_top_level_module {
         self.record_ts_error(
-          pos, "TS1103", "'for await' loops are only allowed within async functions and at the top levels of modules.",
+          pos, 1103, "'for await' loops are only allowed within async functions and at the top levels of modules.",
         )
       } else if in_top_level_module && !self.top_level_await_options_enabled() {
         self.record_ts_error(
-          pos, "TS1432", "Top-level 'for await' loops are only allowed when the 'module' option is set to 'es2022', 'esnext', 'system', 'node16', 'node18', 'node20', 'nodenext', or 'preserve', and the 'target' option is set to 'es2017' or higher.",
+          pos, 1432, "Top-level 'for await' loops are only allowed when the 'module' option is set to 'es2022', 'esnext', 'system', 'node16', 'node18', 'node20', 'nodenext', or 'preserve', and the 'target' option is set to 'es2017' or higher.",
         )
       }
     }
@@ -10411,7 +10213,7 @@ fn Parser::parse_for_stmt(self : Parser) -> Stmt raise ParseError {
   if self.check(TokenKind::RParen) {
     self.record_ts_error(
       self.current().span.start,
-      "TS1109",
+      1109,
       "Expression expected.",
     )
     ignore(self.advance())
@@ -10451,16 +10253,12 @@ fn Parser::parse_for_stmt(self : Parser) -> Stmt raise ParseError {
       match single_decl_name {
         Some("in") => for_left = Some(ForInLeft::Var(decl))
         Some("of") => {
-          self.record_ts_error(
-            self.current().span.start,
-            "TS1005",
-            "',' expected.",
-          )
+          self.record_ts_error(self.current().span.start, 1005, "',' expected.")
           ignore(self.advance())
           if !self.at_end() {
             self.record_ts_error(
               self.current().span.start,
-              "TS1181",
+              1181,
               "Array element destructuring pattern expected.",
             )
           }
@@ -10470,7 +10268,7 @@ fn Parser::parse_for_stmt(self : Parser) -> Stmt raise ParseError {
           if self.check(TokenKind::RBracket) {
             self.record_ts_error(
               self.current().span.start,
-              "TS1005",
+              1005,
               "';' expected.",
             )
             ignore(self.advance())
@@ -10478,7 +10276,7 @@ fn Parser::parse_for_stmt(self : Parser) -> Stmt raise ParseError {
           if self.check(TokenKind::RParen) {
             self.record_ts_error(
               self.current().span.start,
-              "TS1128",
+              1128,
               "Declaration or statement expected.",
             )
             ignore(self.advance())
@@ -10530,7 +10328,7 @@ fn Parser::parse_for_stmt(self : Parser) -> Stmt raise ParseError {
             if item.init is None {
               self.record_ts_error(
                 item.pattern.span.start,
-                "TS1155",
+                1155,
                 "'const' declarations must be initialized.",
               )
             }
@@ -10546,11 +10344,7 @@ fn Parser::parse_for_stmt(self : Parser) -> Stmt raise ParseError {
           }
         }
         if recover_typed_for_head_missing_semicolon {
-          self.record_ts_error(
-            self.current().span.start,
-            "TS1005",
-            "',' expected.",
-          )
+          self.record_ts_error(self.current().span.start, 1005, "',' expected.")
           ignore(self.advance())
           let mut second_comma_pos : Position? = None
           if self.check(TokenKind::LBrace) {
@@ -10597,7 +10391,7 @@ fn Parser::parse_for_stmt(self : Parser) -> Stmt raise ParseError {
           ignore(self.loop_function_depth_stack.pop())
           ignore(self.breakable_function_depth_stack.pop())
           match second_comma_pos {
-            Some(pos) => self.record_ts_error(pos, "TS1005", "',' expected.")
+            Some(pos) => self.record_ts_error(pos, 1005, "',' expected.")
             None => ()
           }
           let expr_pos = if body.span.end.column > 1 {
@@ -10609,7 +10403,7 @@ fn Parser::parse_for_stmt(self : Parser) -> Stmt raise ParseError {
           } else {
             body.span.end
           }
-          self.record_ts_error(expr_pos, "TS1109", "Expression expected.")
+          self.record_ts_error(expr_pos, 1109, "Expression expected.")
           return {
             kind: StmtKind::For({
               init: Some(ForInit::Var(decl)),
@@ -10630,7 +10424,7 @@ fn Parser::parse_for_stmt(self : Parser) -> Stmt raise ParseError {
             if item.init is None && self.ambient_context_depth == 0 {
               self.record_ts_error(
                 item.pattern.span.start,
-                "TS1155",
+                1155,
                 "'const' declarations must be initialized.",
               )
             }
@@ -10796,7 +10590,7 @@ fn Parser::parse_switch_stmt(self : Parser) -> Stmt raise ParseError {
       if self.current_is_escaped_keyword("case") ||
         self.current_is_escaped_keyword("default") {
         self.record_ts_error(
-          case_clause_start, "TS1260", "Keywords cannot contain escape characters.",
+          case_clause_start, 1260, "Keywords cannot contain escape characters.",
         )
         while !self.check(TokenKind::RBrace) && !self.at_end() {
           ignore(self.advance())
@@ -10812,7 +10606,7 @@ fn Parser::parse_switch_stmt(self : Parser) -> Stmt raise ParseError {
         !suppress_duplicate_default_clause_diag {
         reported_duplicate_default_clause = true
         self.record_ts_error(
-          default_clause_start, "TS1113", "A 'default' clause cannot appear more than once in a 'switch' statement.",
+          default_clause_start, 1113, "A 'default' clause cannot appear more than once in a 'switch' statement.",
         )
       }
       saw_default_clause = true
@@ -10836,7 +10630,7 @@ fn Parser::parse_switch_stmt(self : Parser) -> Stmt raise ParseError {
       if self.current_is_escaped_keyword("case") ||
         self.current_is_escaped_keyword("default") {
         self.record_ts_error(
-          default_clause_start, "TS1260", "Keywords cannot contain escape characters.",
+          default_clause_start, 1260, "Keywords cannot contain escape characters.",
         )
         while !self.check(TokenKind::RBrace) && !self.at_end() {
           ignore(self.advance())
@@ -10864,7 +10658,7 @@ fn Parser::parse_break_stmt(self : Parser) -> Stmt raise ParseError {
   if ambient_statement_error {
     self.record_ts_error(
       start.span.start,
-      "TS1036",
+      1036,
       "Statements are not allowed in ambient contexts.",
     )
   }
@@ -10877,14 +10671,14 @@ fn Parser::parse_break_stmt(self : Parser) -> Stmt raise ParseError {
         if label_function_depth < self.function_depth {
           self.record_ts_error(
             start.span.start,
-            "TS1107",
+            1107,
             "Jump target cannot cross function boundary.",
           )
         }
       None =>
         self.record_ts_error(
           start.span.start,
-          "TS1116",
+          1116,
           "A 'break' statement can only jump to a label of an enclosing statement.",
         )
     }
@@ -10893,14 +10687,14 @@ fn Parser::parse_break_stmt(self : Parser) -> Stmt raise ParseError {
   } else if self.breakable_depth == 0 && !ambient_statement_error {
     self.record_ts_error(
       start.span.start,
-      "TS1105",
+      1105,
       "A 'break' statement can only be used within an enclosing iteration or switch statement.",
     )
   } else if !self.has_breakable_in_current_function() &&
     !ambient_statement_error {
     self.record_ts_error(
       start.span.start,
-      "TS1107",
+      1107,
       "Jump target cannot cross function boundary.",
     )
   }
@@ -10922,7 +10716,7 @@ fn Parser::parse_continue_stmt(self : Parser) -> Stmt raise ParseError {
         if label_function_depth < self.function_depth {
           self.record_ts_error(
             start.span.start,
-            "TS1107",
+            1107,
             "Jump target cannot cross function boundary.",
           )
         } else {
@@ -10931,7 +10725,7 @@ fn Parser::parse_continue_stmt(self : Parser) -> Stmt raise ParseError {
             _ =>
               self.record_ts_error(
                 start.span.start,
-                "TS1115",
+                1115,
                 "A 'continue' statement can only jump to a label of an enclosing iteration statement.",
               )
           }
@@ -10939,7 +10733,7 @@ fn Parser::parse_continue_stmt(self : Parser) -> Stmt raise ParseError {
       None =>
         self.record_ts_error(
           start.span.start,
-          "TS1115",
+          1115,
           "A 'continue' statement can only jump to a label of an enclosing iteration statement.",
         )
     }
@@ -10951,20 +10745,20 @@ fn Parser::parse_continue_stmt(self : Parser) -> Stmt raise ParseError {
       if self.async_function_depth > 0 {
         self.record_ts_error(
           start.span.start,
-          "TS1107",
+          1107,
           "Jump target cannot cross function boundary.",
         )
       } else {
         self.record_ts_error(
           start.span.start,
-          "TS1104",
+          1104,
           "A 'continue' statement can only be used within an enclosing iteration statement.",
         )
       }
     } else if !self.has_iteration_in_current_function() {
       self.record_ts_error(
         start.span.start,
-        "TS1107",
+        1107,
         "Jump target cannot cross function boundary.",
       )
     }
@@ -10979,11 +10773,7 @@ fn Parser::parse_continue_stmt(self : Parser) -> Stmt raise ParseError {
 fn Parser::parse_throw_stmt(self : Parser) -> Stmt raise ParseError {
   let start = self.expect_keyword(Keyword::Throw)
   if self.current().span.start.line > start.span.end.line {
-    self.record_ts_error(
-      start.span.end,
-      "TS1142",
-      "Line break not permitted here.",
-    )
+    self.record_ts_error(start.span.end, 1142, "Line break not permitted here.")
     let missing_expr : Expr = { kind: ExprKind::Ident(""), span: start.span }
     return { kind: StmtKind::Throw(missing_expr), span: start.span }
   }
@@ -11011,7 +10801,7 @@ fn Parser::parse_with_stmt(self : Parser) -> Stmt raise ParseError {
   if self.async_function_depth > 0 && self.with_statement_depth == 0 {
     self.record_ts_error(
       start.start,
-      "TS1300",
+      1300,
       "'with' statements are not allowed in an async function block.",
     )
   } else if self.strict_mode &&
@@ -11019,7 +10809,7 @@ fn Parser::parse_with_stmt(self : Parser) -> Stmt raise ParseError {
     self.with_statement_depth == 0 {
     self.record_ts_error(
       start.start,
-      "TS1101",
+      1101,
       "'with' statements are not allowed in strict mode.",
     )
   }
@@ -11052,7 +10842,7 @@ fn Parser::parse_catch_param(self : Parser) -> CatchParam raise ParseError {
       let init_expr = self.parse_expression_no_comma()
       self.record_ts_error(
         init_expr.span.start,
-        "TS1197",
+        1197,
         "Catch clause variable cannot have an initializer.",
       )
       end_span = init_expr.span
@@ -11073,7 +10863,7 @@ fn Parser::parse_catch_param(self : Parser) -> CatchParam raise ParseError {
     let init_expr = self.parse_expression_no_comma()
     self.record_ts_error(
       init_expr.span.start,
-      "TS1197",
+      1197,
       "Catch clause variable cannot have an initializer.",
     )
     end_span = init_expr.span
@@ -11098,7 +10888,7 @@ fn Parser::parse_try_stmt(self : Parser) -> Stmt raise ParseError {
     self.index > 0 &&
     self.previous().kind != TokenKind::RBrace
   if recovered_missing_try_block_rbrace {
-    self.record_ts_error(self.current().span.start, "TS1005", "'try' expected.")
+    self.record_ts_error(self.current().span.start, 1005, "'try' expected.")
   }
   let mut handler : CatchClause? = None
   let mut finalizer : Block? = None
@@ -11120,7 +10910,7 @@ fn Parser::parse_try_stmt(self : Parser) -> Stmt raise ParseError {
       handler = Some({ param, body })
     } else {
       skip_finally_in_this_try = true
-      self.record_ts_error(self.current().span.start, "TS1005", "'{' expected.")
+      self.record_ts_error(self.current().span.start, 1005, "'{' expected.")
       let mut recovered_end = self.current().span
       while !self.at_end() &&
             !self.check(TokenKind::RBrace) &&
@@ -11145,13 +10935,13 @@ fn Parser::parse_try_stmt(self : Parser) -> Stmt raise ParseError {
     self.source_name_for_position(start.span.start) ==
     "constructorWithIncompleteTypeAnnotation.ts" {
     match catch_clause_start {
-      Some(pos) => self.record_ts_error(pos, "TS1005", "'try' expected.")
+      Some(pos) => self.record_ts_error(pos, 1005, "'try' expected.")
       None => ()
     }
     match self.find_enclosing_class_close_after_current() {
       Some(class_close_pos) =>
         self.record_ts_error(
-          class_close_pos, "TS1128", "Declaration or statement expected.",
+          class_close_pos, 1128, "Declaration or statement expected.",
         )
       None => ()
     }
@@ -11177,7 +10967,7 @@ fn Parser::parse_type_alias(self : Parser) -> Stmt raise ParseError {
     self.ambient_context_depth > 0 {
     self.record_ts_error(
       name_span.start,
-      "TS1142",
+      1142,
       "Line break not permitted here.",
     )
   }
@@ -11186,7 +10976,7 @@ fn Parser::parse_type_alias(self : Parser) -> Stmt raise ParseError {
   let suppress_missing_rhs_error = name_is_number &&
     self.check(TokenKind::LBrace)
   if suppress_missing_rhs_error {
-    self.record_ts_error(self.current().span.start, "TS1005", "';' expected.")
+    self.record_ts_error(self.current().span.start, 1005, "';' expected.")
   }
   let any_node : TypeNode = { kind: TypeKind::Ident("any"), span: start.span }
   let saved_type_alias_seen_import_attr_error = self.type_alias_seen_import_attr_error
@@ -11203,7 +10993,7 @@ fn Parser::parse_type_alias(self : Parser) -> Stmt raise ParseError {
         self.check(TokenKind::Comma) ||
         self.check(TokenKind::RBrace) ||
         self.at_end() {
-        self.record_ts_error(eq_span.end, "TS1110", "Type expected.")
+        self.record_ts_error(eq_span.end, 1110, "Type expected.")
         any_node
       } else if self.check_keyword(Keyword::Import) &&
         self.peek_kind(1) != Some(TokenKind::LParen) {
@@ -11214,7 +11004,7 @@ fn Parser::parse_type_alias(self : Parser) -> Stmt raise ParseError {
     } else {
       if !suppress_missing_rhs_error {
         if name != "type" {
-          self.record_ts_error(name_span.end, "TS1110", "Type expected.")
+          self.record_ts_error(name_span.end, 1110, "Type expected.")
         }
         let missing_eq_pos = if self.source_name_for_position(name_span.end) !=
           self.source_name_for_position(self.current().span.start) {
@@ -11226,7 +11016,7 @@ fn Parser::parse_type_alias(self : Parser) -> Stmt raise ParseError {
         } else {
           self.current().span.start
         }
-        self.record_ts_error(missing_eq_pos, "TS1005", "'=' expected.")
+        self.record_ts_error(missing_eq_pos, 1005, "'=' expected.")
       } else {
         // Keep recovery localized for `type 100 {}`-style invalid names.
       }
@@ -11254,7 +11044,7 @@ fn Parser::parse_type_alias(self : Parser) -> Stmt raise ParseError {
         None => ()
       }
     }
-    self.record_ts_error(error_pos, "TS1005", "';' expected.")
+    self.record_ts_error(error_pos, 1005, "';' expected.")
     ignore(self.skip_expression_suffix_in_type())
   }
   if self.eat(TokenKind::Semicolon) {
@@ -11531,17 +11321,13 @@ fn Parser::record_numeric_literal_following_token_error_if_needed(
       if !has_missing_exponent_digits {
         self.record_ts_error(
           self.current().span.start,
-          "TS1351",
+          1351,
           "An identifier or keyword cannot immediately follow a numeric literal.",
         )
       }
     TokenKind::Number(_) =>
       if is_bigint {
-        self.record_ts_error(
-          self.current().span.start,
-          "TS1005",
-          "';' expected.",
-        )
+        self.record_ts_error(self.current().span.start, 1005, "';' expected.")
       }
     _ => ()
   }
@@ -11571,7 +11357,7 @@ fn Parser::record_number_literal_error_if_needed(
   }
   if !value.has_suffix("n") {
     match number_literal_missing_exponent_digit_pos(span.start, value) {
-      Some(pos) => self.record_ts_error(pos, "TS1124", "Digit expected.")
+      Some(pos) => self.record_ts_error(pos, 1124, "Digit expected.")
       None => ()
     }
   }
@@ -11615,7 +11401,7 @@ fn Parser::record_number_literal_error_if_needed(
   if has_eight_or_nine {
     self.record_ts_error(
       span.start,
-      "TS1489",
+      1489,
       "Decimals with leading zeros are not allowed.",
     )
     return
@@ -11626,7 +11412,7 @@ fn Parser::record_number_literal_error_if_needed(
   let suggested_digits = canonical_legacy_octal_digits(digits)
   self.record_ts_error(
     span.start,
-    "TS1121",
+    1121,
     "Octal literals are not allowed. Use the syntax '0o\{suggested_digits}'.",
   )
   if value.contains(".") || value.contains("e") || value.contains("E") {
@@ -11635,7 +11421,7 @@ fn Parser::record_number_literal_error_if_needed(
       line: span.start.line,
       column: span.start.column + head.length(),
     }
-    self.record_ts_error(semicolon_pos, "TS1005", "';' expected.")
+    self.record_ts_error(semicolon_pos, 1005, "';' expected.")
   }
 }
 
@@ -11663,7 +11449,7 @@ fn Parser::record_bigint_literal_error_if_needed(
       let digits = core.view(start_offset=1).to_string()
       self.record_ts_error(
         span.start,
-        "TS1121",
+        1121,
         "Octal literals are not allowed. Use the syntax '0o\{digits}'.",
       )
       let comma_pos : Position = {
@@ -11671,7 +11457,7 @@ fn Parser::record_bigint_literal_error_if_needed(
         line: span.start.line,
         column: span.start.column + core.length(),
       }
-      self.record_ts_error(comma_pos, "TS1005", "',' expected.")
+      self.record_ts_error(comma_pos, 1005, "',' expected.")
       return
     }
     if !is_hex &&
@@ -11680,11 +11466,11 @@ fn Parser::record_bigint_literal_error_if_needed(
       (core.contains("e") || core.contains("E")) {
       self.record_ts_error(
         span.start,
-        "TS1352",
+        1352,
         "A bigint literal cannot use exponential notation.",
       )
       match number_literal_missing_exponent_digit_pos(span.start, core) {
-        Some(pos) => self.record_ts_error(pos, "TS1124", "Digit expected.")
+        Some(pos) => self.record_ts_error(pos, 1124, "Digit expected.")
         None => ()
       }
       return
@@ -11692,7 +11478,7 @@ fn Parser::record_bigint_literal_error_if_needed(
     if core.contains(".") {
       self.record_ts_error(
         span.start,
-        "TS1353",
+        1353,
         "A bigint literal must be an integer.",
       )
       return
@@ -11703,7 +11489,7 @@ fn Parser::record_bigint_literal_error_if_needed(
         line: span.start.line,
         column: span.start.column + 2,
       }
-      self.record_ts_error(pos, "TS1177", "Binary digit expected.")
+      self.record_ts_error(pos, 1177, "Binary digit expected.")
       return
     }
     if value == "0on" || value == "0On" {
@@ -11712,7 +11498,7 @@ fn Parser::record_bigint_literal_error_if_needed(
         line: span.start.line,
         column: span.start.column + 2,
       }
-      self.record_ts_error(pos, "TS1178", "Octal digit expected.")
+      self.record_ts_error(pos, 1178, "Octal digit expected.")
       return
     }
     if value == "0xn" || value == "0Xn" {
@@ -11721,7 +11507,7 @@ fn Parser::record_bigint_literal_error_if_needed(
         line: span.start.line,
         column: span.start.column + 2,
       }
-      self.record_ts_error(pos, "TS1125", "Hexadecimal digit expected.")
+      self.record_ts_error(pos, 1125, "Hexadecimal digit expected.")
       return
     }
     return
@@ -11731,7 +11517,7 @@ fn Parser::record_bigint_literal_error_if_needed(
     self.current().span.start.offset == span.end.offset {
     self.record_ts_error(
       span.start,
-      "TS1353",
+      1353,
       "A bigint literal must be an integer.",
     )
   }
@@ -11756,7 +11542,7 @@ fn Parser::record_enum_legacy_octal_error_in_expr(
         let digits = value.view(start_offset=1).to_string()
         self.record_ts_error(
           expr.span.start,
-          "TS1121",
+          1121,
           "Octal literals are not allowed. Use the syntax '0o\{digits}'.",
         )
       }
@@ -11769,7 +11555,7 @@ fn Parser::record_enum_legacy_octal_error_in_expr(
                 let digits = value.view(start_offset=1).to_string()
                 self.record_ts_error(
                   expr.span.start,
-                  "TS1121",
+                  1121,
                   "Octal literals are not allowed. Use the syntax '-0o\{digits}'.",
                 )
               } else {
@@ -11898,7 +11684,7 @@ fn Parser::parse_enum_decl(
               ) {
               self.record_ts_error(
                 expr.span.start,
-                "TS1066",
+                1066,
                 "In ambient enum declarations member initializer must be constant expression.",
               )
             }
@@ -11915,7 +11701,7 @@ fn Parser::parse_enum_decl(
                   ) {
                   self.record_ts_error(
                     expr.span.start,
-                    "TS1281",
+                    1281,
                     "Cannot access '\{member_ref_name}' from another file without qualification when 'isolatedModules' is enabled. Use '\{name}.\{member_ref_name}' instead.",
                   )
                 }
@@ -11934,7 +11720,7 @@ fn Parser::parse_enum_decl(
       previous_member_allows_auto_increment = false
       self.record_ts_error(
         member_span.start,
-        "TS1061",
+        1061,
         "Enum member must have initializer.",
       )
     }
@@ -11983,14 +11769,10 @@ fn Parser::parse_interface_decl(self : Parser) -> Stmt raise ParseError {
     let (found, _) = self.parse_ident_name()
     name = found
     if self.eat(TokenKind::Dot) {
-      self.record_ts_error(
-        self.previous().span.start,
-        "TS1005",
-        "'{' expected.",
-      )
+      self.record_ts_error(self.previous().span.start, 1005, "'{' expected.")
       self.record_ts_error(
         self.current().span.start,
-        "TS1434",
+        1434,
         "Unexpected keyword or identifier.",
       )
       if self.current().kind is TokenKind::Ident(_) ||
@@ -12003,7 +11785,7 @@ fn Parser::parse_interface_decl(self : Parser) -> Stmt raise ParseError {
     if self.check(TokenKind::LBrace) {
       self.record_ts_error(
         self.current().span.start,
-        "TS1438",
+        1438,
         "Interface must be given a name.",
       )
     }
@@ -12039,7 +11821,7 @@ fn Parser::parse_interface_decl(self : Parser) -> Stmt raise ParseError {
   if self.eat_keyword(Keyword::Implements) {
     self.record_ts_error(
       self.previous().span.start,
-      "TS1176",
+      1176,
       "Interface declaration cannot have 'implements' clause.",
     )
     while true {
@@ -12051,7 +11833,7 @@ fn Parser::parse_interface_decl(self : Parser) -> Stmt raise ParseError {
     }
   }
   if name_is_number && self.check(TokenKind::LBrace) {
-    self.record_ts_error(self.current().span.start, "TS1005", "';' expected.")
+    self.record_ts_error(self.current().span.start, 1005, "';' expected.")
   }
   ignore(self.expect(TokenKind::LBrace, "'{'"))
   let members : Array[InterfaceMember] = []
@@ -12114,7 +11896,7 @@ fn Parser::parse_interface_member(
       let start_span = self.current().span
       self.record_ts_error(
         start_span.start,
-        "TS1131",
+        1131,
         "Property or signature expected.",
       )
       let mut end_span = start_span
@@ -12131,7 +11913,7 @@ fn Parser::parse_interface_member(
       if self.check(TokenKind::RBrace) {
         self.record_ts_error(
           self.current().span.start,
-          "TS1128",
+          1128,
           "Declaration or statement expected.",
         )
       }
@@ -12150,7 +11932,7 @@ fn Parser::parse_interface_member(
     let start_span = self.advance().span
     self.record_ts_error(
       start_span.start,
-      "TS1131",
+      1131,
       "Property or signature expected.",
     )
     let mut end_span = start_span
@@ -12188,13 +11970,13 @@ fn Parser::parse_interface_member(
     }
     if self.eat(TokenKind::Question) {
       let question_span = self.previous().span
-      self.record_ts_error(question_span.start, "TS1005", "';' expected.")
+      self.record_ts_error(question_span.start, 1005, "';' expected.")
       let mut end_span = question_span
       if self.eat(TokenKind::Colon) {
         let colon_span = self.previous().span
         self.record_ts_error(
           colon_span.start,
-          "TS1131",
+          1131,
           "Property or signature expected.",
         )
         end_span = colon_span
@@ -12259,13 +12041,13 @@ fn Parser::parse_interface_member(
       }
       if self.eat(TokenKind::Question) {
         let question_span = self.previous().span
-        self.record_ts_error(question_span.start, "TS1005", "';' expected.")
+        self.record_ts_error(question_span.start, 1005, "';' expected.")
         let mut end_span = question_span
         if self.eat(TokenKind::Colon) {
           let colon_span = self.previous().span
           self.record_ts_error(
             colon_span.start,
-            "TS1131",
+            1131,
             "Property or signature expected.",
           )
           end_span = colon_span
@@ -12349,7 +12131,7 @@ fn Parser::parse_interface_member(
         if is_index_signature_member {
           self.record_ts_error(
             modifier_pos,
-            "TS1071",
+            1071,
             "'\{modifier_name}' modifier cannot appear on an index signature.",
           )
         }
@@ -12363,7 +12145,7 @@ fn Parser::parse_interface_member(
       }
       if self.should_report_optional_index_signature_param_error(question_pos) {
         self.record_ts_error(
-          question_pos, "TS1019", "An index signature parameter cannot have a question mark.",
+          question_pos, 1019, "An index signature parameter cannot have a question mark.",
         )
       }
     }
@@ -12380,12 +12162,12 @@ fn Parser::parse_interface_member(
       member_type_after_bracket != Some(TokenKind::Question) {
       self.record_ts_error(
         self.current().span.start,
-        "TS1021",
+        1021,
         "An index signature must have a type annotation.",
       )
     }
     self.parse_bracket_member_name_with_computed_name_error(
-      "TS1169", "A computed property name in an interface must refer to an expression whose type is a literal type or a 'unique symbol' type.",
+      1169, "A computed property name in an interface must refer to an expression whose type is a literal type or a 'unique symbol' type.",
     )
   } else {
     let token = self.current()
@@ -12399,13 +12181,13 @@ fn Parser::parse_interface_member(
   }
   if parsed_index_signature_member && self.eat(TokenKind::Question) {
     let question_span = self.previous().span
-    self.record_ts_error(question_span.start, "TS1005", "';' expected.")
+    self.record_ts_error(question_span.start, 1005, "';' expected.")
     let mut end_span = question_span
     if self.eat(TokenKind::Colon) {
       let colon_span = self.previous().span
       self.record_ts_error(
         colon_span.start,
-        "TS1131",
+        1131,
         "Property or signature expected.",
       )
       end_span = colon_span
@@ -12471,7 +12253,7 @@ fn Parser::parse_interface_member(
     if self.check(TokenKind::LBrace) {
       self.record_ts_error(
         self.current().span.start,
-        "TS1183",
+        1183,
         "An implementation cannot be declared in ambient contexts.",
       )
       let body = self.parse_block_in_function_context()
@@ -12493,7 +12275,7 @@ fn Parser::parse_interface_member(
     let expr = self.parse_expression_no_comma()
     self.record_ts_error(
       expr.span.start,
-      "TS1246",
+      1246,
       "An interface property cannot have an initializer.",
     )
     end_span = expr.span
@@ -12542,11 +12324,7 @@ fn Parser::parse_type_member(self : Parser) -> TypeMember raise ParseError {
       let ret_type = if self.eat(TokenKind::Colon) {
         self.parse_member_type_with_restricted_multiline_index_postfix()
       } else if self.eat(TokenKind::Arrow) {
-        self.record_ts_error(
-          self.previous().span.start,
-          "TS1005",
-          "':' expected.",
-        )
+        self.record_ts_error(self.previous().span.start, 1005, "':' expected.")
         self.parse_member_type_with_restricted_multiline_index_postfix()
       } else {
         { kind: TypeKind::Ident("any"), span: start.span }
@@ -12586,11 +12364,7 @@ fn Parser::parse_type_member(self : Parser) -> TypeMember raise ParseError {
     let ret_type = if self.eat(TokenKind::Colon) {
       self.parse_member_type_with_restricted_multiline_index_postfix()
     } else if self.eat(TokenKind::Arrow) {
-      self.record_ts_error(
-        self.previous().span.start,
-        "TS1005",
-        "':' expected.",
-      )
+      self.record_ts_error(self.previous().span.start, 1005, "':' expected.")
       self.parse_member_type_with_restricted_multiline_index_postfix()
     } else {
       { kind: TypeKind::Ident("any"), span: start.span }
@@ -12704,7 +12478,7 @@ fn Parser::parse_type_member(self : Parser) -> TypeMember raise ParseError {
       }
       if self.should_report_optional_index_signature_param_error(question_pos) {
         self.record_ts_error(
-          question_pos, "TS1019", "An index signature parameter cannot have a question mark.",
+          question_pos, 1019, "An index signature parameter cannot have a question mark.",
         )
       }
     }
@@ -12713,7 +12487,7 @@ fn Parser::parse_type_member(self : Parser) -> TypeMember raise ParseError {
         if is_index_signature_member {
           self.record_ts_error(
             modifier_pos,
-            "TS1071",
+            1071,
             "'\{modifier_name}' modifier cannot appear on an index signature.",
           )
         }
@@ -12731,7 +12505,7 @@ fn Parser::parse_type_member(self : Parser) -> TypeMember raise ParseError {
       self.peek_kind_after_matching_bracket() != Some(TokenKind::Colon) {
       self.record_ts_error(
         self.current().span.start,
-        "TS1021",
+        1021,
         "An index signature must have a type annotation.",
       )
     }
@@ -12787,7 +12561,7 @@ fn Parser::parse_type_member(self : Parser) -> TypeMember raise ParseError {
     if self.check(TokenKind::LBrace) {
       self.record_ts_error(
         self.current().span.start,
-        "TS1183",
+        1183,
         "An implementation cannot be declared in ambient contexts.",
       )
       let body = self.parse_block_in_function_context()
@@ -12809,7 +12583,7 @@ fn Parser::parse_type_member(self : Parser) -> TypeMember raise ParseError {
     let expr = self.parse_expression_no_comma()
     self.record_ts_error(
       expr.span.start,
-      "TS1247",
+      1247,
       "A type literal property cannot have an initializer.",
     )
     end_span = expr.span
@@ -12830,7 +12604,7 @@ fn Parser::parse_expr_stmt(self : Parser) -> Stmt raise ParseError {
   let expr_span = expr.span
   let mut end_span = expr_span
   if self.eat(TokenKind::Colon) {
-    self.record_ts_error(self.previous().span.start, "TS1005", "';' expected.")
+    self.record_ts_error(self.previous().span.start, 1005, "';' expected.")
     let type_ann = self.parse_type()
     end_span = type_ann.span
   }
@@ -12855,12 +12629,12 @@ fn Parser::parse_expr_stmt(self : Parser) -> Stmt raise ParseError {
     self.index > 0 &&
     self.previous().kind == TokenKind::RParen &&
     !skip_lbrace_semicolon_diag {
-    self.record_ts_error(self.previous().span.start, "TS1005", "';' expected.")
+    self.record_ts_error(self.previous().span.start, 1005, "';' expected.")
   } else if !self.check(TokenKind::RBrace) &&
     !self.at_end() &&
     self.current().span.start.line == end_span.end.line &&
     self.current().kind is TokenKind::String(_) {
-    self.record_ts_error(self.current().span.start, "TS1005", "';' expected.")
+    self.record_ts_error(self.current().span.start, 1005, "';' expected.")
   }
   { kind: StmtKind::ExprStmt(expr), span: expr_span.merge(end_span) }
 }
@@ -12938,9 +12712,9 @@ fn Parser::recover_expression_from_parse_error(
               }
             }
           }
-          self.record_ts_error(semicolon_pos, "TS1005", "';' expected.")
+          self.record_ts_error(semicolon_pos, 1005, "';' expected.")
         } else {
-          self.record_ts_error(pos, "TS1109", "Expression expected.")
+          self.record_ts_error(pos, 1109, "Expression expected.")
           let catch_member_recovery = self.current().kind ==
             TokenKind::Keyword(Keyword::Catch) &&
             self.peek_kind(1) == Some(TokenKind::Dot)
@@ -12949,7 +12723,7 @@ fn Parser::recover_expression_from_parse_error(
               Some(dot_token) =>
                 self.record_ts_error(
                   dot_token.span.start,
-                  "TS1005",
+                  1005,
                   "'{' expected.",
                 )
               None => ()
@@ -12962,7 +12736,7 @@ fn Parser::recover_expression_from_parse_error(
           if gt_var_followup {
             self.record_ts_error(
               self.current().span.start,
-              "TS1109",
+              1109,
               "Expression expected.",
             )
           }
@@ -12975,7 +12749,7 @@ fn Parser::recover_expression_from_parse_error(
               Some(next_token) =>
                 self.record_ts_error(
                   next_token.span.start,
-                  "TS1109",
+                  1109,
                   "Expression expected.",
                 )
               None => ()
@@ -13002,7 +12776,7 @@ fn Parser::recover_expression_from_parse_error(
             offset += 1
           }
         }
-        self.record_ts_error(diag_pos, "TS1005", "')' expected.")
+        self.record_ts_error(diag_pos, 1005, "')' expected.")
       } else {
         self.record_error(err)
       }
@@ -13052,7 +12826,7 @@ fn Parser::recover_expression(self : Parser) -> Expr {
       recorded_public_call_like_name_error = true
       match self.peek(1) {
         Some(name_token) =>
-          self.record_ts_error(name_token.span.start, "TS1005", "';' expected.")
+          self.record_ts_error(name_token.span.start, 1005, "';' expected.")
         None => ()
       }
     }
@@ -13064,7 +12838,7 @@ fn Parser::recover_expression(self : Parser) -> Expr {
       recorded_public_call_like_colon_error = true
       self.record_ts_error(
         self.current().span.start,
-        "TS1109",
+        1109,
         "Expression expected.",
       )
     }
@@ -13086,7 +12860,7 @@ fn Parser::parse_assignment(self : Parser) -> Expr raise ParseError {
         _ => false
       }
       if missing_rhs_at_eof {
-        self.record_ts_error(assignment_end, "TS1109", "Expression expected.")
+        self.record_ts_error(assignment_end, 1109, "Expression expected.")
       }
       let span = expr.span.merge(value.span)
       { kind: ExprKind::Assign({ op, target: expr, value }), span }
@@ -13213,7 +12987,7 @@ fn Parser::parse_conditional(self : Parser) -> Expr raise ParseError {
     expr.kind is ExprKind::Arrow(_) &&
     self.index > 0 &&
     self.previous().kind == TokenKind::RBrace {
-    self.record_ts_error(self.current().span.start, "TS1005", "';' expected.")
+    self.record_ts_error(self.current().span.start, 1005, "';' expected.")
     let target_line = self.current().span.start.line
     while !self.check(TokenKind::Colon) &&
           !self.at_end() &&
@@ -13221,7 +12995,7 @@ fn Parser::parse_conditional(self : Parser) -> Expr raise ParseError {
       ignore(self.advance())
     }
     if self.check(TokenKind::Colon) {
-      self.record_ts_error(self.current().span.start, "TS1005", "';' expected.")
+      self.record_ts_error(self.current().span.start, 1005, "';' expected.")
       ignore(self.advance())
     }
     return expr
@@ -13673,16 +13447,12 @@ fn Parser::parse_unary(self : Parser) -> Expr raise ParseError {
         gt_span = self.previous().span
       } else {
         missing_type_assert_gt = true
-        self.record_ts_error(
-          self.current().span.start,
-          "TS1005",
-          "'>' expected.",
-        )
+        self.record_ts_error(self.current().span.start, 1005, "'>' expected.")
       }
       if self.check_keyword(Keyword::Yield) || self.check_ident_name("yield") {
         self.record_ts_error(
           self.current().span.start,
-          "TS1109",
+          1109,
           "Expression expected.",
         )
       }
@@ -13691,7 +13461,7 @@ fn Parser::parse_unary(self : Parser) -> Expr raise ParseError {
       } else if missing_type_assert_gt && self.at_end() {
         { kind: ExprKind::Ident(""), span: gt_span }
       } else {
-        self.record_ts_error(gt_span.end, "TS1109", "Expression expected.")
+        self.record_ts_error(gt_span.end, 1109, "Expression expected.")
         { kind: ExprKind::Ident(""), span: gt_span }
       }
       self.record_erasable_syntax_only_error_if_needed(assert_start.start)
@@ -13721,7 +13491,7 @@ fn Parser::parse_unary(self : Parser) -> Expr raise ParseError {
           }
         }
         if !suppress_js_lt_assertion_diag {
-          self.record_ts_error(start.start, "TS1109", "Expression expected.")
+          self.record_ts_error(start.start, 1109, "Expression expected.")
         }
         let mut end_span = self.current().span
         ignore(self.advance())
@@ -13749,7 +13519,7 @@ fn Parser::parse_unary(self : Parser) -> Expr raise ParseError {
             if !(self.current().kind is TokenKind::String(_)) {
               self.record_ts_error(
                 self.current().span.start,
-                "TS1141",
+                1141,
                 "String literal expected.",
               )
             }
@@ -13763,7 +13533,7 @@ fn Parser::parse_unary(self : Parser) -> Expr raise ParseError {
               if self.at_end() || self.check(TokenKind::RParen) {
                 self.record_ts_error(
                   self.previous().span.end,
-                  "TS1109",
+                  1109,
                   "Expression expected.",
                 )
               }
@@ -13798,7 +13568,7 @@ fn Parser::parse_unary(self : Parser) -> Expr raise ParseError {
         ExprKind::Ident(_) =>
           self.record_ts_error(
             expr.span.start,
-            "TS1102",
+            1102,
             "'delete' cannot be called on an identifier in strict mode.",
           )
         _ => ()
@@ -13843,13 +13613,13 @@ fn Parser::parse_unary(self : Parser) -> Expr raise ParseError {
       if allow_top_level_module_await && !self.top_level_await_options_enabled() {
         self.record_ts_error(
           start.start,
-          "TS1378",
+          1378,
           "Top-level 'await' expressions are only allowed when the 'module' option is set to 'es2022', 'esnext', 'system', 'node16', 'node18', 'node20', 'nodenext', or 'preserve', and the 'target' option is set to 'es2017' or higher.",
         )
       } else if !allow_async_function_await && !allow_top_level_module_await {
         self.record_ts_error(
           start.start,
-          "TS1308",
+          1308,
           "'await' expressions are only allowed within async functions and at the top levels of modules.",
         )
       }
@@ -13861,13 +13631,13 @@ fn Parser::parse_unary(self : Parser) -> Expr raise ParseError {
         if self.is_await_self_reference_binding(name, expr.span.start) {
           self.record_ts_error(
             start.start,
-            "TS1062",
+            1062,
             "Type is referenced directly or indirectly in the fulfillment callback of its own 'then' method.",
           )
         } else if self.is_thenable_await_binding(name, expr.span.start) {
           self.record_ts_error(
             expr.span.start,
-            "TS1320",
+            1320,
             "Type of 'await' operand must either be a valid promise or must not contain a callable 'then' member.",
           )
         }
@@ -13898,7 +13668,7 @@ fn Parser::parse_unary(self : Parser) -> Expr raise ParseError {
       self.parameter_initializer_depth == 0 {
       self.record_ts_error(
         start.start,
-        "TS1163",
+        1163,
         "A 'yield' expression is only allowed in a generator body.",
       )
     }
@@ -13918,7 +13688,7 @@ fn Parser::parse_unary(self : Parser) -> Expr raise ParseError {
           if self.is_thenable_await_binding(name, expr.span.start) {
             self.record_ts_error(
               expr.span.start,
-              "TS1320",
+              1320,
               "Type of 'await' operand must either be a valid promise or must not contain a callable 'then' member.",
             )
           }
@@ -14034,7 +13804,7 @@ fn Parser::is_ambiguous_generic_assertion_with_lshift(self : Parser) -> Bool {
 ///|
 fn Parser::parse_ambiguous_generic_assertion_with_lshift(self : Parser) -> Expr {
   let start_span = self.current().span
-  self.record_ts_error(start_span.start, "TS1109", "Expression expected.")
+  self.record_ts_error(start_span.start, 1109, "Expression expected.")
   ignore(self.advance())
   let mut colon_pos : Position? = None
   let mut rparen_pos : Position? = None
@@ -14055,15 +13825,15 @@ fn Parser::parse_ambiguous_generic_assertion_with_lshift(self : Parser) -> Expr 
     ignore(self.advance())
   }
   match colon_pos {
-    Some(pos) => self.record_ts_error(pos, "TS1005", "')' expected.")
+    Some(pos) => self.record_ts_error(pos, 1005, "')' expected.")
     None => ()
   }
   match rparen_pos {
-    Some(pos) => self.record_ts_error(pos, "TS1005", "',' expected.")
+    Some(pos) => self.record_ts_error(pos, 1005, "',' expected.")
     None => ()
   }
   match arrow_pos {
-    Some(pos) => self.record_ts_error(pos, "TS1005", "';' expected.")
+    Some(pos) => self.record_ts_error(pos, 1005, "';' expected.")
     None => ()
   }
   let end_span = if self.index > 0 { self.previous().span } else { start_span }
@@ -14119,8 +13889,8 @@ fn Parser::parse_jsx_tag_name(
     leading_colon = true
     let colon_span = self.advance().span
     if !is_closing {
-      self.record_ts_error(lt_span.start, "TS1109", "Expression expected.")
-      self.record_ts_error(colon_span.start, "TS1109", "Expression expected.")
+      self.record_ts_error(lt_span.start, 1109, "Expression expected.")
+      self.record_ts_error(colon_span.start, 1109, "Expression expected.")
     }
     if is_jsx_name_token(self.current().kind) {
       ignore(self.advance())
@@ -14133,14 +13903,14 @@ fn Parser::parse_jsx_tag_name(
         if name.has_prefix("#") {
           self.record_ts_error(
             self.current().span.end,
-            "TS1003",
+            1003,
             "Identifier expected.",
           )
           ignore(self.advance())
         } else if !is_closing {
           self.record_ts_error(
             self.current().span.start,
-            "TS1003",
+            1003,
             "Identifier expected.",
           )
         }
@@ -14148,7 +13918,7 @@ fn Parser::parse_jsx_tag_name(
         if !is_closing {
           self.record_ts_error(
             self.current().span.start,
-            "TS1003",
+            1003,
             "Identifier expected.",
           )
         }
@@ -14170,7 +13940,7 @@ fn Parser::parse_jsx_tag_name(
             if name.has_prefix("#") {
               self.record_ts_error(
                 self.current().span.end,
-                "TS1003",
+                1003,
                 "Identifier expected.",
               )
               ignore(self.advance())
@@ -14195,20 +13965,16 @@ fn Parser::parse_jsx_tag_name(
       colon_count += 1
       if colon_count > 1 {
         if is_closing {
-          self.record_ts_error(colon_span.start, "TS1005", "'>' expected.")
+          self.record_ts_error(colon_span.start, 1005, "'>' expected.")
           closing_extra_colon = true
         } else {
-          self.record_ts_error(
-            colon_span.start,
-            "TS1003",
-            "Identifier expected.",
-          )
+          self.record_ts_error(colon_span.start, 1003, "Identifier expected.")
         }
       }
       if !is_jsx_name_token(self.current().kind) {
         self.record_ts_error(
           self.current().span.start,
-          "TS1003",
+          1003,
           "Identifier expected.",
         )
         break
@@ -14254,7 +14020,7 @@ fn Parser::parse_jsx_attribute_initializer(
   if self.check(TokenKind::Gt) || self.check(TokenKind::Slash) || self.at_end() {
     self.record_ts_error(
       self.current().span.start,
-      "TS1145",
+      1145,
       "'{' or JSX element expected.",
     )
     return (self.current().span, None)
@@ -14273,7 +14039,7 @@ fn Parser::parse_jsx_type_args(self : Parser) -> Span raise ParseError {
   if self.check(TokenKind::Gt) {
     self.record_ts_error(
       lt_span.start,
-      "TS1099",
+      1099,
       "Type argument list cannot be empty.",
     )
     return self.advance().span
@@ -14285,7 +14051,7 @@ fn Parser::parse_jsx_type_args(self : Parser) -> Span raise ParseError {
       if self.check(TokenKind::Gt) {
         self.record_ts_error(
           comma_span.start,
-          "TS1009",
+          1009,
           "Trailing comma not allowed.",
         )
         break
@@ -14321,7 +14087,7 @@ fn Parser::parse_jsx_opening_tag_rest(
       continue
     }
     if pending_leading_colon_comma {
-      self.record_ts_error(self.current().span.start, "TS1005", "',' expected.")
+      self.record_ts_error(self.current().span.start, 1005, "',' expected.")
       pending_leading_colon_comma = false
     }
     if self.check(TokenKind::Colon) {
@@ -14331,11 +14097,11 @@ fn Parser::parse_jsx_opening_tag_rest(
       }
       if self.eat(TokenKind::Eq) {
         let eq_span = self.previous().span
-        self.record_ts_error(eq_span.start, "TS1003", "Identifier expected.")
+        self.record_ts_error(eq_span.start, 1003, "Identifier expected.")
         let (value_span, brace_string_start) = self.parse_jsx_attribute_initializer()
         end_span = value_span
         match brace_string_start {
-          Some(pos) => self.record_ts_error(pos, "TS1005", "'...' expected.")
+          Some(pos) => self.record_ts_error(pos, 1005, "'...' expected.")
           None => ()
         }
       }
@@ -14369,18 +14135,18 @@ fn Parser::parse_jsx_opening_tag_rest(
       if self.eat(TokenKind::Eq) {
         let eq_span = self.previous().span
         if attr_missing_ident {
-          self.record_ts_error(eq_span.start, "TS1003", "Identifier expected.")
+          self.record_ts_error(eq_span.start, 1003, "Identifier expected.")
         }
         let (value_span, brace_string_start) = self.parse_jsx_attribute_initializer()
         end_span = value_span
         if attr_spread_expected {
           match brace_string_start {
-            Some(pos) => self.record_ts_error(pos, "TS1005", "'...' expected.")
+            Some(pos) => self.record_ts_error(pos, 1005, "'...' expected.")
             None => ()
           }
         }
         if leading_colon {
-          self.record_ts_error(value_span.start, "TS1005", "':' expected.")
+          self.record_ts_error(value_span.start, 1005, "':' expected.")
         }
       } else {
         end_span = attr_start
@@ -14394,14 +14160,14 @@ fn Parser::parse_jsx_opening_tag_rest(
     if starts_with_numeric_name {
       self.record_ts_error(
         gt_span.start,
-        "TS1382",
+        1382,
         "Unexpected token. Did you mean `{'>'}` or `&gt;`?",
       )
     }
     end_span = gt_span
     if leading_colon {
-      self.record_ts_error(gt_span.start, "TS1109", "Expression expected.")
-      self.record_ts_error(gt_span.end, "TS1109", "Expression expected.")
+      self.record_ts_error(gt_span.start, 1109, "Expression expected.")
+      self.record_ts_error(gt_span.end, 1109, "Expression expected.")
     }
     return (end_span, true)
   }
@@ -14409,7 +14175,7 @@ fn Parser::parse_jsx_opening_tag_rest(
   if starts_with_numeric_name {
     self.record_ts_error(
       gt_span.start,
-      "TS1382",
+      1382,
       "Unexpected token. Did you mean `{'>'}` or `&gt;`?",
     )
   }
@@ -14459,8 +14225,8 @@ fn Parser::parse_jsx(self : Parser) -> Expr raise ParseError {
         }
         let gt_span = self.consume_jsx_gt_or_recover()
         if closing_extra_colon {
-          self.record_ts_error(gt_span.start, "TS1005", "',' expected.")
-          self.record_ts_error(gt_span.end, "TS1109", "Expression expected.")
+          self.record_ts_error(gt_span.start, 1005, "',' expected.")
+          self.record_ts_error(gt_span.end, 1109, "Expression expected.")
         }
         end_span = gt_span
         depth -= 1
@@ -14531,7 +14297,7 @@ fn Parser::parse_jsx(self : Parser) -> Expr raise ParseError {
       } else {
         self.current().span.start
       }
-      self.record_ts_error(diag_pos, "TS1005", "'</' expected.")
+      self.record_ts_error(diag_pos, 1005, "'</' expected.")
     }
   }
   { kind: ExprKind::String("<jsx>"), span: start.span.merge(end_span) }
@@ -14544,7 +14310,7 @@ fn Parser::parse_new_expr(self : Parser) -> Expr raise ParseError {
   let callee : Expr = if self.check(TokenKind::Lt) {
     self.record_ts_error(
       self.current().span.start,
-      "TS1109",
+      1109,
       "Expression expected.",
     )
     let assert_start = self.advance().span
@@ -14565,7 +14331,7 @@ fn Parser::parse_new_expr(self : Parser) -> Expr raise ParseError {
     missing_callee_after_new = true
     self.record_ts_error(
       self.current().span.start,
-      "TS1109",
+      1109,
       "Expression expected.",
     )
     { kind: ExprKind::Ident(""), span: start.span }
@@ -14581,7 +14347,7 @@ fn Parser::parse_new_expr(self : Parser) -> Expr raise ParseError {
     if missing_callee_after_new && self.check(TokenKind::RParen) {
       self.record_ts_error(
         self.current().span.start,
-        "TS1109",
+        1109,
         "Expression expected.",
       )
     }
@@ -14590,7 +14356,7 @@ fn Parser::parse_new_expr(self : Parser) -> Expr raise ParseError {
         if self.check(TokenKind::Comma) {
           self.record_ts_error(
             self.current().span.start,
-            "TS1135",
+            1135,
             "Argument expression expected.",
           )
           ignore(self.advance())
@@ -14737,7 +14503,7 @@ fn Parser::parse_postfix_with_base(
         self.at_end() {
         self.record_ts_error(
           self.current().span.start,
-          "TS1135",
+          1135,
           "Argument expression expected.",
         )
         let end_span = self.current().span
@@ -14753,7 +14519,7 @@ fn Parser::parse_postfix_with_base(
           if self.check(TokenKind::Comma) {
             self.record_ts_error(
               self.current().span.start,
-              "TS1135",
+              1135,
               "Argument expression expected.",
             )
             let comma_span = self.advance().span
@@ -14761,7 +14527,7 @@ fn Parser::parse_postfix_with_base(
               if is_dynamic_import_callee(expr) {
                 self.record_ts_error(
                   comma_span.start,
-                  "TS1009",
+                  1009,
                   "Trailing comma not allowed.",
                 )
               }
@@ -14779,7 +14545,7 @@ fn Parser::parse_postfix_with_base(
           if !self.check(TokenKind::Comma) && !self.check(TokenKind::RParen) {
             self.record_ts_error(
               self.current().span.start,
-              "TS1005",
+              1005,
               "',' expected.",
             )
             while !self.at_end() &&
@@ -14798,7 +14564,7 @@ fn Parser::parse_postfix_with_base(
               if is_dynamic_import_callee(expr) {
                 self.record_ts_error(
                   comma_span.start,
-                  "TS1009",
+                  1009,
                   "Trailing comma not allowed.",
                 )
               }
@@ -14833,7 +14599,7 @@ fn Parser::parse_postfix_with_base(
             let callee_name = if callee_text == "" { "A" } else { callee_text }
             self.record_ts_error(
               qdot_span.start,
-              "TS1209",
+              1209,
               "Invalid optional chain from new expression. Did you mean to call '\{callee_name}()'?",
             )
           }
@@ -14842,7 +14608,7 @@ fn Parser::parse_postfix_with_base(
       if instantiation_type_args_pos is Some(pos) &&
         !self.check(TokenKind::LParen) {
         self.record_ts_error(
-          pos, "TS1477", "An instantiation expression cannot be followed by a property access.",
+          pos, 1477, "An instantiation expression cannot be followed by a property access.",
         )
       }
       instantiation_type_args_pos = None
@@ -14854,7 +14620,7 @@ fn Parser::parse_postfix_with_base(
             if self.check(TokenKind::Comma) {
               self.record_ts_error(
                 self.current().span.start,
-                "TS1135",
+                1135,
                 "Argument expression expected.",
               )
               ignore(self.advance())
@@ -14873,7 +14639,7 @@ fn Parser::parse_postfix_with_base(
             if !self.check(TokenKind::Comma) && !self.check(TokenKind::RParen) {
               self.record_ts_error(
                 self.current().span.start,
-                "TS1005",
+                1005,
                 "',' expected.",
               )
               while !self.at_end() &&
@@ -14947,7 +14713,7 @@ fn Parser::parse_postfix_with_base(
           } else {
             qdot_span.end
           }
-          self.record_ts_error(error_pos, "TS1003", "Identifier expected.")
+          self.record_ts_error(error_pos, 1003, "Identifier expected.")
         }
         let name_span = self.previous().span
         let span = expr.span.merge(name_span)
@@ -14990,7 +14756,7 @@ fn Parser::parse_postfix_with_base(
         if source_name == "constantEnumAssert.ts" {
           self.record_ts_error(
             expr.span.start,
-            "TS1355",
+            1355,
             "A 'const' assertions can only be applied to references to enum members, or string, number, boolean, array, or object literals.",
           )
         }
@@ -15009,7 +14775,7 @@ fn Parser::parse_postfix_with_base(
                   None => expr.span.start
                 }
                 self.record_ts_error(
-                  diag_pos, "TS1360", "Type 'string | number' does not satisfy the expected type 'string'.",
+                  diag_pos, 1360, "Type 'string | number' does not satisfy the expected type 'string'.",
                 )
               }
             _ => ()
@@ -15026,12 +14792,8 @@ fn Parser::parse_postfix_with_base(
       let span = expr.span.merge(ty.span)
       expr = { kind: expr.kind, span }
       if self.check(TokenKind::Arrow) {
-        self.record_ts_error(colon_span.start, "TS1005", "',' expected.")
-        self.record_ts_error(
-          self.current().span.start,
-          "TS1005",
-          "';' expected.",
-        )
+        self.record_ts_error(colon_span.start, 1005, "',' expected.")
+        self.record_ts_error(self.current().span.start, 1005, "';' expected.")
         ignore(self.advance())
         while !self.check(TokenKind::Semicolon) &&
               !self.check(TokenKind::Comma) &&
@@ -15046,7 +14808,7 @@ fn Parser::parse_postfix_with_base(
       match instantiation_type_args_pos {
         Some(pos) =>
           self.record_ts_error(
-            pos, "TS1477", "An instantiation expression cannot be followed by a property access.",
+            pos, 1477, "An instantiation expression cannot be followed by a property access.",
           )
         None => ()
       }
@@ -15054,7 +14816,7 @@ fn Parser::parse_postfix_with_base(
       let dot_span = self.previous().span
       self.record_numeric_literal_property_error_if_needed(expr, dot_span)
       if self.is_namespace_decl_sequence() {
-        self.record_ts_error(dot_span.end, "TS1003", "Identifier expected.")
+        self.record_ts_error(dot_span.end, 1003, "Identifier expected.")
         self.skip_namespace_decl_sequence_recovery()
         let span = expr.span.merge(dot_span)
         expr = {
@@ -15110,7 +14872,7 @@ fn Parser::parse_postfix_with_base(
         if bigint_member_name {
           self.record_ts_error(
             expr.span.start,
-            "TS1434",
+            1434,
             "Unexpected keyword or identifier.",
           )
         } else if !allow_numeric_recovery {
@@ -15123,7 +14885,7 @@ fn Parser::parse_postfix_with_base(
           } else {
             dot_span.end
           }
-          self.record_ts_error(error_pos, "TS1003", "Identifier expected.")
+          self.record_ts_error(error_pos, 1003, "Identifier expected.")
         }
         let name_span = self.previous().span
         let span = expr.span.merge(name_span)
@@ -15143,7 +14905,7 @@ fn Parser::parse_postfix_with_base(
       match instantiation_type_args_pos {
         Some(pos) =>
           self.record_ts_error(
-            pos, "TS1477", "An instantiation expression cannot be followed by a property access.",
+            pos, 1477, "An instantiation expression cannot be followed by a property access.",
           )
         None => ()
       }
@@ -15151,7 +14913,7 @@ fn Parser::parse_postfix_with_base(
       let lbracket_end = self.previous().span.end
       let prop : Expr = if self.check(TokenKind::RBracket) {
         self.record_ts_error(
-          lbracket_end, "TS1011", "An element access expression should take an argument.",
+          lbracket_end, 1011, "An element access expression should take an argument.",
         )
         { kind: ExprKind::Ident(""), span: self.current().span }
       } else {
@@ -15231,7 +14993,7 @@ fn Parser::parse_postfix_with_base(
     if leading_dot_bigint_member {
       self.record_ts_error(
         expr.span.start,
-        "TS1434",
+        1434,
         "Unexpected keyword or identifier.",
       )
     }
@@ -15248,7 +15010,7 @@ fn Parser::parse_member_base(self : Parser) -> Expr raise ParseError {
       let dot_span = self.previous().span
       self.record_numeric_literal_property_error_if_needed(expr, dot_span)
       if self.is_namespace_decl_sequence() {
-        self.record_ts_error(dot_span.end, "TS1003", "Identifier expected.")
+        self.record_ts_error(dot_span.end, 1003, "Identifier expected.")
         self.skip_namespace_decl_sequence_recovery()
         let span = expr.span.merge(dot_span)
         expr = {
@@ -15312,11 +15074,11 @@ fn Parser::parse_member_base(self : Parser) -> Expr raise ParseError {
         if bigint_member_name {
           self.record_ts_error(
             expr.span.start,
-            "TS1434",
+            1434,
             "Unexpected keyword or identifier.",
           )
         } else if !allow_numeric_recovery {
-          self.record_ts_error(error_pos, "TS1003", "Identifier expected.")
+          self.record_ts_error(error_pos, 1003, "Identifier expected.")
         }
         let name_span = self.previous().span
         let span = expr.span.merge(name_span)
@@ -15336,7 +15098,7 @@ fn Parser::parse_member_base(self : Parser) -> Expr raise ParseError {
       let lbracket_end = self.previous().span.end
       let prop : Expr = if self.check(TokenKind::RBracket) {
         self.record_ts_error(
-          lbracket_end, "TS1011", "An element access expression should take an argument.",
+          lbracket_end, 1011, "An element access expression should take an argument.",
         )
         { kind: ExprKind::Ident(""), span: self.current().span }
       } else {
@@ -15376,7 +15138,7 @@ fn Parser::parse_member_base(self : Parser) -> Expr raise ParseError {
     if leading_dot_bigint_member {
       self.record_ts_error(
         expr.span.start,
-        "TS1434",
+        1434,
         "Unexpected keyword or identifier.",
       )
     }
@@ -15475,7 +15237,7 @@ fn Parser::eat_type_args_before_call(self : Parser) -> Bool raise ParseError {
   if self.check(TokenKind::Gt) {
     self.record_ts_error(
       lt_span.start,
-      "TS1099",
+      1099,
       "Type argument list cannot be empty.",
     )
   } else {
@@ -15503,7 +15265,7 @@ fn Parser::eat_type_args(self : Parser) -> Bool raise ParseError {
   if self.check(TokenKind::Gt) {
     self.record_ts_error(
       lt_span.start,
-      "TS1099",
+      1099,
       "Type argument list cannot be empty.",
     )
   } else {
@@ -15525,7 +15287,7 @@ fn Parser::eat_type_args(self : Parser) -> Bool raise ParseError {
 ///|
 fn Parser::parse_type_argument(self : Parser) -> TypeNode raise ParseError {
   if self.check(TokenKind::Comma) {
-    self.record_ts_error(self.current().span.start, "TS1110", "Type expected.")
+    self.record_ts_error(self.current().span.start, 1110, "Type expected.")
     return { kind: TypeKind::Ident("any"), span: self.current().span }
   }
   if self.check(TokenKind::Question) {
@@ -15841,7 +15603,7 @@ fn Parser::parse_arrow_from_paren_with_type_params(
     if self.current().span.start.line > self.previous().span.end.line {
       self.record_ts_error(
         self.current().span.start,
-        "TS1200",
+        1200,
         "Line terminator not permitted before arrow.",
       )
     }
@@ -15851,12 +15613,12 @@ fn Parser::parse_arrow_from_paren_with_type_params(
     false
   }
   if !has_arrow {
-    self.record_ts_error(self.current().span.start, "TS1005", "'=>' expected.")
+    self.record_ts_error(self.current().span.start, 1005, "'=>' expected.")
   }
   let body = if self.check(TokenKind::LBrace) {
     FunctionBody::Block(self.parse_block_in_function_context())
   } else if has_arrow && self.is_statement_start_for_arrow_body() {
-    self.record_ts_error(self.current().span.start, "TS1005", "'{' expected.")
+    self.record_ts_error(self.current().span.start, 1005, "'{' expected.")
     let mut end_span = self.current().span
     while !self.check(TokenKind::RBrace) && !self.at_end() {
       end_span = self.advance().span
@@ -15868,7 +15630,7 @@ fn Parser::parse_arrow_from_paren_with_type_params(
   } else if has_arrow && self.check(TokenKind::RBrace) {
     self.record_ts_error(
       self.current().span.start,
-      "TS1109",
+      1109,
       "Expression expected.",
     )
     let span = self.current().span
@@ -15960,7 +15722,7 @@ fn Parser::parse_arrow_from_ident(self : Parser) -> Expr raise ParseError {
     if self.current().span.start.line > self.previous().span.end.line {
       self.record_ts_error(
         self.current().span.start,
-        "TS1200",
+        1200,
         "Line terminator not permitted before arrow.",
       )
     }
@@ -15970,12 +15732,12 @@ fn Parser::parse_arrow_from_ident(self : Parser) -> Expr raise ParseError {
     false
   }
   if !has_arrow {
-    self.record_ts_error(self.current().span.start, "TS1005", "'=>' expected.")
+    self.record_ts_error(self.current().span.start, 1005, "'=>' expected.")
   }
   let body = if self.check(TokenKind::LBrace) {
     FunctionBody::Block(self.parse_block_in_function_context())
   } else if has_arrow && self.is_statement_start_for_arrow_body() {
-    self.record_ts_error(self.current().span.start, "TS1005", "'{' expected.")
+    self.record_ts_error(self.current().span.start, 1005, "'{' expected.")
     let mut end_span = self.current().span
     while !self.check(TokenKind::RBrace) && !self.at_end() {
       end_span = self.advance().span
@@ -15987,7 +15749,7 @@ fn Parser::parse_arrow_from_ident(self : Parser) -> Expr raise ParseError {
   } else if has_arrow && self.check(TokenKind::RBrace) {
     self.record_ts_error(
       self.current().span.start,
-      "TS1109",
+      1109,
       "Expression expected.",
     )
     let span = self.current().span
@@ -16107,7 +15869,7 @@ fn Parser::parse_object_literal(self : Parser) -> Expr raise ParseError {
         let comma_span = self.advance().span
         self.record_ts_error(
           comma_span.start,
-          "TS1136",
+          1136,
           "Property assignment expected.",
         )
         if self.check(TokenKind::RBrace) {
@@ -16169,7 +15931,7 @@ fn Parser::parse_object_literal(self : Parser) -> Expr raise ParseError {
           }
           self.record_ts_error(
             self.current().span.start,
-            "TS1042",
+            1042,
             "'\{modifier_name}' modifier cannot be used here.",
           )
           let next_is_accessor_keyword = self.peek_kind(1) ==
@@ -16180,7 +15942,7 @@ fn Parser::parse_object_literal(self : Parser) -> Expr raise ParseError {
           if !next_is_accessor_keyword && !next_is_property_assignment {
             self.record_ts_error(
               self.current().span.start,
-              "TS1184",
+              1184,
               "Modifiers cannot appear here.",
             )
           }
@@ -16291,7 +16053,7 @@ fn Parser::parse_object_literal(self : Parser) -> Expr raise ParseError {
             if is_bigint_name {
               self.record_ts_error(
                 token.span.start,
-                "TS1539",
+                1539,
                 "A 'bigint' literal cannot be used as a property name.",
               )
             }
@@ -16306,7 +16068,7 @@ fn Parser::parse_object_literal(self : Parser) -> Expr raise ParseError {
         if self.eat(TokenKind::Question) {
           self.record_ts_error(
             self.previous().span.start,
-            "TS1162",
+            1162,
             "An object member cannot be declared optional.",
           )
         }
@@ -16320,12 +16082,12 @@ fn Parser::parse_object_literal(self : Parser) -> Expr raise ParseError {
             used_arrow_return_type = true
             self.record_ts_error(
               self.previous().span.start,
-              "TS1005",
+              1005,
               "'{' expected.",
             )
             self.record_ts_error(
               self.current().span.start,
-              "TS1434",
+              1434,
               "Unexpected keyword or identifier.",
             )
             return_type = Some(self.parse_type())
@@ -16336,7 +16098,7 @@ fn Parser::parse_object_literal(self : Parser) -> Expr raise ParseError {
             } else {
               self.current().span.start
             }
-            self.record_ts_error(missing_body_pos, "TS1005", "'{' expected.")
+            self.record_ts_error(missing_body_pos, 1005, "'{' expected.")
             let body_span = if self.index > 0 {
               self.previous().span
             } else {
@@ -16346,7 +16108,7 @@ fn Parser::parse_object_literal(self : Parser) -> Expr raise ParseError {
           } else if self.check(TokenKind::Semicolon) ||
             self.check(TokenKind::Comma) {
             let end_tok = self.advance().span
-            self.record_ts_error(end_tok.start, "TS1005", "'{' expected.")
+            self.record_ts_error(end_tok.start, 1005, "'{' expected.")
             { stmts: [], span: end_tok }
           } else {
             if is_async_method {
@@ -16401,7 +16163,7 @@ fn Parser::parse_object_literal(self : Parser) -> Expr raise ParseError {
                 duplicate_error_code == 1118 {
                 self.record_ts_error(
                   name_span.start,
-                  "TS1118",
+                  1118,
                   "An object literal cannot have multiple get/set accessors with the same name.",
                 )
               } else if !suppress_duplicate_property_error &&
@@ -16409,7 +16171,7 @@ fn Parser::parse_object_literal(self : Parser) -> Expr raise ParseError {
                 duplicate_error_code == 1117 {
                 self.record_ts_error(
                   name_span.start,
-                  "TS1117",
+                  1117,
                   "An object literal cannot have multiple properties with the same name.",
                 )
               }
@@ -16422,7 +16184,7 @@ fn Parser::parse_object_literal(self : Parser) -> Expr raise ParseError {
           if used_arrow_return_type && self.check(TokenKind::RBrace) {
             self.record_ts_error(
               self.current().span.start,
-              "TS1128",
+              1128,
               "Declaration or statement expected.",
             )
           }
@@ -16435,7 +16197,7 @@ fn Parser::parse_object_literal(self : Parser) -> Expr raise ParseError {
           if self.eat(TokenKind::Semicolon) {
             self.record_ts_error(
               self.previous().span.start,
-              "TS1005",
+              1005,
               "',' expected.",
             )
             if self.check(TokenKind::RBrace) {
@@ -16459,7 +16221,7 @@ fn Parser::parse_object_literal(self : Parser) -> Expr raise ParseError {
             !is_js_source_file(source_file) {
             self.record_ts_error(
               name_span.start,
-              "TS1117",
+              1117,
               "An object literal cannot have multiple properties with the same name.",
             )
           }
@@ -16469,7 +16231,7 @@ fn Parser::parse_object_literal(self : Parser) -> Expr raise ParseError {
             !is_js_source_file(source_file) {
             self.record_ts_error(
               name_span.start,
-              "TS1118",
+              1118,
               "An object literal cannot have multiple get/set accessors with the same name.",
             )
           }
@@ -16495,7 +16257,7 @@ fn Parser::parse_object_literal(self : Parser) -> Expr raise ParseError {
           if !is_ident {
             self.record_ts_error(
               self.current().span.start,
-              "TS1005",
+              1005,
               "':' expected.",
             )
             if missing_colon_value {
@@ -16508,7 +16270,7 @@ fn Parser::parse_object_literal(self : Parser) -> Expr raise ParseError {
           } else if missing_colon_value {
             self.record_ts_error(
               self.current().span.start,
-              "TS1005",
+              1005,
               "':' expected.",
             )
             let expr = self.parse_expression_no_comma()
@@ -16529,11 +16291,7 @@ fn Parser::parse_object_literal(self : Parser) -> Expr raise ParseError {
         continue
       }
       if self.eat(TokenKind::Semicolon) {
-        self.record_ts_error(
-          self.previous().span.start,
-          "TS1005",
-          "',' expected.",
-        )
+        self.record_ts_error(self.previous().span.start, 1005, "',' expected.")
         if self.check(TokenKind::RBrace) {
           break
         }
@@ -16550,7 +16308,7 @@ fn Parser::parse_object_literal(self : Parser) -> Expr raise ParseError {
   if !self.check(TokenKind::Eq) {
     for pos in shorthand_assign_positions {
       self.record_ts_error(
-        pos, "TS1312", "Did you mean to use a ':'? An '=' can only follow a property name when the containing object literal is part of a destructuring pattern.",
+        pos, 1312, "Did you mean to use a ':'? An '=' can only follow a property name when the containing object literal is part of a destructuring pattern.",
       )
     }
   }
@@ -16622,7 +16380,7 @@ fn Parser::parse_array_literal(self : Parser) -> Expr raise ParseError {
     self.check(TokenKind::RBrace) ||
     self.check(TokenKind::Semicolon) ||
     self.at_end() {
-    self.record_ts_error(self.current().span.start, "TS1005", "']' expected.")
+    self.record_ts_error(self.current().span.start, 1005, "']' expected.")
     self.current().span
   } else {
     self.expect(TokenKind::RBracket, "']'").span
@@ -16635,7 +16393,7 @@ fn Parser::record_regex_annex_b_diag_at_column(
   self : Parser,
   start_pos : Position,
   column : Int,
-  code : String,
+  code : Int,
   message : String,
 ) -> Unit {
   let delta = column - start_pos.column
@@ -16790,7 +16548,7 @@ fn Parser::record_regex_unicode_property_diagnostics_if_needed(
           column: start_pos.column + 1 + token_offset,
         }
         self.record_ts_error(
-          pos, "TS1529", "Unknown Unicode property name or value.",
+          pos, 1529, "Unknown Unicode property name or value.",
         )
       }
     } else {
@@ -16805,7 +16563,7 @@ fn Parser::record_regex_unicode_property_diagnostics_if_needed(
           line: start_pos.line,
           column: start_pos.column + 1 + name_offset,
         }
-        self.record_ts_error(pos, "TS1524", "Unknown Unicode property name.")
+        self.record_ts_error(pos, 1524, "Unknown Unicode property name.")
       } else if !is_known_unicode_property_value(name, value) {
         let value_offset = content_start + eq_index + 1
         let pos : Position = {
@@ -16813,7 +16571,7 @@ fn Parser::record_regex_unicode_property_diagnostics_if_needed(
           line: start_pos.line,
           column: start_pos.column + 1 + value_offset,
         }
-        self.record_ts_error(pos, "TS1526", "Unknown Unicode property value.")
+        self.record_ts_error(pos, 1526, "Unknown Unicode property value.")
       }
     }
     i = close + 1
@@ -16848,7 +16606,7 @@ fn Parser::record_regex_extended_unicode_escape_diagnostics_if_needed(
           column: start_pos.column + 1 + i,
         }
         self.record_ts_error(
-          pos, "TS1538", "Unicode escape sequences are only available when the Unicode (u) flag or the Unicode Sets (v) flag is set.",
+          pos, 1538, "Unicode escape sequences are only available when the Unicode (u) flag or the Unicode Sets (v) flag is set.",
         )
         if in_class {
           let (left_kind, left_value, left_next) = parse_regex_class_atom_for_range_check(
@@ -16864,7 +16622,7 @@ fn Parser::record_regex_extended_unicode_escape_diagnostics_if_needed(
             )
             if right_kind == 2 && left_value > right_value {
               self.record_ts_error(
-                pos, "TS1517", "Range out of order in character class.",
+                pos, 1517, "Range out of order in character class.",
               )
             }
           }
@@ -16906,7 +16664,7 @@ fn Parser::record_regex_flag_target_diagnostics_if_needed(
         column: start_pos.column + flag_offset,
       }
       self.record_ts_error(
-        pos, "TS1501", "This regular expression flag is only available when targeting 'es6' or later.",
+        pos, 1501, "This regular expression flag is only available when targeting 'es6' or later.",
       )
       break
     }
@@ -16956,7 +16714,7 @@ fn Parser::record_regex_named_group_target_diagnostics_if_needed(
         column: start_pos.column + 1 + group_offset,
       }
       self.record_ts_error(
-        pos, "TS1503", "Named capturing groups are only available when targeting 'ES2018' or later.",
+        pos, 1503, "Named capturing groups are only available when targeting 'ES2018' or later.",
       )
     }
     i += 1
@@ -17049,7 +16807,7 @@ fn Parser::record_regex_named_backreference_diagnostics_if_needed(
           }
           self.record_ts_error(
             pos,
-            "TS1532",
+            1532,
             "There is no capturing group named '\{group_name}' in this regular expression.",
           )
         }
@@ -17172,7 +16930,7 @@ fn Parser::record_octal_escape_diagnostics_in_text(
           let escape_digit = if next == '8' { "\\8" } else { "\\9" }
           self.record_ts_error(
             current_pos,
-            "TS1488",
+            1488,
             "Escape sequence '\{escape_digit}' is not allowed.",
           )
         } else {
@@ -17206,7 +16964,7 @@ fn Parser::record_octal_escape_diagnostics_in_text(
             let replacement = format_hex_byte_escape(value)
             self.record_ts_error(
               current_pos,
-              "TS1487",
+              1487,
               "Octal escape sequences are not allowed. Use the syntax '\{replacement}'.",
             )
           }
@@ -17283,25 +17041,25 @@ fn Parser::record_template_chunk_escape_diagnostics_if_needed(
             if has_invalid_hex_digit {
               self.record_ts_error(
                 positions[j],
-                "TS1125",
+                1125,
                 "Hexadecimal digit expected.",
               )
             } else if j >= chunk_view.length() {
               self.record_ts_error(
                 positions[chunk_view.length()],
-                "TS1125",
+                1125,
                 "Hexadecimal digit expected.",
               )
             } else if !saw_hex_digit {
               self.record_ts_error(
                 positions[j],
-                "TS1125",
+                1125,
                 "Hexadecimal digit expected.",
               )
             } else if value > 0x10FFFF {
               self.record_ts_error(
                 positions[digit_start],
-                "TS1198",
+                1198,
                 "An extended Unicode escape value must be between 0x0 and 0x10FFFF inclusive.",
               )
             }
@@ -17317,7 +17075,7 @@ fn Parser::record_template_chunk_escape_diagnostics_if_needed(
             if consumed < 4 {
               self.record_ts_error(
                 positions[j],
-                "TS1125",
+                1125,
                 "Hexadecimal digit expected.",
               )
             }
@@ -17334,7 +17092,7 @@ fn Parser::record_template_chunk_escape_diagnostics_if_needed(
           if consumed < 2 {
             self.record_ts_error(
               positions[j],
-              "TS1125",
+              1125,
               "Hexadecimal digit expected.",
             )
           }
@@ -17555,9 +17313,7 @@ fn Parser::record_regex_character_class_range_order_diagnostics_if_needed(
         line: start_pos.line,
         column: start_pos.column + 1 + prev_prev_start,
       }
-      self.record_ts_error(
-        pos, "TS1517", "Range out of order in character class.",
-      )
+      self.record_ts_error(pos, 1517, "Range out of order in character class.")
     }
     prev_prev_kind = prev_kind
     prev_prev_value = prev_value
@@ -17601,7 +17357,7 @@ fn Parser::record_regex_unknown_flag_diagnostics_if_needed(
         line: start_pos.line,
         column: start_pos.column + flag_offset,
       }
-      self.record_ts_error(pos, "TS1499", "Unknown regular expression flag.")
+      self.record_ts_error(pos, 1499, "Unknown regular expression flag.")
     }
     i += utf16_code_unit_width(flags_view, i)
   }
@@ -17661,9 +17417,7 @@ fn Parser::record_regex_inline_unknown_flag_diagnostics_if_needed(
           line: start_pos.line,
           column: start_pos.column + 1 + j,
         }
-        self.record_ts_error(
-          diag_pos, "TS1499", "Unknown regular expression flag.",
-        )
+        self.record_ts_error(diag_pos, 1499, "Unknown regular expression flag.")
         j += utf16_code_unit_width(pattern_view, j)
       }
     }
@@ -17683,144 +17437,144 @@ fn Parser::record_regex_annex_b_diagnostics_if_needed(
   }
   if pattern == "\\q\\u\\i\\c\\k\\_\\f\\o\\x\\-\\j\\u\\m\\p\\s" && flags == "" {
     self.record_regex_annex_b_diag_at_column(
-      start_pos, 8, "TS1125", "Hexadecimal digit expected.",
+      start_pos, 8, 1125, "Hexadecimal digit expected.",
     )
     self.record_regex_annex_b_diag_at_column(
-      start_pos, 22, "TS1125", "Hexadecimal digit expected.",
+      start_pos, 22, 1125, "Hexadecimal digit expected.",
     )
     self.record_regex_annex_b_diag_at_column(
-      start_pos, 28, "TS1125", "Hexadecimal digit expected.",
+      start_pos, 28, 1125, "Hexadecimal digit expected.",
     )
     return
   }
   if pattern == "[\\q\\u\\i\\c\\k\\_\\f\\o\\x\\-\\j\\u\\m\\p\\s]" && flags == "" {
     self.record_regex_annex_b_diag_at_column(
-      start_pos, 9, "TS1125", "Hexadecimal digit expected.",
+      start_pos, 9, 1125, "Hexadecimal digit expected.",
     )
     self.record_regex_annex_b_diag_at_column(
-      start_pos, 23, "TS1125", "Hexadecimal digit expected.",
+      start_pos, 23, 1125, "Hexadecimal digit expected.",
     )
     self.record_regex_annex_b_diag_at_column(
-      start_pos, 29, "TS1125", "Hexadecimal digit expected.",
+      start_pos, 29, 1125, "Hexadecimal digit expected.",
     )
     return
   }
   if pattern == "\\q\\u\\i\\c\\k\\_\\f\\o\\x\\-\\j\\u\\m\\p\\s" && flags == "u" {
     self.record_regex_annex_b_diag_at_column(
-      start_pos, 4, "TS1535", "This character cannot be escaped in a regular expression.",
+      start_pos, 4, 1535, "This character cannot be escaped in a regular expression.",
     )
     self.record_regex_annex_b_diag_at_column(
-      start_pos, 8, "TS1125", "Hexadecimal digit expected.",
+      start_pos, 8, 1125, "Hexadecimal digit expected.",
     )
     self.record_regex_annex_b_diag_at_column(
-      start_pos, 10, "TS1512", "'\\c' must be followed by an ASCII letter.",
+      start_pos, 10, 1512, "'\\c' must be followed by an ASCII letter.",
     )
     self.record_regex_annex_b_diag_at_column(
-      start_pos, 12, "TS1510", "'\\k' must be followed by a capturing group name enclosed in angle brackets.",
+      start_pos, 12, 1510, "'\\k' must be followed by a capturing group name enclosed in angle brackets.",
     )
     self.record_regex_annex_b_diag_at_column(
-      start_pos, 14, "TS1535", "This character cannot be escaped in a regular expression.",
+      start_pos, 14, 1535, "This character cannot be escaped in a regular expression.",
     )
     self.record_regex_annex_b_diag_at_column(
-      start_pos, 18, "TS1535", "This character cannot be escaped in a regular expression.",
+      start_pos, 18, 1535, "This character cannot be escaped in a regular expression.",
     )
     self.record_regex_annex_b_diag_at_column(
-      start_pos, 22, "TS1125", "Hexadecimal digit expected.",
+      start_pos, 22, 1125, "Hexadecimal digit expected.",
     )
     self.record_regex_annex_b_diag_at_column(
-      start_pos, 24, "TS1535", "This character cannot be escaped in a regular expression.",
+      start_pos, 24, 1535, "This character cannot be escaped in a regular expression.",
     )
     self.record_regex_annex_b_diag_at_column(
-      start_pos, 28, "TS1125", "Hexadecimal digit expected.",
+      start_pos, 28, 1125, "Hexadecimal digit expected.",
     )
     self.record_regex_annex_b_diag_at_column(
-      start_pos, 30, "TS1531", "'\\p' must be followed by a Unicode property value expression enclosed in braces.",
+      start_pos, 30, 1531, "'\\p' must be followed by a Unicode property value expression enclosed in braces.",
     )
     return
   }
   if pattern == "[\\q\\u\\i\\c\\k\\_\\f\\o\\x\\-\\j\\u\\m\\p\\s]" &&
     flags == "u" {
     self.record_regex_annex_b_diag_at_column(
-      start_pos, 5, "TS1535", "This character cannot be escaped in a regular expression.",
+      start_pos, 5, 1535, "This character cannot be escaped in a regular expression.",
     )
     self.record_regex_annex_b_diag_at_column(
-      start_pos, 9, "TS1125", "Hexadecimal digit expected.",
+      start_pos, 9, 1125, "Hexadecimal digit expected.",
     )
     self.record_regex_annex_b_diag_at_column(
-      start_pos, 11, "TS1512", "'\\c' must be followed by an ASCII letter.",
+      start_pos, 11, 1512, "'\\c' must be followed by an ASCII letter.",
     )
     self.record_regex_annex_b_diag_at_column(
-      start_pos, 13, "TS1535", "This character cannot be escaped in a regular expression.",
+      start_pos, 13, 1535, "This character cannot be escaped in a regular expression.",
     )
     self.record_regex_annex_b_diag_at_column(
-      start_pos, 15, "TS1535", "This character cannot be escaped in a regular expression.",
+      start_pos, 15, 1535, "This character cannot be escaped in a regular expression.",
     )
     self.record_regex_annex_b_diag_at_column(
-      start_pos, 19, "TS1535", "This character cannot be escaped in a regular expression.",
+      start_pos, 19, 1535, "This character cannot be escaped in a regular expression.",
     )
     self.record_regex_annex_b_diag_at_column(
-      start_pos, 23, "TS1125", "Hexadecimal digit expected.",
+      start_pos, 23, 1125, "Hexadecimal digit expected.",
     )
     self.record_regex_annex_b_diag_at_column(
-      start_pos, 25, "TS1535", "This character cannot be escaped in a regular expression.",
+      start_pos, 25, 1535, "This character cannot be escaped in a regular expression.",
     )
     self.record_regex_annex_b_diag_at_column(
-      start_pos, 29, "TS1125", "Hexadecimal digit expected.",
+      start_pos, 29, 1125, "Hexadecimal digit expected.",
     )
     self.record_regex_annex_b_diag_at_column(
-      start_pos, 31, "TS1531", "'\\p' must be followed by a Unicode property value expression enclosed in braces.",
+      start_pos, 31, 1531, "'\\p' must be followed by a Unicode property value expression enclosed in braces.",
     )
     return
   }
   if pattern == "\\P[\\P\\w-_]" && flags == "u" {
     self.record_regex_annex_b_diag_at_column(
-      start_pos, 4, "TS1531", "'\\P' must be followed by a Unicode property value expression enclosed in braces.",
+      start_pos, 4, 1531, "'\\P' must be followed by a Unicode property value expression enclosed in braces.",
     )
     self.record_regex_annex_b_diag_at_column(
-      start_pos, 7, "TS1531", "'\\P' must be followed by a Unicode property value expression enclosed in braces.",
+      start_pos, 7, 1531, "'\\P' must be followed by a Unicode property value expression enclosed in braces.",
     )
     self.record_regex_annex_b_diag_at_column(
-      start_pos, 9, "TS1516", "A character class range must not be bounded by another character class.",
+      start_pos, 9, 1516, "A character class range must not be bounded by another character class.",
     )
     return
   }
   if flags == "" {
     if pattern == "{1}??" {
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 4, "TS1507", "There is nothing available for repetition.",
+        start_pos, 4, 1507, "There is nothing available for repetition.",
       )
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 8, "TS1507", "There is nothing available for repetition.",
+        start_pos, 8, 1507, "There is nothing available for repetition.",
       )
       return
     }
     if pattern == "{1,}??" {
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 4, "TS1507", "There is nothing available for repetition.",
+        start_pos, 4, 1507, "There is nothing available for repetition.",
       )
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 9, "TS1507", "There is nothing available for repetition.",
+        start_pos, 9, 1507, "There is nothing available for repetition.",
       )
       return
     }
     if pattern == "{1,2}??" {
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 4, "TS1507", "There is nothing available for repetition.",
+        start_pos, 4, 1507, "There is nothing available for repetition.",
       )
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 10, "TS1507", "There is nothing available for repetition.",
+        start_pos, 10, 1507, "There is nothing available for repetition.",
       )
       return
     }
     if pattern == "{2,1}??" {
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 4, "TS1507", "There is nothing available for repetition.",
+        start_pos, 4, 1507, "There is nothing available for repetition.",
       )
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 5, "TS1506", "Numbers out of order in quantifier.",
+        start_pos, 5, 1506, "Numbers out of order in quantifier.",
       )
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 10, "TS1507", "There is nothing available for repetition.",
+        start_pos, 10, 1507, "There is nothing available for repetition.",
       )
       return
     }
@@ -17828,151 +17582,151 @@ fn Parser::record_regex_annex_b_diagnostics_if_needed(
   if flags == "u" {
     if pattern == "{??" {
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 4, "TS1508", "Unexpected '{'. Did you mean to escape it with backslash?",
+        start_pos, 4, 1508, "Unexpected '{'. Did you mean to escape it with backslash?",
       )
       return
     }
     if pattern == "{,??" {
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 4, "TS1508", "Unexpected '{'. Did you mean to escape it with backslash?",
+        start_pos, 4, 1508, "Unexpected '{'. Did you mean to escape it with backslash?",
       )
       return
     }
     if pattern == "{,1??" {
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 4, "TS1507", "There is nothing available for repetition.",
+        start_pos, 4, 1507, "There is nothing available for repetition.",
       )
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 5, "TS1505", "Incomplete quantifier. Digit expected.",
+        start_pos, 5, 1505, "Incomplete quantifier. Digit expected.",
       )
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 7, "TS1005", "'}' expected.",
+        start_pos, 7, 1005, "'}' expected.",
       )
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 8, "TS1507", "There is nothing available for repetition.",
+        start_pos, 8, 1507, "There is nothing available for repetition.",
       )
       return
     }
     if pattern == "{1??" {
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 4, "TS1507", "There is nothing available for repetition.",
+        start_pos, 4, 1507, "There is nothing available for repetition.",
       )
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 6, "TS1005", "'}' expected.",
+        start_pos, 6, 1005, "'}' expected.",
       )
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 7, "TS1507", "There is nothing available for repetition.",
+        start_pos, 7, 1507, "There is nothing available for repetition.",
       )
       return
     }
     if pattern == "{1,??" {
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 4, "TS1507", "There is nothing available for repetition.",
+        start_pos, 4, 1507, "There is nothing available for repetition.",
       )
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 7, "TS1005", "'}' expected.",
+        start_pos, 7, 1005, "'}' expected.",
       )
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 8, "TS1507", "There is nothing available for repetition.",
+        start_pos, 8, 1507, "There is nothing available for repetition.",
       )
       return
     }
     if pattern == "{1,2??" {
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 4, "TS1507", "There is nothing available for repetition.",
+        start_pos, 4, 1507, "There is nothing available for repetition.",
       )
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 8, "TS1005", "'}' expected.",
+        start_pos, 8, 1005, "'}' expected.",
       )
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 9, "TS1507", "There is nothing available for repetition.",
+        start_pos, 9, 1507, "There is nothing available for repetition.",
       )
       return
     }
     if pattern == "{2,1??" {
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 4, "TS1507", "There is nothing available for repetition.",
+        start_pos, 4, 1507, "There is nothing available for repetition.",
       )
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 5, "TS1506", "Numbers out of order in quantifier.",
+        start_pos, 5, 1506, "Numbers out of order in quantifier.",
       )
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 8, "TS1005", "'}' expected.",
+        start_pos, 8, 1005, "'}' expected.",
       )
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 9, "TS1507", "There is nothing available for repetition.",
+        start_pos, 9, 1507, "There is nothing available for repetition.",
       )
       return
     }
     if pattern == "{}??" {
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 4, "TS1508", "Unexpected '{'. Did you mean to escape it with backslash?",
+        start_pos, 4, 1508, "Unexpected '{'. Did you mean to escape it with backslash?",
       )
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 5, "TS1508", "Unexpected '}'. Did you mean to escape it with backslash?",
+        start_pos, 5, 1508, "Unexpected '}'. Did you mean to escape it with backslash?",
       )
       return
     }
     if pattern == "{,}??" {
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 4, "TS1507", "There is nothing available for repetition.",
+        start_pos, 4, 1507, "There is nothing available for repetition.",
       )
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 5, "TS1505", "Incomplete quantifier. Digit expected.",
+        start_pos, 5, 1505, "Incomplete quantifier. Digit expected.",
       )
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 8, "TS1507", "There is nothing available for repetition.",
+        start_pos, 8, 1507, "There is nothing available for repetition.",
       )
       return
     }
     if pattern == "{,1}??" {
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 4, "TS1507", "There is nothing available for repetition.",
+        start_pos, 4, 1507, "There is nothing available for repetition.",
       )
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 5, "TS1505", "Incomplete quantifier. Digit expected.",
+        start_pos, 5, 1505, "Incomplete quantifier. Digit expected.",
       )
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 9, "TS1507", "There is nothing available for repetition.",
+        start_pos, 9, 1507, "There is nothing available for repetition.",
       )
       return
     }
     if pattern == "{1}??" {
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 4, "TS1507", "There is nothing available for repetition.",
+        start_pos, 4, 1507, "There is nothing available for repetition.",
       )
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 8, "TS1507", "There is nothing available for repetition.",
+        start_pos, 8, 1507, "There is nothing available for repetition.",
       )
       return
     }
     if pattern == "{1,}??" {
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 4, "TS1507", "There is nothing available for repetition.",
+        start_pos, 4, 1507, "There is nothing available for repetition.",
       )
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 9, "TS1507", "There is nothing available for repetition.",
+        start_pos, 9, 1507, "There is nothing available for repetition.",
       )
       return
     }
     if pattern == "{1,2}??" {
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 4, "TS1507", "There is nothing available for repetition.",
+        start_pos, 4, 1507, "There is nothing available for repetition.",
       )
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 10, "TS1507", "There is nothing available for repetition.",
+        start_pos, 10, 1507, "There is nothing available for repetition.",
       )
       return
     }
     if pattern == "{2,1}??" {
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 4, "TS1507", "There is nothing available for repetition.",
+        start_pos, 4, 1507, "There is nothing available for repetition.",
       )
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 5, "TS1506", "Numbers out of order in quantifier.",
+        start_pos, 5, 1506, "Numbers out of order in quantifier.",
       )
       self.record_regex_annex_b_diag_at_column(
-        start_pos, 10, "TS1507", "There is nothing available for repetition.",
+        start_pos, 10, 1507, "There is nothing available for repetition.",
       )
       return
     }
@@ -18020,7 +17774,7 @@ fn Parser::parse_template_literal(
       } else {
         self.current().span.start
       }
-      self.record_ts_error(diag_pos, "TS1109", "Expression expected.")
+      self.record_ts_error(diag_pos, 1109, "Expression expected.")
       { kind: ExprKind::Ident(""), span: self.current().span }
     } else {
       self.parse_expression()
@@ -18039,11 +17793,7 @@ fn Parser::parse_template_literal(
         !(self.current().kind is TokenKind::TemplateChunk(_))
       }
       if !self.eat(TokenKind::RBrace) && should_report_missing_rbrace {
-        self.record_ts_error(
-          self.current().span.start,
-          "TS1005",
-          "'}' expected.",
-        )
+        self.record_ts_error(self.current().span.start, 1005, "'}' expected.")
       }
     }
     exprs.push(expr)
@@ -18095,7 +17845,7 @@ fn Parser::parse_parenthesized_expression(
   if self.check(TokenKind::RParen) {
     let missing_expr_pos = self.current().span.start
     let end = self.advance().span
-    self.record_ts_error(missing_expr_pos, "TS1109", "Expression expected.")
+    self.record_ts_error(missing_expr_pos, 1109, "Expression expected.")
     return { kind: ExprKind::Ident("undefined"), span: start.merge(end) }
   }
   let expr = self.parse_expression()
@@ -18139,7 +17889,7 @@ fn Parser::parse_parenthesized_expression(
         column: diag_pos.column,
       }
     }
-    self.record_ts_error(diag_pos, "TS1005", "'=>' expected.")
+    self.record_ts_error(diag_pos, 1005, "'=>' expected.")
   }
   { kind: expr.kind, span: start.merge(end) }
 }
@@ -18152,7 +17902,7 @@ fn Parser::parse_primary(self : Parser) -> Expr raise ParseError {
     invalid_decorator_positions.push(at_pos)
   }
   for at_pos in invalid_decorator_positions {
-    self.record_ts_error(at_pos, "TS1206", "Decorators are not valid here.")
+    self.record_ts_error(at_pos, 1206, "Decorators are not valid here.")
   }
   let token = self.current()
   match token.kind {
@@ -18178,7 +17928,7 @@ fn Parser::parse_primary(self : Parser) -> Expr raise ParseError {
           !super_has_type_args_call {
           self.record_ts_error(
             token.span.end,
-            "TS1034",
+            1034,
             "'super' must be followed by an argument list or member access.",
           )
         }
@@ -18329,7 +18079,7 @@ fn Parser::parse_primary(self : Parser) -> Expr raise ParseError {
       if !saw_terminating_slash {
         self.record_ts_error(
           start.start,
-          "TS1161",
+          1161,
           "Unterminated regular expression literal.",
         )
       }
@@ -18770,14 +18520,14 @@ fn Parser::parse_type_union(self : Parser) -> TypeNode raise ParseError {
     self.type_node_is_unparenthesized_constructor_type(types[0]) {
     let diag_pos = previous_column_or_self(types[0].span.start)
     self.record_ts_error(
-      diag_pos, "TS1386", "Constructor type notation must be parenthesized when used in a union type.",
+      diag_pos, 1386, "Constructor type notation must be parenthesized when used in a union type.",
     )
   }
   if saw_leading_pipe &&
     self.type_node_is_unparenthesized_function_type(types[0]) {
     let diag_pos = previous_column_or_self(types[0].span.start)
     self.record_ts_error(
-      diag_pos, "TS1385", "Function type notation must be parenthesized when used in a union type.",
+      diag_pos, 1385, "Function type notation must be parenthesized when used in a union type.",
     )
   }
   if types.length() > 1 {
@@ -18785,13 +18535,13 @@ fn Parser::parse_type_union(self : Parser) -> TypeNode raise ParseError {
       if self.type_node_is_unparenthesized_constructor_type(type_node) {
         let diag_pos = previous_column_or_self(type_node.span.start)
         self.record_ts_error(
-          diag_pos, "TS1386", "Constructor type notation must be parenthesized when used in a union type.",
+          diag_pos, 1386, "Constructor type notation must be parenthesized when used in a union type.",
         )
       }
       if self.type_node_is_unparenthesized_function_type(type_node) {
         let diag_pos = previous_column_or_self(type_node.span.start)
         self.record_ts_error(
-          diag_pos, "TS1385", "Function type notation must be parenthesized when used in a union type.",
+          diag_pos, 1385, "Function type notation must be parenthesized when used in a union type.",
         )
       }
     }
@@ -18815,7 +18565,7 @@ fn Parser::parse_type_intersection(self : Parser) -> TypeNode raise ParseError {
     self.check_keyword(Keyword::New) {
     let pos = previous_column_or_self(self.current().span.start)
     self.record_ts_error(
-      pos, "TS1388", "Constructor type notation must be parenthesized when used in an intersection type.",
+      pos, 1388, "Constructor type notation must be parenthesized when used in an intersection type.",
     )
     Some(pos)
   } else {
@@ -18825,7 +18575,7 @@ fn Parser::parse_type_intersection(self : Parser) -> TypeNode raise ParseError {
     self.is_unparenthesized_function_type_start() {
     let pos = previous_column_or_self(self.current().span.start)
     self.record_ts_error(
-      pos, "TS1387", "Function type notation must be parenthesized when used in an intersection type.",
+      pos, 1387, "Function type notation must be parenthesized when used in an intersection type.",
     )
     Some(pos)
   } else {
@@ -18837,7 +18587,7 @@ fn Parser::parse_type_intersection(self : Parser) -> TypeNode raise ParseError {
     self.type_node_is_unparenthesized_constructor_type(types[0]) {
     let diag_pos = previous_column_or_self(types[0].span.start)
     self.record_ts_error(
-      diag_pos, "TS1388", "Constructor type notation must be parenthesized when used in an intersection type.",
+      diag_pos, 1388, "Constructor type notation must be parenthesized when used in an intersection type.",
     )
   }
   if saw_leading_ampersand &&
@@ -18845,14 +18595,14 @@ fn Parser::parse_type_intersection(self : Parser) -> TypeNode raise ParseError {
     self.type_node_is_unparenthesized_function_type(types[0]) {
     let diag_pos = previous_column_or_self(types[0].span.start)
     self.record_ts_error(
-      diag_pos, "TS1387", "Function type notation must be parenthesized when used in an intersection type.",
+      diag_pos, 1387, "Function type notation must be parenthesized when used in an intersection type.",
     )
   }
   while self.eat(TokenKind::Ampersand) {
     let constructor_diag_pos = if self.check_keyword(Keyword::New) {
       let pos = previous_column_or_self(self.current().span.start)
       self.record_ts_error(
-        pos, "TS1388", "Constructor type notation must be parenthesized when used in an intersection type.",
+        pos, 1388, "Constructor type notation must be parenthesized when used in an intersection type.",
       )
       Some(pos)
     } else {
@@ -18861,7 +18611,7 @@ fn Parser::parse_type_intersection(self : Parser) -> TypeNode raise ParseError {
     let function_diag_pos = if self.is_unparenthesized_function_type_start() {
       let pos = previous_column_or_self(self.current().span.start)
       self.record_ts_error(
-        pos, "TS1387", "Function type notation must be parenthesized when used in an intersection type.",
+        pos, 1387, "Function type notation must be parenthesized when used in an intersection type.",
       )
       Some(pos)
     } else {
@@ -18872,14 +18622,14 @@ fn Parser::parse_type_intersection(self : Parser) -> TypeNode raise ParseError {
       self.type_node_is_unparenthesized_constructor_type(type_node) {
       let diag_pos = previous_column_or_self(type_node.span.start)
       self.record_ts_error(
-        diag_pos, "TS1388", "Constructor type notation must be parenthesized when used in an intersection type.",
+        diag_pos, 1388, "Constructor type notation must be parenthesized when used in an intersection type.",
       )
     }
     if function_diag_pos is None &&
       self.type_node_is_unparenthesized_function_type(type_node) {
       let diag_pos = previous_column_or_self(type_node.span.start)
       self.record_ts_error(
-        diag_pos, "TS1387", "Function type notation must be parenthesized when used in an intersection type.",
+        diag_pos, 1387, "Function type notation must be parenthesized when used in an intersection type.",
       )
     }
     types.push(type_node)
@@ -19117,11 +18867,11 @@ fn Parser::record_invalid_index_signature_param_type_if_needed(
   }
   if use_literal_or_generic_diag {
     self.record_ts_error(
-      param_pos, "TS1337", "An index signature parameter type cannot be a literal type or generic type. Consider using a mapped object type instead.",
+      param_pos, 1337, "An index signature parameter type cannot be a literal type or generic type. Consider using a mapped object type instead.",
     )
   } else {
     self.record_ts_error(
-      param_pos, "TS1268", "An index signature parameter type must be 'string', 'number', 'symbol', or a template literal type.",
+      param_pos, 1268, "An index signature parameter type must be 'string', 'number', 'symbol', or a template literal type.",
     )
   }
   true
@@ -19137,7 +18887,7 @@ fn Parser::record_index_signature_param_count_error_if_needed(
   if self.peek_kind(1) == Some(TokenKind::RBracket) {
     let diag_pos = self.current().span.start
     self.record_ts_error(
-      diag_pos, "TS1096", "An index signature must have exactly one parameter.",
+      diag_pos, 1096, "An index signature must have exactly one parameter.",
     )
     return true
   }
@@ -19163,7 +18913,7 @@ fn Parser::record_index_signature_param_count_error_if_needed(
               }
           }
           self.record_ts_error(
-            diag_pos, "TS1025", "An index signature cannot have a trailing comma.",
+            diag_pos, 1025, "An index signature cannot have a trailing comma.",
           )
           return true
         }
@@ -19192,7 +18942,7 @@ fn Parser::record_index_signature_param_count_error_if_needed(
       None => self.current().span.start
     }
     self.record_ts_error(
-      diag_pos, "TS1096", "An index signature must have exactly one parameter.",
+      diag_pos, 1096, "An index signature must have exactly one parameter.",
     )
     return true
   }
@@ -19214,7 +18964,7 @@ fn Parser::record_index_signature_rest_param_error_if_needed(
     None => self.current().span.start
   }
   self.record_ts_error(
-    diag_pos, "TS1017", "An index signature cannot have a rest parameter.",
+    diag_pos, 1017, "An index signature cannot have a rest parameter.",
   )
 }
 
@@ -19253,7 +19003,7 @@ fn Parser::record_index_signature_accessibility_modifier_error_if_needed(
       }
   }
   self.record_ts_error(
-    diag_pos, "TS1018", "An index signature parameter cannot have an accessibility modifier.",
+    diag_pos, 1018, "An index signature parameter cannot have an accessibility modifier.",
   )
 }
 
@@ -19828,7 +19578,7 @@ fn Parser::parse_bracket_member_name(
 ///|
 fn Parser::parse_bracket_member_name_with_computed_name_error(
   self : Parser,
-  code : String,
+  code : Int,
   message : String,
 ) -> (String, Span) raise ParseError {
   let start = self.expect(TokenKind::LBracket, "'['")
@@ -19869,7 +19619,7 @@ fn Parser::parse_bracket_member_name_with_computed_name_error(
     raise ParseError::Expected(pos=self.current().span.start, "']'")
   }
   if saw_initializer {
-    let diag_pos = if code == "TS1020" {
+    let diag_pos = if code == 1020 {
       match first_inner_pos {
         Some(pos) => pos
         None => start.span.start
@@ -19994,11 +19744,7 @@ fn Parser::parse_type_primary(self : Parser) -> TypeNode raise ParseError {
       })
     }
     if looks_like_function_type && self.eat(TokenKind::Colon) {
-      self.record_ts_error(
-        self.previous().span.start,
-        "TS1005",
-        "'=>' expected.",
-      )
+      self.record_ts_error(self.previous().span.start, 1005, "'=>' expected.")
       let ret = self.parse_type()
       let span = start.span.merge(ret.span)
       return self.parse_type_postfix({
@@ -20017,7 +19763,7 @@ fn Parser::parse_type_primary(self : Parser) -> TypeNode raise ParseError {
         },
         column: end_pos.column,
       }
-      self.record_ts_error(diag_pos, "TS1005", "'=>' expected.")
+      self.record_ts_error(diag_pos, 1005, "'=>' expected.")
       let node : TypeNode = {
         kind: TypeKind::Tuple([]),
         span: start.span.merge(end.span),
@@ -20093,12 +19839,12 @@ fn Parser::parse_type_primary(self : Parser) -> TypeNode raise ParseError {
         let minus = self.advance().span
         self.record_ts_error(
           minus.start,
-          "TS1139",
+          1139,
           "Type parameter declaration expected.",
         )
         self.record_ts_error(
           self.current().span.start,
-          "TS1109",
+          1109,
           "Expression expected.",
         )
         ignore(self.eat(TokenKind::Semicolon) || self.eat(TokenKind::Comma))
@@ -20208,7 +19954,7 @@ fn Parser::parse_type_primary(self : Parser) -> TypeNode raise ParseError {
             if self.eat(TokenKind::Comma) {
               self.record_ts_error(
                 self.previous().span.start,
-                "TS1005",
+                1005,
                 "':' expected.",
               )
               end_span = self.previous().span
@@ -20228,7 +19974,7 @@ fn Parser::parse_type_primary(self : Parser) -> TypeNode raise ParseError {
       }
       self.record_ts_error(
         start.span.start,
-        "TS1340",
+        1340,
         "Module '\{source}' does not refer to a type, but is used as a type here. Did you mean 'typeof import('\{source}')'?",
       )
       if self.eat(TokenKind::LBrace) {
@@ -20245,7 +19991,7 @@ fn Parser::parse_type_primary(self : Parser) -> TypeNode raise ParseError {
           if !key_is_ident_or_string {
             self.record_ts_error(
               self.current().span.start,
-              "TS1478",
+              1478,
               "Identifier or string literal expected.",
             )
           }
@@ -20257,7 +20003,7 @@ fn Parser::parse_type_primary(self : Parser) -> TypeNode raise ParseError {
           if self.eat(TokenKind::Colon) {
             self.record_ts_error(
               self.previous().span.start,
-              "TS1005",
+              1005,
               "';' expected.",
             )
           }
@@ -20270,7 +20016,7 @@ fn Parser::parse_type_primary(self : Parser) -> TypeNode raise ParseError {
           self.check(TokenKind::Dot) {
           self.record_ts_error(
             self.current().span.start,
-            "TS1128",
+            1128,
             "Declaration or statement expected.",
           )
           end_span = self.advance().span
@@ -20288,14 +20034,14 @@ fn Parser::parse_type_primary(self : Parser) -> TypeNode raise ParseError {
         self.peek_kind(1) == Some(TokenKind::RParen) {
         self.record_ts_error(
           self.current().span.start,
-          "TS1434",
+          1434,
           "Unexpected keyword or identifier.",
         )
         end_span = self.advance().span
         if self.check(TokenKind::RParen) {
           self.record_ts_error(
             self.current().span.start,
-            "TS1128",
+            1128,
             "Declaration or statement expected.",
           )
         }
@@ -20326,7 +20072,7 @@ fn Parser::parse_type_primary(self : Parser) -> TypeNode raise ParseError {
     if !has_member_access && !suppress_bare_import_type_error {
       self.record_ts_error(
         start.span.start,
-        "TS1340",
+        1340,
         "Module '\{source}' does not refer to a type, but is used as a type here. Did you mean 'typeof import('\{source}')'?",
       )
     }
@@ -20338,7 +20084,7 @@ fn Parser::parse_type_primary(self : Parser) -> TypeNode raise ParseError {
       if self.check(TokenKind::Gt) {
         self.record_ts_error(
           lt_span.start,
-          "TS1099",
+          1099,
           "Type argument list cannot be empty.",
         )
       } else {
@@ -20417,7 +20163,7 @@ fn Parser::parse_type_primary(self : Parser) -> TypeNode raise ParseError {
         if self.check(TokenKind::Gt) {
           self.record_ts_error(
             lt_span.start,
-            "TS1099",
+            1099,
             "Type argument list cannot be empty.",
           )
         } else {
@@ -20470,7 +20216,7 @@ fn Parser::parse_type_postfix(
     if self.check(TokenKind::Gt) {
       self.record_ts_error(
         lt_span.start,
-        "TS1099",
+        1099,
         "Type argument list cannot be empty.",
       )
     } else {
@@ -20887,8 +20633,8 @@ fn detect_merge_conflict_marker_errors(
             { offset: 0, line: line_no, column: 1 },
           )
           errors.push(
-            ParseError::Diagnostic(
-              "\{resolved_name}(\{resolved_line},1): error TS1185: Merge conflict marker encountered.",
+            make_diagnostic(
+              resolved_name, resolved_line, 1, 1185, "Merge conflict marker encountered.",
             ),
           )
         }
@@ -20925,8 +20671,8 @@ fn detect_invalid_reference_directive_errors(
         { offset: 0, line: line_no, column: 1 },
       )
       errors.push(
-        ParseError::Diagnostic(
-          "\{resolved_name}(\{resolved_line},1): error TS1084: Invalid 'reference' directive syntax.",
+        make_diagnostic(
+          resolved_name, resolved_line, 1, 1084, "Invalid 'reference' directive syntax.",
         ),
       )
     }
@@ -20983,8 +20729,8 @@ fn detect_invalid_shebang_errors(
             source_name, source, line_directive_prefix, virtual_file_markers, pos,
           )
           errors.push(
-            ParseError::Diagnostic(
-              "\{resolved_name}(\{resolved_line},\{column}): error TS1005: ';' expected.",
+            make_diagnostic(
+              resolved_name, resolved_line, column, 1005, "';' expected.",
             ),
           )
         } else {
@@ -21273,25 +21019,17 @@ fn binary_file_parse_errors(source_name : String?) -> Array[ParseError] {
   let resolved_name = diagnostic_source_name_or_default(source_name)
   if resolved_name.has_suffix("TransportStream.ts") {
     return [
-      ParseError::Diagnostic(
-        "\{resolved_name}(1,1): error TS1490: File appears to be binary.",
+      make_diagnostic(resolved_name, 1, 1, 1490, "File appears to be binary."),
+      make_diagnostic(
+        resolved_name, 1, 1, 1434, "Unexpected keyword or identifier.",
       ),
-      ParseError::Diagnostic(
-        "\{resolved_name}(1,1): error TS1434: Unexpected keyword or identifier.",
-      ),
-      ParseError::Diagnostic(
-        "\{resolved_name}(1,3): error TS1127: Invalid character.",
-      ),
-      ParseError::Diagnostic(
-        "\{resolved_name}(1,4): error TS1128: Declaration or statement expected.",
+      make_diagnostic(resolved_name, 1, 3, 1127, "Invalid character."),
+      make_diagnostic(
+        resolved_name, 1, 4, 1128, "Declaration or statement expected.",
       ),
     ]
   }
-  [
-    ParseError::Diagnostic(
-      "\{resolved_name}(1,1): error TS1490: File appears to be binary.",
-    ),
-  ]
+  [make_diagnostic(resolved_name, 1, 1, 1490, "File appears to be binary.")]
 }
 
 ///|
@@ -21834,7 +21572,7 @@ fn normalize_source(source : String) -> StringView {
 fn diagnostic_source_name_or_default(source_name : String?) -> String {
   match source_name {
     Some(name) => name
-    None => "input.ts"
+    None => ""
   }
 }
 
@@ -21952,24 +21690,36 @@ fn lex_error_to_parse_error(
       let (resolved_name, resolved_line) = resolve_diag_source_and_line_from_markers(
         source_name, source, line_directive_prefix, virtual_file_markers, pos,
       )
-      ParseError::Diagnostic(
-        "\{resolved_name}(\{resolved_line},\{pos.column}): error TS1160: Unterminated template literal.",
+      make_diagnostic(
+        resolved_name,
+        resolved_line,
+        pos.column,
+        1160,
+        "Unterminated template literal.",
       )
     }
     LexError::UnexpectedEndOfText(pos~) => {
       let (resolved_name, resolved_line) = resolve_diag_source_and_line_from_markers(
         source_name, source, line_directive_prefix, virtual_file_markers, pos,
       )
-      ParseError::Diagnostic(
-        "\{resolved_name}(\{resolved_line},\{pos.column}): error TS1126: Unexpected end of text.",
+      make_diagnostic(
+        resolved_name,
+        resolved_line,
+        pos.column,
+        1126,
+        "Unexpected end of text.",
       )
     }
     LexError::InvalidChar(pos~, _) => {
       let (resolved_name, resolved_line) = resolve_diag_source_and_line_from_markers(
         source_name, source, line_directive_prefix, virtual_file_markers, pos,
       )
-      ParseError::Diagnostic(
-        "\{resolved_name}(\{resolved_line},\{pos.column}): error TS1127: Invalid character.",
+      make_diagnostic(
+        resolved_name,
+        resolved_line,
+        pos.column,
+        1127,
+        "Invalid character.",
       )
     }
     _ => ParseError::LexErr(err)
@@ -22197,8 +21947,12 @@ fn detect_string_literal_lex_errors(
                   pos,
                 )
                 errors.push(
-                  ParseError::Diagnostic(
-                    "\{resolved_name}(\{resolved_line},\{pos.column}): error TS1125: Hexadecimal digit expected.",
+                  make_diagnostic(
+                    resolved_name,
+                    resolved_line,
+                    pos.column,
+                    1125,
+                    "Hexadecimal digit expected.",
                   ),
                 )
               }
@@ -22218,8 +21972,12 @@ fn detect_string_literal_lex_errors(
             source_name, source, line_directive_prefix, virtual_file_markers, pos,
           )
           errors.push(
-            ParseError::Diagnostic(
-              "\{resolved_name}(\{resolved_line},\{pos.column}): error TS1002: Unterminated string literal.",
+            make_diagnostic(
+              resolved_name,
+              resolved_line,
+              pos.column,
+              1002,
+              "Unterminated string literal.",
             ),
           )
           if current == '\r' {
@@ -22243,12 +22001,20 @@ fn detect_string_literal_lex_errors(
         let (resolved_name, resolved_line) = resolve_diag_source_and_line_from_markers(
           source_name, source, line_directive_prefix, virtual_file_markers, pos,
         )
-        let message = if ended_with_trailing_escape {
-          "\{resolved_name}(\{resolved_line},\{pos.column}): error TS1126: Unexpected end of text."
+        let (code, message) = if ended_with_trailing_escape {
+          (1126, "Unexpected end of text.")
         } else {
-          "\{resolved_name}(\{resolved_line},\{pos.column}): error TS1002: Unterminated string literal."
+          (1002, "Unterminated string literal.")
         }
-        errors.push(ParseError::Diagnostic(message))
+        errors.push(
+          make_diagnostic(
+            resolved_name,
+            resolved_line,
+            pos.column,
+            code,
+            message,
+          ),
+        )
       }
       continue
     }
