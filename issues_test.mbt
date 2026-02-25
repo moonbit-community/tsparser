@@ -4,7 +4,7 @@ test "`...` in arrow parameter should emit TS1003" {
     #|(...) => {} 
   guard parse_program(source).0[0]
     is Diagnostic(error_code=1003, error_msg="Identifier expected.", ..) else {
-    fail("parse \{source} should emit TS1003")
+    fail("parse '\{source}' should emit TS1003")
   }
 }
 
@@ -12,13 +12,15 @@ test "`...` in arrow parameter should emit TS1003" {
 test "invalid arrow parameter modifier should emit TS2369" {
   let source =
     #|(public foo) => {}
-  guard parse_program(source).0[0]
-    is Diagnostic(
-      error_code=2369,
-      error_msg="A parameter property is only allowed in a constructor implementation.",
-      ..
-    ) else {
-    fail("parse \{source} should emit TS2369")
+  guard parse_program(source).0
+    is [
+      Diagnostic(
+        error_code=2369,
+        error_msg="A parameter property is only allowed in a constructor implementation.",
+        ..
+      ),
+    ] else {
+    fail("parse '\{source}' should emit TS2369")
   }
 }
 
@@ -26,13 +28,15 @@ test "invalid arrow parameter modifier should emit TS2369" {
 test "function type parameter modifier should emit TS2369" {
   let source =
     #|declare const foo: (public bar) => baz
-  guard parse_program(source).0[0]
-    is Diagnostic(
-      error_code=2369,
-      error_msg="A parameter property is only allowed in a constructor implementation.",
-      ..
-    ) else {
-    fail("parse \{source} should emit TS2369")
+  guard parse_program(source).0
+    is [
+      Diagnostic(
+        error_code=2369,
+        error_msg="A parameter property is only allowed in a constructor implementation.",
+        ..
+      ),
+    ] else {
+    fail("parse '\{source}' should emit TS2369")
   }
 }
 
@@ -46,7 +50,7 @@ test "parse_expression recovery should still collect errors" {
       error_msg="Argument expression expected.",
       ..
     ) else {
-    fail("parse \{source} should emit TS1135")
+    fail("parse '\{source}' should emit TS1135")
   }
 }
 
@@ -114,7 +118,7 @@ test "empty element access should emit TS1011" {
         ..
       ),
     ] else {
-    fail("parse \{source} should emit TS1011")
+    fail("parse '\{source}' should emit TS1011")
   }
 }
 
@@ -124,7 +128,7 @@ test "empty template interpolation should emit TS1109" {
     #|`${}`
   guard parse_program(source).0
     is [Diagnostic(error_code=1109, error_msg="Expression expected.", ..)] else {
-    fail("parse \{source} should emit TS1109")
+    fail("parse '\{source}' should emit TS1109")
   }
 }
 
