@@ -8,6 +8,7 @@ pub(all) suberror LexError {
 } derive(Eq, Debug)
 
 ///|
+/// https://github.com/microsoft/TypeScript/blob/main/src/compiler/diagnosticMessages.json
 pub(all) suberror ParseError {
   LexErr(LexError)
   UnexpectedEof(pos~ : Position)
