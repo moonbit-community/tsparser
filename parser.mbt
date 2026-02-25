@@ -9661,6 +9661,7 @@ fn Parser::parse_param(
   let mut is_rest = false
   let mut param_property_modifier_pos : Position? = None
   let mut saw_accessibility_modifier = false
+  let mut saw_disallowed_param_property_modifier = false
   let allow_parameter_decorators = self.class_header_context_depth > 0 &&
     self.experimental_decorators
   while self.check(TokenKind::At) {
@@ -9694,7 +9695,12 @@ fn Parser::parse_param(
         if next_is_param {
           let modifier_pos = self.current().span.start
           if !allow_param_property_modifiers {
-            ()
+            if !saw_disallowed_param_property_modifier {
+              self.record_ts_error(
+                modifier_pos, 2369, "A parameter property is only allowed in a constructor implementation.",
+              )
+              saw_disallowed_param_property_modifier = true
+            }
           } else {
             self.record_erasable_syntax_only_error_if_needed(modifier_pos)
             if saw_accessibility_modifier {
@@ -9717,7 +9723,12 @@ fn Parser::parse_param(
         if next_is_param {
           let modifier_pos = self.current().span.start
           if !allow_param_property_modifiers {
-            ()
+            if !saw_disallowed_param_property_modifier {
+              self.record_ts_error(
+                modifier_pos, 2369, "A parameter property is only allowed in a constructor implementation.",
+              )
+              saw_disallowed_param_property_modifier = true
+            }
           } else {
             self.record_erasable_syntax_only_error_if_needed(modifier_pos)
             if param_property_modifier_pos is None {
@@ -18717,6 +18728,7 @@ fn Parser::parse_function_type_param(
   self : Parser,
 ) -> TypeNode raise ParseError {
   ignore(self.eat(TokenKind::Ellipsis))
+  let mut saw_disallowed_param_property_modifier = false
   while self.check_keyword(Keyword::Public) ||
         self.check_keyword(Keyword::Private) ||
         self.check_keyword(Keyword::Protected) ||
@@ -18728,6 +18740,21 @@ fn Parser::parse_function_type_param(
     }
     if !next_is_ident {
       break
+    }
+    match self.current().kind {
+      TokenKind::Keyword(Keyword::Public)
+      | TokenKind::Keyword(Keyword::Private)
+      | TokenKind::Keyword(Keyword::Protected)
+      | TokenKind::Keyword(Keyword::Readonly) =>
+        if !saw_disallowed_param_property_modifier {
+          self.record_ts_error(
+            self.current().span.start,
+            2369,
+            "A parameter property is only allowed in a constructor implementation.",
+          )
+          saw_disallowed_param_property_modifier = true
+        }
+      _ => ()
     }
     ignore(self.advance())
   }
