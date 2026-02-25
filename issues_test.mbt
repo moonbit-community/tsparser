@@ -119,24 +119,13 @@ test "empty element access should emit TS1011" {
 }
 
 ///|
-test "empty template interpolation should error" {
+test "empty template interpolation should emit TS1109" {
   let source =
     #|`${}`
-  debug_inspect(
-    parse_program(source).0,
-    content=(
-      #|<ArrayView:
-      #|  [
-      #|    Diagnostic(
-      #|      filename="",
-      #|      line=1,
-      #|      column=4,
-      #|      error_code=1109,
-      #|      error_msg="Expression expected.",
-      #|    ),
-      #|  ]>
-    ),
-  )
+  guard parse_program(source).0
+    is [Diagnostic(error_code=1109, error_msg="Expression expected.", ..)] else {
+    fail("parse \{source} should emit TS1109")
+  }
 }
 
 ///|
