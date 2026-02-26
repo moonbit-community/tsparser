@@ -133,63 +133,80 @@ test "empty template interpolation should emit TS1109" {
 }
 
 ///|
-test "rest parameter must be trailing" {
+test "misplaced rest parameter should emit TS1014" {
   let source =
     #|function foo(...bar, baz) {}
-  debug_inspect(
-    parse_program(source).0,
-    content=(
-      #|<ArrayView:
-      #|  [
-      #|    Diagnostic(
-      #|      filename="",
-      #|      line=1,
-      #|      column=14,
-      #|      error_code=1014,
-      #|      error_msg="A rest parameter must be last in a parameter list.",
-      #|    ),
-      #|  ]>
-    ),
-  )
+  guard parse_program(source).0 is [
+    Diagnostic(
+      error_code = 1014,
+      error_msg = "A rest parameter must be last in a parameter list.",
+      ..
+    )
+  ] else {
+    fail("parse '\{source}' should emit TS1014")
+  }
 }
 
 ///|
 test "abstract new type should require parenthesized parameters" {
   let source =
     #|type foo = abstract new bar
-  debug_inspect(
-    parse_program(source).0,
-    content=(
-      #|<ArrayView:
-      #|  [
-      #|    Diagnostic(
-      #|      filename="",
-      #|      line=1,
-      #|      column=25,
-      #|      error_code=1005,
-      #|      error_msg="'(' expected.",
-      #|    ),
-      #|  ]>
-    ),
-  )
+  guard parse_program(source).0 is [Diagnostic(error_code=1005, error_msg="'(' expected.", ..)] else {
+    fail("parse '\{source}' should emit TS1005")
+  }
 }
 
 ///|
 test "function type generic parameters should be preserved" {
-  let generic_source =
+  let source =
     #|type foo = <T>(_: T) => T
-  let non_generic_source =
-    #|type foo = (_: T) => T
   debug_inspect(
-    parse_program(generic_source).0,
+    parse_program(source).1,
     content=(
-      #|<ArrayView: []>
-    ),
-  )
-  debug_inspect(
-    parse_program(non_generic_source).0,
-    content=(
-      #|<ArrayView: []>
+      #|{
+      #|  stmts: [
+      #|    {
+      #|      kind: TypeAliasDecl(
+      #|        {
+      #|          name: "foo",
+      #|          type_params: [],
+      #|          value: {
+      #|            kind: Function(
+      #|              [
+      #|                {
+      #|                  kind: Ident("T"),
+      #|                  span: {
+      #|                    start: { offset: 18, line: 1, column: 19 },
+      #|                    end: { offset: 19, line: 1, column: 20 },
+      #|                  },
+      #|                },
+      #|              ],
+      #|              {
+      #|                kind: Ident("T"),
+      #|                span: {
+      #|                  start: { offset: 24, line: 1, column: 25 },
+      #|                  end: { offset: 25, line: 1, column: 26 },
+      #|                },
+      #|              },
+      #|            ),
+      #|            span: {
+      #|              start: { offset: 14, line: 1, column: 15 },
+      #|              end: { offset: 25, line: 1, column: 26 },
+      #|            },
+      #|          },
+      #|          span: {
+      #|            start: { offset: 0, line: 1, column: 1 },
+      #|            end: { offset: 25, line: 1, column: 26 },
+      #|          },
+      #|        },
+      #|      ),
+      #|      span: {
+      #|        start: { offset: 0, line: 1, column: 1 },
+      #|        end: { offset: 25, line: 1, column: 26 },
+      #|      },
+      #|    },
+      #|  ],
+      #|}
     ),
   )
 }
