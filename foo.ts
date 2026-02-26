@@ -1,1 +1,0 @@
-type foo = abstract new bar

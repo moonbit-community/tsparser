@@ -593,6 +593,7 @@ pub enum TypeKind {
   IndexAccess(TypeNode, TypeNode)
   Generic(TypeNode, Array[TypeNode])
   Function(Array[TypeNode], TypeNode)
+  GenericFunction(Array[TypeParam], Array[TypeNode], TypeNode)
 } derive(Debug)
 
 ///|

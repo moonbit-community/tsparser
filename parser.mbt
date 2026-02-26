@@ -2838,9 +2838,25 @@ fn type_node_is_void(type_ann : TypeNode) -> Bool {
 }
 
 ///|
+fn make_function_type_node(
+  type_params : Array[TypeParam],
+  params : Array[TypeNode],
+  ret : TypeNode,
+  span : Span,
+) -> TypeNode {
+  let kind = if type_params.length() == 0 {
+    TypeKind::Function(params, ret)
+  } else {
+    TypeKind::GenericFunction(type_params, params, ret)
+  }
+  { kind, span }
+}
+
+///|
 fn type_node_is_function_returning_void(type_ann : TypeNode) -> Bool {
   match type_ann.kind {
-    TypeKind::Function(_, ret_type) => type_node_is_void(ret_type)
+    TypeKind::Function(_, ret_type)
+    | TypeKind::GenericFunction(_, _, ret_type) => type_node_is_void(ret_type)
     _ => false
   }
 }
@@ -2891,6 +2907,30 @@ fn type_node_references_ident(type_ann : TypeNode, name : String) -> Bool {
       false
     }
     TypeKind::Function(params, ret) => {
+      for param in params {
+        if type_node_references_ident(param, name) {
+          return true
+        }
+      }
+      type_node_references_ident(ret, name)
+    }
+    TypeKind::GenericFunction(type_params, params, ret) => {
+      for type_param in type_params {
+        match type_param.constraint {
+          Some(constraint) =>
+            if type_node_references_ident(constraint, name) {
+              return true
+            }
+          None => ()
+        }
+        match type_param.default_type {
+          Some(default_type) =>
+            if type_node_references_ident(default_type, name) {
+              return true
+            }
+          None => ()
+        }
+      }
       for param in params {
         if type_node_references_ident(param, name) {
           return true
@@ -2963,6 +3003,34 @@ fn type_node_contains_recursive_promise_reference(
       type_node_contains_recursive_promise_reference(object_ty, alias_name) ||
       type_node_contains_recursive_promise_reference(index_ty, alias_name)
     TypeKind::Function(params, ret) => {
+      for param in params {
+        if type_node_contains_recursive_promise_reference(param, alias_name) {
+          return true
+        }
+      }
+      type_node_contains_recursive_promise_reference(ret, alias_name)
+    }
+    TypeKind::GenericFunction(type_params, params, ret) => {
+      for type_param in type_params {
+        match type_param.constraint {
+          Some(constraint) =>
+            if type_node_contains_recursive_promise_reference(
+                constraint, alias_name,
+              ) {
+              return true
+            }
+          None => ()
+        }
+        match type_param.default_type {
+          Some(default_type) =>
+            if type_node_contains_recursive_promise_reference(
+                default_type, alias_name,
+              ) {
+              return true
+            }
+          None => ()
+        }
+      }
       for param in params {
         if type_node_contains_recursive_promise_reference(param, alias_name) {
           return true
@@ -12114,82 +12182,13 @@ fn Parser::parse_interface_member(
       self.peek_kind(1) == Some(TokenKind::LParen)
     ) {
     let start = self.expect_keyword(Keyword::New)
-    ignore(self.parse_type_params())
-    let params = self.parse_params(false)
-    let mut return_type : TypeNode? = None
-    if self.eat(TokenKind::Colon) {
-      return_type = Some(self.parse_type())
-    }
-    if self.eat(TokenKind::Question) {
-      let question_span = self.previous().span
-      self.record_ts_error(question_span.start, 1005, "';' expected.")
-      let mut end_span = question_span
-      if self.eat(TokenKind::Colon) {
-        let colon_span = self.previous().span
-        self.record_ts_error(
-          colon_span.start,
-          1131,
-          "Property or signature expected.",
-        )
-        end_span = colon_span
-        if !self.check(TokenKind::Semicolon) &&
-          !self.check(TokenKind::Comma) &&
-          !self.check(TokenKind::RBrace) &&
-          !self.at_end() {
-          let skipped = self.parse_member_type_with_restricted_multiline_index_postfix()
-          end_span = skipped.span
-        }
-      }
-      if self.eat(TokenKind::Semicolon) || self.eat(TokenKind::Comma) {
-        end_span = self.previous().span
-      }
-      let type_ann : TypeNode = {
-        kind: TypeKind::Ident("any"),
-        span: start.span,
-      }
-      return {
-        name: "new",
-        optional: false,
-        type_ann,
-        span: start.span.merge(end_span),
-      }
-    }
-    let ret_type = match return_type {
-      Some(ty) => ty
-      None => { kind: TypeKind::Ident("any"), span: start.span }
-    }
-    let param_types : Array[TypeNode] = []
-    for param in params {
-      match param.type_ann {
-        Some(ty) => param_types.push(ty)
-        None =>
-          param_types.push({ kind: TypeKind::Ident("any"), span: param.span })
-      }
-    }
-    let type_ann : TypeNode = {
-      kind: TypeKind::Function(param_types, ret_type),
-      span: start.span.merge(ret_type.span),
-    }
-    let mut end_span = type_ann.span
-    if self.eat(TokenKind::Semicolon) || self.eat(TokenKind::Comma) {
-      end_span = self.previous().span
-    }
-    return {
-      name: "new",
-      optional: false,
-      type_ann,
-      span: start.span.merge(end_span),
-    }
-  }
-  if self.check(TokenKind::Lt) || self.check(TokenKind::LParen) {
-    ignore(self.parse_type_params())
-    if self.check(TokenKind::LParen) {
+    let type_params = self.parse_type_params()
+    self.enter_type_param_scope(type_params)
+    let parsed_interface_member : InterfaceMember = try {
       let params = self.parse_params(false)
       let mut return_type : TypeNode? = None
       if self.eat(TokenKind::Colon) {
-        return_type = Some(
-          self.parse_member_type_with_restricted_multiline_index_postfix(),
-        )
+        return_type = Some(self.parse_type())
       }
       if self.eat(TokenKind::Question) {
         let question_span = self.previous().span
@@ -12216,31 +12215,132 @@ fn Parser::parse_interface_member(
         }
         let type_ann : TypeNode = {
           kind: TypeKind::Ident("any"),
-          span: question_span,
+          span: start.span,
         }
-        return { name: "[call]", optional: false, type_ann, span: end_span }
-      }
-      let ret_type = match return_type {
-        Some(ty) => ty
-        None => { kind: TypeKind::Ident("any"), span: self.current().span }
-      }
-      let param_types : Array[TypeNode] = []
-      for param in params {
-        match param.type_ann {
-          Some(ty) => param_types.push(ty)
-          None =>
-            param_types.push({ kind: TypeKind::Ident("any"), span: param.span })
+        {
+          name: "new",
+          optional: false,
+          type_ann,
+          span: start.span.merge(end_span),
+        }
+      } else {
+        let ret_type = match return_type {
+          Some(ty) => ty
+          None => { kind: TypeKind::Ident("any"), span: start.span }
+        }
+        let param_types : Array[TypeNode] = []
+        for param in params {
+          match param.type_ann {
+            Some(ty) => param_types.push(ty)
+            None =>
+              param_types.push({
+                kind: TypeKind::Ident("any"),
+                span: param.span,
+              })
+          }
+        }
+        let type_ann = make_function_type_node(
+          type_params,
+          param_types,
+          ret_type,
+          start.span.merge(ret_type.span),
+        )
+        let mut end_span = type_ann.span
+        if self.eat(TokenKind::Semicolon) || self.eat(TokenKind::Comma) {
+          end_span = self.previous().span
+        }
+        {
+          name: "new",
+          optional: false,
+          type_ann,
+          span: start.span.merge(end_span),
         }
       }
-      let type_ann : TypeNode = {
-        kind: TypeKind::Function(param_types, ret_type),
-        span: ret_type.span,
+    } catch {
+      err => {
+        self.leave_type_param_scope()
+        raise err
       }
-      let mut end_span = type_ann.span
-      if self.eat(TokenKind::Semicolon) || self.eat(TokenKind::Comma) {
-        end_span = self.previous().span
+    }
+    self.leave_type_param_scope()
+    return parsed_interface_member
+  }
+  if self.check(TokenKind::Lt) || self.check(TokenKind::LParen) {
+    let type_params = self.parse_type_params()
+    if self.check(TokenKind::LParen) {
+      self.enter_type_param_scope(type_params)
+      let parsed_interface_member : InterfaceMember = try {
+        let params = self.parse_params(false)
+        let mut return_type : TypeNode? = None
+        if self.eat(TokenKind::Colon) {
+          return_type = Some(
+            self.parse_member_type_with_restricted_multiline_index_postfix(),
+          )
+        }
+        if self.eat(TokenKind::Question) {
+          let question_span = self.previous().span
+          self.record_ts_error(question_span.start, 1005, "';' expected.")
+          let mut end_span = question_span
+          if self.eat(TokenKind::Colon) {
+            let colon_span = self.previous().span
+            self.record_ts_error(
+              colon_span.start,
+              1131,
+              "Property or signature expected.",
+            )
+            end_span = colon_span
+            if !self.check(TokenKind::Semicolon) &&
+              !self.check(TokenKind::Comma) &&
+              !self.check(TokenKind::RBrace) &&
+              !self.at_end() {
+              let skipped = self.parse_member_type_with_restricted_multiline_index_postfix()
+              end_span = skipped.span
+            }
+          }
+          if self.eat(TokenKind::Semicolon) || self.eat(TokenKind::Comma) {
+            end_span = self.previous().span
+          }
+          let type_ann : TypeNode = {
+            kind: TypeKind::Ident("any"),
+            span: question_span,
+          }
+          { name: "[call]", optional: false, type_ann, span: end_span }
+        } else {
+          let ret_type = match return_type {
+            Some(ty) => ty
+            None => { kind: TypeKind::Ident("any"), span: self.current().span }
+          }
+          let param_types : Array[TypeNode] = []
+          for param in params {
+            match param.type_ann {
+              Some(ty) => param_types.push(ty)
+              None =>
+                param_types.push({
+                  kind: TypeKind::Ident("any"),
+                  span: param.span,
+                })
+            }
+          }
+          let type_ann = make_function_type_node(
+            type_params,
+            param_types,
+            ret_type,
+            ret_type.span,
+          )
+          let mut end_span = type_ann.span
+          if self.eat(TokenKind::Semicolon) || self.eat(TokenKind::Comma) {
+            end_span = self.previous().span
+          }
+          { name: "[call]", optional: false, type_ann, span: end_span }
+        }
+      } catch {
+        err => {
+          self.leave_type_param_scope()
+          raise err
+        }
       }
-      return { name: "[call]", optional: false, type_ann, span: end_span }
+      self.leave_type_param_scope()
+      return parsed_interface_member
     }
   }
   if self.check_keyword(Keyword::Get) || self.check_keyword(Keyword::Set) {
@@ -12376,45 +12476,57 @@ fn Parser::parse_interface_member(
       optional = false
     }
   }
-  ignore(self.parse_type_params())
+  let type_params = self.parse_type_params()
   if self.check(TokenKind::LParen) {
-    let params = self.parse_params(false)
-    let mut return_type : TypeNode? = None
-    if self.eat(TokenKind::Colon) {
-      return_type = Some(
-        self.parse_member_type_with_restricted_multiline_index_postfix(),
+    self.enter_type_param_scope(type_params)
+    let parsed_interface_member : InterfaceMember = try {
+      let params = self.parse_params(false)
+      let mut return_type : TypeNode? = None
+      if self.eat(TokenKind::Colon) {
+        return_type = Some(
+          self.parse_member_type_with_restricted_multiline_index_postfix(),
+        )
+      }
+      let ret_type = match return_type {
+        Some(ty) => ty
+        None => { kind: TypeKind::Ident("any"), span: name_span }
+      }
+      let param_types : Array[TypeNode] = []
+      for param in params {
+        match param.type_ann {
+          Some(ty) => param_types.push(ty)
+          None =>
+            param_types.push({ kind: TypeKind::Ident("any"), span: param.span })
+        }
+      }
+      let type_ann = make_function_type_node(
+        type_params,
+        param_types,
+        ret_type,
+        name_span.merge(ret_type.span),
       )
-    }
-    let ret_type = match return_type {
-      Some(ty) => ty
-      None => { kind: TypeKind::Ident("any"), span: name_span }
-    }
-    let param_types : Array[TypeNode] = []
-    for param in params {
-      match param.type_ann {
-        Some(ty) => param_types.push(ty)
-        None =>
-          param_types.push({ kind: TypeKind::Ident("any"), span: param.span })
+      let mut end_span = type_ann.span
+      if self.check(TokenKind::LBrace) {
+        self.record_ts_error(
+          self.current().span.start,
+          1183,
+          "An implementation cannot be declared in ambient contexts.",
+        )
+        let body = self.parse_block_in_function_context()
+        end_span = body.span
+      }
+      if self.eat(TokenKind::Semicolon) || self.eat(TokenKind::Comma) {
+        end_span = self.previous().span
+      }
+      { name, optional, type_ann, span: name_span.merge(end_span) }
+    } catch {
+      err => {
+        self.leave_type_param_scope()
+        raise err
       }
     }
-    let type_ann : TypeNode = {
-      kind: TypeKind::Function(param_types, ret_type),
-      span: name_span.merge(ret_type.span),
-    }
-    let mut end_span = type_ann.span
-    if self.check(TokenKind::LBrace) {
-      self.record_ts_error(
-        self.current().span.start,
-        1183,
-        "An implementation cannot be declared in ambient contexts.",
-      )
-      let body = self.parse_block_in_function_context()
-      end_span = body.span
-    }
-    if self.eat(TokenKind::Semicolon) || self.eat(TokenKind::Comma) {
-      end_span = self.previous().span
-    }
-    return { name, optional, type_ann, span: name_span.merge(end_span) }
+    self.leave_type_param_scope()
+    return parsed_interface_member
   }
   let type_ann = if self.eat(TokenKind::Colon) {
     self.parse_member_type_with_restricted_multiline_index_postfix()
@@ -12456,45 +12568,61 @@ fn Parser::parse_type_member(self : Parser) -> TypeMember raise ParseError {
     leading_index_signature_modifier = Some((modifier_name, modifier_pos))
   }
   if self.check(TokenKind::Lt) {
-    ignore(self.parse_type_params())
+    let type_params = self.parse_type_params()
     if self.check(TokenKind::LParen) {
-      let start = self.expect(TokenKind::LParen, "'('")
-      let params : Array[TypeNode] = []
-      if !self.check(TokenKind::RParen) {
-        while true {
-          params.push(self.parse_function_type_param())
-          if self.eat(TokenKind::Comma) {
-            if self.check(TokenKind::RParen) {
-              break
+      self.enter_type_param_scope(type_params)
+      let parsed_type_member : TypeMember = try {
+        let start = self.expect(TokenKind::LParen, "'('")
+        let params : Array[TypeNode] = []
+        if !self.check(TokenKind::RParen) {
+          while true {
+            params.push(self.parse_function_type_param())
+            if self.eat(TokenKind::Comma) {
+              if self.check(TokenKind::RParen) {
+                break
+              }
+              continue
             }
-            continue
+            break
           }
-          break
+        }
+        ignore(self.expect(TokenKind::RParen, "')'"))
+        let ret_type = if self.eat(TokenKind::Colon) {
+          self.parse_member_type_with_restricted_multiline_index_postfix()
+        } else if self.eat(TokenKind::Arrow) {
+          self.record_ts_error(
+            self.previous().span.start,
+            1005,
+            "':' expected.",
+          )
+          self.parse_member_type_with_restricted_multiline_index_postfix()
+        } else {
+          { kind: TypeKind::Ident("any"), span: start.span }
+        }
+        let type_ann = make_function_type_node(
+          type_params,
+          params,
+          ret_type,
+          start.span.merge(ret_type.span),
+        )
+        let mut end_span = type_ann.span
+        if self.eat(TokenKind::Semicolon) || self.eat(TokenKind::Comma) {
+          end_span = self.previous().span
+        }
+        {
+          name: "[call]",
+          optional: false,
+          type_ann,
+          span: start.span.merge(end_span),
+        }
+      } catch {
+        err => {
+          self.leave_type_param_scope()
+          raise err
         }
       }
-      ignore(self.expect(TokenKind::RParen, "')'"))
-      let ret_type = if self.eat(TokenKind::Colon) {
-        self.parse_member_type_with_restricted_multiline_index_postfix()
-      } else if self.eat(TokenKind::Arrow) {
-        self.record_ts_error(self.previous().span.start, 1005, "':' expected.")
-        self.parse_member_type_with_restricted_multiline_index_postfix()
-      } else {
-        { kind: TypeKind::Ident("any"), span: start.span }
-      }
-      let type_ann : TypeNode = {
-        kind: TypeKind::Function(params, ret_type),
-        span: start.span.merge(ret_type.span),
-      }
-      let mut end_span = type_ann.span
-      if self.eat(TokenKind::Semicolon) || self.eat(TokenKind::Comma) {
-        end_span = self.previous().span
-      }
-      return {
-        name: "[call]",
-        optional: false,
-        type_ann,
-        span: start.span.merge(end_span),
-      }
+      self.leave_type_param_scope()
+      return parsed_type_member
     }
   }
   if self.check(TokenKind::LParen) {
@@ -12521,10 +12649,12 @@ fn Parser::parse_type_member(self : Parser) -> TypeMember raise ParseError {
     } else {
       { kind: TypeKind::Ident("any"), span: start.span }
     }
-    let type_ann : TypeNode = {
-      kind: TypeKind::Function(params, ret_type),
-      span: start.span.merge(ret_type.span),
-    }
+    let type_ann = make_function_type_node(
+      [],
+      params,
+      ret_type,
+      start.span.merge(ret_type.span),
+    )
     let mut end_span = type_ann.span
     if self.eat(TokenKind::Semicolon) || self.eat(TokenKind::Comma) {
       end_span = self.previous().span
@@ -12542,36 +12672,48 @@ fn Parser::parse_type_member(self : Parser) -> TypeMember raise ParseError {
     if self.eat(TokenKind::Question) {
       optional = true
     }
-    ignore(self.parse_type_params())
-    ignore(self.expect(TokenKind::LParen, "'('"))
-    let params : Array[TypeNode] = []
-    if !self.check(TokenKind::RParen) {
-      while true {
-        params.push(self.parse_function_type_param())
-        if self.eat(TokenKind::Comma) {
-          if self.check(TokenKind::RParen) {
-            break
+    let type_params = self.parse_type_params()
+    self.enter_type_param_scope(type_params)
+    let parsed_type_member : TypeMember = try {
+      ignore(self.expect(TokenKind::LParen, "'('"))
+      let params : Array[TypeNode] = []
+      if !self.check(TokenKind::RParen) {
+        while true {
+          params.push(self.parse_function_type_param())
+          if self.eat(TokenKind::Comma) {
+            if self.check(TokenKind::RParen) {
+              break
+            }
+            continue
           }
-          continue
+          break
         }
-        break
+      }
+      ignore(self.expect(TokenKind::RParen, "')'"))
+      let ret_type = if self.eat(TokenKind::Colon) {
+        self.parse_member_type_with_restricted_multiline_index_postfix()
+      } else {
+        { kind: TypeKind::Ident("any"), span: start.span }
+      }
+      let type_ann = make_function_type_node(
+        type_params,
+        params,
+        ret_type,
+        start.span.merge(ret_type.span),
+      )
+      let mut end_span = type_ann.span
+      if self.eat(TokenKind::Semicolon) || self.eat(TokenKind::Comma) {
+        end_span = self.previous().span
+      }
+      { name: "new", optional, type_ann, span: start.span.merge(end_span) }
+    } catch {
+      err => {
+        self.leave_type_param_scope()
+        raise err
       }
     }
-    ignore(self.expect(TokenKind::RParen, "')'"))
-    let ret_type = if self.eat(TokenKind::Colon) {
-      self.parse_member_type_with_restricted_multiline_index_postfix()
-    } else {
-      { kind: TypeKind::Ident("any"), span: start.span }
-    }
-    let type_ann : TypeNode = {
-      kind: TypeKind::Function(params, ret_type),
-      span: start.span.merge(ret_type.span),
-    }
-    let mut end_span = type_ann.span
-    if self.eat(TokenKind::Semicolon) || self.eat(TokenKind::Comma) {
-      end_span = self.previous().span
-    }
-    return { name: "new", optional, type_ann, span: start.span.merge(end_span) }
+    self.leave_type_param_scope()
+    return parsed_type_member
   }
   if self.check_keyword(Keyword::Get) || self.check_keyword(Keyword::Set) {
     let next_is_name = match self.peek_kind(1) {
@@ -12684,45 +12826,57 @@ fn Parser::parse_type_member(self : Parser) -> TypeMember raise ParseError {
       optional = false
     }
   }
-  ignore(self.parse_type_params())
+  let type_params = self.parse_type_params()
   if self.check(TokenKind::LParen) {
-    let params = self.parse_params(false)
-    let mut return_type : TypeNode? = None
-    if self.eat(TokenKind::Colon) {
-      return_type = Some(
-        self.parse_member_type_with_restricted_multiline_index_postfix(),
+    self.enter_type_param_scope(type_params)
+    let parsed_type_member : TypeMember = try {
+      let params = self.parse_params(false)
+      let mut return_type : TypeNode? = None
+      if self.eat(TokenKind::Colon) {
+        return_type = Some(
+          self.parse_member_type_with_restricted_multiline_index_postfix(),
+        )
+      }
+      let ret_type = match return_type {
+        Some(ty) => ty
+        None => { kind: TypeKind::Ident("any"), span: name_span }
+      }
+      let param_types : Array[TypeNode] = []
+      for param in params {
+        match param.type_ann {
+          Some(ty) => param_types.push(ty)
+          None =>
+            param_types.push({ kind: TypeKind::Ident("any"), span: param.span })
+        }
+      }
+      let type_ann = make_function_type_node(
+        type_params,
+        param_types,
+        ret_type,
+        name_span.merge(ret_type.span),
       )
-    }
-    let ret_type = match return_type {
-      Some(ty) => ty
-      None => { kind: TypeKind::Ident("any"), span: name_span }
-    }
-    let param_types : Array[TypeNode] = []
-    for param in params {
-      match param.type_ann {
-        Some(ty) => param_types.push(ty)
-        None =>
-          param_types.push({ kind: TypeKind::Ident("any"), span: param.span })
+      let mut end_span = type_ann.span
+      if self.check(TokenKind::LBrace) {
+        self.record_ts_error(
+          self.current().span.start,
+          1183,
+          "An implementation cannot be declared in ambient contexts.",
+        )
+        let body = self.parse_block_in_function_context()
+        end_span = body.span
+      }
+      if self.eat(TokenKind::Semicolon) || self.eat(TokenKind::Comma) {
+        end_span = self.previous().span
+      }
+      { name, optional, type_ann, span: name_span.merge(end_span) }
+    } catch {
+      err => {
+        self.leave_type_param_scope()
+        raise err
       }
     }
-    let type_ann : TypeNode = {
-      kind: TypeKind::Function(param_types, ret_type),
-      span: name_span.merge(ret_type.span),
-    }
-    let mut end_span = type_ann.span
-    if self.check(TokenKind::LBrace) {
-      self.record_ts_error(
-        self.current().span.start,
-        1183,
-        "An implementation cannot be declared in ambient contexts.",
-      )
-      let body = self.parse_block_in_function_context()
-      end_span = body.span
-    }
-    if self.eat(TokenKind::Semicolon) || self.eat(TokenKind::Comma) {
-      end_span = self.previous().span
-    }
-    return { name, optional, type_ann, span: name_span.merge(end_span) }
+    self.leave_type_param_scope()
+    return parsed_type_member
   }
   let type_ann = if self.eat(TokenKind::Colon) {
     self.parse_member_type_with_restricted_multiline_index_postfix()
@@ -18494,7 +18648,7 @@ fn Parser::type_node_is_unparenthesized_function_type(
   type_node : TypeNode,
 ) -> Bool {
   match type_node.kind {
-    TypeKind::Function(_, _) => ()
+    TypeKind::Function(_, _) | TypeKind::GenericFunction(_, _, _) => ()
     _ => return false
   }
   let start_offset = type_node.span.start.offset
@@ -19779,34 +19933,66 @@ fn Parser::parse_constructor_type_signature(
   self : Parser,
   start_span : Span,
 ) -> TypeNode raise ParseError {
-  if self.check(TokenKind::Lt) {
-    ignore(self.parse_type_params())
+  let type_params = if self.check(TokenKind::Lt) {
+    self.parse_type_params()
+  } else {
+    []
   }
-  ignore(self.expect(TokenKind::LParen, "'('"))
-  let params : Array[TypeNode] = []
-  if !self.check(TokenKind::RParen) {
-    while true {
-      params.push(self.parse_function_type_param())
-      if self.eat(TokenKind::Comma) {
-        if self.check(TokenKind::RParen) {
-          break
+  self.enter_type_param_scope(type_params)
+  let node = try {
+    ignore(self.expect(TokenKind::LParen, "'('"))
+    let params : Array[TypeNode] = []
+    if !self.check(TokenKind::RParen) {
+      while true {
+        params.push(self.parse_function_type_param())
+        if self.eat(TokenKind::Comma) {
+          if self.check(TokenKind::RParen) {
+            break
+          }
+          continue
         }
-        continue
+        break
       }
-      break
+    }
+    ignore(self.expect(TokenKind::RParen, "')'"))
+    ignore(self.expect(TokenKind::Arrow, "'=>'"))
+    let ret = self.parse_type()
+    make_function_type_node(
+      type_params,
+      params,
+      ret,
+      start_span.merge(ret.span),
+    )
+  } catch {
+    err => {
+      self.leave_type_param_scope()
+      raise err
     }
   }
-  ignore(self.expect(TokenKind::RParen, "')'"))
-  ignore(self.expect(TokenKind::Arrow, "'=>'"))
-  let ret = self.parse_type()
-  { kind: TypeKind::Function(params, ret), span: start_span.merge(ret.span) }
+  self.leave_type_param_scope()
+  node
 }
 
 ///|
 fn Parser::parse_type_primary(self : Parser) -> TypeNode raise ParseError {
   if self.check(TokenKind::Lt) && self.is_type_args_before_call() {
-    ignore(self.parse_type_params())
-    return self.parse_type_primary()
+    let type_params = self.parse_type_params()
+    self.enter_type_param_scope(type_params)
+    let node = try {
+      let inner = self.parse_type_primary()
+      match inner.kind {
+        TypeKind::Function(params, ret) =>
+          make_function_type_node(type_params, params, ret, inner.span)
+        _ => inner
+      }
+    } catch {
+      err => {
+        self.leave_type_param_scope()
+        raise err
+      }
+    }
+    self.leave_type_param_scope()
+    return node
   }
   if self.eat(TokenKind::Question) {
     let start = self.previous().span
@@ -19880,19 +20066,17 @@ fn Parser::parse_type_primary(self : Parser) -> TypeNode raise ParseError {
       ignore(self.expect(TokenKind::Arrow, "'=>'"))
       let ret = self.parse_type()
       let span = start.span.merge(ret.span)
-      return self.parse_type_postfix({
-        kind: TypeKind::Function(params, ret),
-        span,
-      })
+      return self.parse_type_postfix(
+        make_function_type_node([], params, ret, span),
+      )
     }
     if looks_like_function_type && self.eat(TokenKind::Colon) {
       self.record_ts_error(self.previous().span.start, 1005, "'=>' expected.")
       let ret = self.parse_type()
       let span = start.span.merge(ret.span)
-      return self.parse_type_postfix({
-        kind: TypeKind::Function(params, ret),
-        span,
-      })
+      return self.parse_type_postfix(
+        make_function_type_node([], params, ret, span),
+      )
     }
     if params.length() == 0 {
       let end_pos = end.span.end

@@ -136,13 +136,14 @@ test "empty template interpolation should emit TS1109" {
 test "misplaced rest parameter should emit TS1014" {
   let source =
     #|function foo(...bar, baz) {}
-  guard parse_program(source).0 is [
-    Diagnostic(
-      error_code = 1014,
-      error_msg = "A rest parameter must be last in a parameter list.",
-      ..
-    )
-  ] else {
+  guard parse_program(source).0
+    is [
+      Diagnostic(
+        error_code=1014,
+        error_msg="A rest parameter must be last in a parameter list.",
+        ..
+      ),
+    ] else {
     fail("parse '\{source}' should emit TS1014")
   }
 }
@@ -151,7 +152,8 @@ test "misplaced rest parameter should emit TS1014" {
 test "abstract new type should require parenthesized parameters" {
   let source =
     #|type foo = abstract new bar
-  guard parse_program(source).0 is [Diagnostic(error_code=1005, error_msg="'(' expected.", ..)] else {
+  guard parse_program(source).0
+    is [Diagnostic(error_code=1005, error_msg="'(' expected.", ..)] else {
     fail("parse '\{source}' should emit TS1005")
   }
 }
@@ -160,55 +162,24 @@ test "abstract new type should require parenthesized parameters" {
 test "function type generic parameters should be preserved" {
   let source =
     #|type foo = <T>(_: T) => T
-  debug_inspect(
-    parse_program(source).1,
-    content=(
-      #|{
-      #|  stmts: [
-      #|    {
-      #|      kind: TypeAliasDecl(
-      #|        {
-      #|          name: "foo",
-      #|          type_params: [],
-      #|          value: {
-      #|            kind: Function(
-      #|              [
-      #|                {
-      #|                  kind: Ident("T"),
-      #|                  span: {
-      #|                    start: { offset: 18, line: 1, column: 19 },
-      #|                    end: { offset: 19, line: 1, column: 20 },
-      #|                  },
-      #|                },
-      #|              ],
-      #|              {
-      #|                kind: Ident("T"),
-      #|                span: {
-      #|                  start: { offset: 24, line: 1, column: 25 },
-      #|                  end: { offset: 25, line: 1, column: 26 },
-      #|                },
-      #|              },
-      #|            ),
-      #|            span: {
-      #|              start: { offset: 14, line: 1, column: 15 },
-      #|              end: { offset: 25, line: 1, column: 26 },
-      #|            },
-      #|          },
-      #|          span: {
-      #|            start: { offset: 0, line: 1, column: 1 },
-      #|            end: { offset: 25, line: 1, column: 26 },
-      #|          },
-      #|        },
-      #|      ),
-      #|      span: {
-      #|        start: { offset: 0, line: 1, column: 1 },
-      #|        end: { offset: 25, line: 1, column: 26 },
-      #|      },
-      #|    },
-      #|  ],
-      #|}
-    ),
-  )
+  let (errors, program) = parse_program(source)
+  assert_true(errors is [])
+  guard program.stmts
+    is [
+      {
+        kind: TypeAliasDecl(
+          {
+            value: {
+              kind: GenericFunction([{ name: type_parameter_name, .. }], _, _),
+              ..,
+            },
+            ..,
+          }
+        ),
+        ..,
+      },
+    ]
+  assert_eq(type_parameter_name, "T")
 }
 
 ///|
