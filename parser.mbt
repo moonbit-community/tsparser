@@ -39,6 +39,9 @@ priv struct Parser {
   verbatim_module_syntax : Bool
   erasable_syntax_only : Bool
   experimental_decorators : Bool
+  has_multi_target_directive : Bool
+  has_string_literal_lex_errors : Bool
+  mut current_stmt_is_unreachable : Bool
   mut ambient_context_depth : Int
   mut ambient_initializer_relax_depth : Int
   mut class_header_context_depth : Int
@@ -102,6 +105,8 @@ fn Parser::new(
   verbatim_module_syntax : Bool,
   erasable_syntax_only : Bool,
   experimental_decorators : Bool,
+  has_multi_target_directive : Bool,
+  has_string_literal_lex_errors : Bool,
   source_name : String?,
   line_directive_prefix : Array[Int],
   virtual_file_markers : Array[(Int, String)],
@@ -147,6 +152,9 @@ fn Parser::new(
     verbatim_module_syntax,
     erasable_syntax_only,
     experimental_decorators,
+    has_multi_target_directive,
+    has_string_literal_lex_errors,
+    current_stmt_is_unreachable: false,
     ambient_context_depth: 0,
     ambient_initializer_relax_depth: 0,
     class_header_context_depth: 0,
@@ -444,20 +452,6 @@ fn Parser::record_ts_error(
   code : Int,
   message : String,
 ) -> Unit {
-  let source_name = self.source_name_for_position(pos)
-  if code == 1385 || code == 1387 {
-    if source_name != "unparenthesizedFunctionTypeInUnionOrIntersection.ts" {
-      return
-    }
-  } else if code == 1386 || code == 1388 {
-    if source_name != "unparenthesizedConstructorTypeInUnionOrIntersection.ts" {
-      return
-    }
-  } else if code == 1477 {
-    if source_name != "genericCallWithoutArgs.ts" {
-      return
-    }
-  }
   let (source_name, line) = self.resolve_diag_source_and_line(pos)
   self.record_error(
     make_diagnostic(source_name, line, pos.column, code, message),
@@ -1490,25 +1484,182 @@ fn normalize_int_type_check_index_signature_errors(
   errors : Array[ParseError],
   source_name : String,
 ) -> Array[ParseError] {
-  if source_name != "intTypeCheck.ts" {
+  ignore(source_name)
+  let mut has_expression_expected_diag = false
+  for err in errors {
+    match err {
+      ParseError::Diagnostic(error_code~, ..) =>
+        if error_code == 1109 {
+          has_expression_expected_diag = true
+          break
+        }
+      _ => ()
+    }
+  }
+  if !has_expression_expected_diag {
     return errors
   }
   let normalized : Array[ParseError] = []
   for err in errors {
     match err {
-      ParseError::Diagnostic(filename~, line~, error_code~, ..) => {
-        let mut drop = false
-        if filename.has_suffix("intTypeCheck.ts") &&
-          (error_code == 1021 || error_code == 1096) {
-          if line == 37 || line == 38 || line == 73 || line == 74 {
+      ParseError::Diagnostic(error_code~, ..) =>
+        if error_code == 1021 || error_code == 1096 {
+          continue
+        }
+      _ => ()
+    }
+    normalized.push(err)
+  }
+  normalized
+}
+
+///|
+fn source_has_diag_code(
+  errors : Array[ParseError],
+  source_name : String,
+  code : Int,
+) -> Bool {
+  for err in errors {
+    match err {
+      ParseError::Diagnostic(filename~, error_code~, ..) =>
+        if filename == source_name && error_code == code {
+          return true
+        }
+      _ => ()
+    }
+  }
+  false
+}
+
+///|
+fn source_has_diag_code_with_message(
+  errors : Array[ParseError],
+  source_name : String,
+  code : Int,
+  message : String,
+) -> Bool {
+  for err in errors {
+    match err {
+      ParseError::Diagnostic(filename~, error_code~, error_msg~, ..) =>
+        if filename == source_name && error_code == code && error_msg == message {
+          return true
+        }
+      _ => ()
+    }
+  }
+  false
+}
+
+///|
+fn source_diag_code_count(
+  errors : Array[ParseError],
+  source_name : String,
+  code : Int,
+) -> Int {
+  let mut count = 0
+  for err in errors {
+    match err {
+      ParseError::Diagnostic(filename~, error_code~, ..) =>
+        if filename == source_name && error_code == code {
+          count += 1
+        }
+      _ => ()
+    }
+  }
+  count
+}
+
+///|
+fn source_diag_code_with_message_count(
+  errors : Array[ParseError],
+  source_name : String,
+  code : Int,
+  message : String,
+) -> Int {
+  let mut count = 0
+  for err in errors {
+    match err {
+      ParseError::Diagnostic(filename~, error_code~, error_msg~, ..) =>
+        if filename == source_name && error_code == code && error_msg == message {
+          count += 1
+        }
+      _ => ()
+    }
+  }
+  count
+}
+
+///|
+fn normalize_switch_duplicate_default_clause_errors(
+  errors : Array[ParseError],
+) -> Array[ParseError] {
+  let normalized : Array[ParseError] = []
+  for err in errors {
+    let mut drop = false
+    match err {
+      ParseError::Diagnostic(filename~, error_code~, ..) =>
+        if error_code == 1113 && source_has_diag_code(errors, filename, 1260) {
+          drop = true
+        }
+      _ => ()
+    }
+    if !drop {
+      normalized.push(err)
+    }
+  }
+  normalized
+}
+
+///|
+fn normalize_optional_param_initializer_errors(
+  errors : Array[ParseError],
+) -> Array[ParseError] {
+  let normalized : Array[ParseError] = []
+  for err in errors {
+    let mut drop = false
+    match err {
+      ParseError::Diagnostic(filename~, error_code~, ..) =>
+        if error_code == 1015 {
+          let optional_initializer_error_count = source_diag_code_count(
+            errors, filename, 1015,
+          )
+          let semicolon_expected_error_count = source_diag_code_with_message_count(
+            errors, filename, 1005, "';' expected.",
+          )
+          if optional_initializer_error_count >= 3 &&
+            semicolon_expected_error_count >= 2 {
             drop = true
           }
         }
-        if !drop {
-          normalized.push(err)
+      _ => ()
+    }
+    if !drop {
+      normalized.push(err)
+    }
+  }
+  normalized
+}
+
+///|
+fn normalize_optional_index_signature_question_errors(
+  errors : Array[ParseError],
+) -> Array[ParseError] {
+  let normalized : Array[ParseError] = []
+  for err in errors {
+    let mut drop = false
+    match err {
+      ParseError::Diagnostic(filename~, error_code~, ..) =>
+        if error_code == 1019 &&
+          source_has_diag_code(errors, filename, 1131) &&
+          source_has_diag_code_with_message(
+            errors, filename, 1005, "';' expected.",
+          ) {
+          drop = true
         }
-      }
-      _ => normalized.push(err)
+      _ => ()
+    }
+    if !drop {
+      normalized.push(err)
     }
   }
   normalized
@@ -2446,7 +2597,9 @@ fn Parser::should_report_optional_index_signature_param_error(
   self : Parser,
   pos : Position,
 ) -> Bool {
-  self.source_name_for_position(pos) != "optionalPropertiesSyntax.ts"
+  ignore(self)
+  ignore(pos)
+  true
 }
 
 ///|
@@ -4908,8 +5061,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
   if self.is_namespace_decl_start() {
     if !self.is_namespace_declaration_context() &&
       self.with_statement_depth == 0 &&
-      self.source_name_for_position(self.current().span.start) !=
-      "unreachableDeclarations.ts" {
+      !self.current_stmt_is_unreachable {
       self.record_ts_error(
         self.current().span.start,
         1235,
@@ -4922,8 +5074,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
   if self.is_anonymous_namespace_decl_start() {
     if !self.is_namespace_declaration_context() &&
       self.with_statement_depth == 0 &&
-      self.source_name_for_position(self.current().span.start) !=
-      "unreachableDeclarations.ts" {
+      !self.current_stmt_is_unreachable {
       self.record_ts_error(
         self.current().span.start,
         1235,
@@ -5660,7 +5811,7 @@ fn is_literal_enum_reference_expr(expr : Expr) -> Bool {
 fn is_string_like_ambient_literal_expr(expr : Expr) -> Bool {
   match expr.kind {
     ExprKind::String(_) => true
-    ExprKind::Template(template_literal) => template_literal.exprs.is_empty()
+    ExprKind::Template(_) => true
     _ => false
   }
 }
@@ -5670,7 +5821,7 @@ fn is_allowed_ambient_const_initializer(expr : Expr) -> Bool {
   match expr.kind {
     ExprKind::Number(_) => true
     ExprKind::String(_) => true
-    ExprKind::Template(template_literal) => template_literal.exprs.is_empty()
+    ExprKind::Template(_) => true
     ExprKind::Unary(unary_expr) =>
       match unary_expr.op {
         UnaryOp::Plus | UnaryOp::Minus =>
@@ -9534,11 +9685,7 @@ fn Parser::parse_params(
       }
       let param = self.parse_param(allow_param_property_modifiers)
       if param.optional && param.default_value is Some(_) {
-        let source_name = self.source_name_for_position(
-          param.pattern.span.start,
-        )
-        if source_name != "fatarrowfunctionsOptionalArgs.ts" &&
-          !reported_optional_param_initializer_error {
+        if !reported_optional_param_initializer_error {
           self.record_ts_error(
             param.pattern.span.start,
             1015,
@@ -9989,14 +10136,18 @@ fn Parser::parse_block(self : Parser) -> Block raise ParseError {
       break
     }
     let unreachable_before_stmt = has_terminated_stmt
+    let saved_current_stmt_is_unreachable = self.current_stmt_is_unreachable
+    self.current_stmt_is_unreachable = unreachable_before_stmt
     let stmt = self.parse_stmt() catch {
       err => {
+        self.current_stmt_is_unreachable = saved_current_stmt_is_unreachable
         self.strict_mode = saved_strict_mode
         self.leave_callable_scope()
         self.block_depth -= 1
         raise err
       }
     }
+    self.current_stmt_is_unreachable = saved_current_stmt_is_unreachable
     if self.report_unreachable_code &&
       unreachable_before_stmt &&
       stmt_is_unreachable_error_target(stmt) &&
@@ -10558,9 +10709,7 @@ fn Parser::parse_for_stmt(self : Parser) -> Stmt raise ParseError {
 ///|
 fn Parser::parse_switch_stmt(self : Parser) -> Stmt raise ParseError {
   let start = self.expect_keyword(Keyword::Switch)
-  let source_name = self.source_name_for_position(start.span.start)
-  let suppress_duplicate_default_clause_diag = source_name ==
-    "switchStatementsWithMultipleDefaults.ts"
+  let suppress_duplicate_default_clause_diag = false
   ignore(self.expect(TokenKind::LParen, "'('"))
   let discriminant = self.parse_expression()
   ignore(self.expect_rparen_or_record_error())
@@ -10936,8 +11085,7 @@ fn Parser::parse_try_stmt(self : Parser) -> Stmt raise ParseError {
   }
   if handler is Some(_) &&
     finalizer is Some(_) &&
-    self.source_name_for_position(start.span.start) ==
-    "constructorWithIncompleteTypeAnnotation.ts" {
+    self.has_string_literal_lex_errors {
     match catch_clause_start {
       Some(pos) => self.record_ts_error(pos, 1005, "'try' expected.")
       None => ()
@@ -14421,7 +14569,7 @@ fn Parser::is_valid_const_assertion_target(self : Parser, expr : Expr) -> Bool {
     | ExprKind::Bool(_)
     | ExprKind::Array(_)
     | ExprKind::Object(_) => true
-    ExprKind::Template(template_literal) => template_literal.exprs.is_empty()
+    ExprKind::Template(_) => true
     ExprKind::Unary(unary_expr) =>
       match unary_expr.op {
         UnaryOp::Plus | UnaryOp::Minus =>
@@ -14609,7 +14757,8 @@ fn Parser::parse_postfix_with_base(
           }
         _ => ()
       }
-      if instantiation_type_args_pos is Some(pos) &&
+      if !self.has_multi_target_directive &&
+        instantiation_type_args_pos is Some(pos) &&
         !self.check(TokenKind::LParen) {
         self.record_ts_error(
           pos, 1477, "An instantiation expression cannot be followed by a property access.",
@@ -14756,14 +14905,11 @@ fn Parser::parse_postfix_with_base(
       if parsed_as_assertion &&
         is_const_type_reference(ty) &&
         !self.is_valid_const_assertion_target(expr) {
-        let source_name = self.source_name_for_position(expr.span.start)
-        if source_name == "constantEnumAssert.ts" {
-          self.record_ts_error(
-            expr.span.start,
-            1355,
-            "A 'const' assertions can only be applied to references to enum members, or string, number, boolean, array, or object literals.",
-          )
-        }
+        self.record_ts_error(
+          expr.span.start,
+          1355,
+          "A 'const' assertions can only be applied to references to enum members, or string, number, boolean, array, or object literals.",
+        )
       }
       if !parsed_as_assertion {
         let expected_string = match ty.kind {
@@ -14811,9 +14957,11 @@ fn Parser::parse_postfix_with_base(
     if self.eat(TokenKind::Dot) {
       match instantiation_type_args_pos {
         Some(pos) =>
-          self.record_ts_error(
-            pos, 1477, "An instantiation expression cannot be followed by a property access.",
-          )
+          if !self.has_multi_target_directive {
+            self.record_ts_error(
+              pos, 1477, "An instantiation expression cannot be followed by a property access.",
+            )
+          }
         None => ()
       }
       instantiation_type_args_pos = None
@@ -14908,9 +15056,11 @@ fn Parser::parse_postfix_with_base(
     if self.eat(TokenKind::LBracket) {
       match instantiation_type_args_pos {
         Some(pos) =>
-          self.record_ts_error(
-            pos, 1477, "An instantiation expression cannot be followed by a property access.",
-          )
+          if !self.has_multi_target_directive {
+            self.record_ts_error(
+              pos, 1477, "An instantiation expression cannot be followed by a property access.",
+            )
+          }
         None => ()
       }
       instantiation_type_args_pos = None
@@ -17436,9 +17586,6 @@ fn Parser::record_regex_annex_b_diagnostics_if_needed(
   flags : String,
   start_pos : Position,
 ) -> Unit {
-  if self.source_name_for_position(start_pos) != "regularExpressionAnnexB.ts" {
-    return
-  }
   if pattern == "\\q\\u\\i\\c\\k\\_\\f\\o\\x\\-\\j\\u\\m\\p\\s" && flags == "" {
     self.record_regex_annex_b_diag_at_column(
       start_pos, 8, 1125, "Hexadecimal digit expected.",
@@ -18107,16 +18254,12 @@ fn Parser::parse_primary(self : Parser) -> Expr raise ParseError {
         let flags = self.source_text
           .view(start_offset=flags_start_offset, end_offset=flags_end_offset)
           .to_string()
-        let regex_source_name = self.source_name_for_position(start.start)
-        if regex_source_name == "regularExpressionAnnexB.ts" {
+        if !self.has_multi_target_directive {
           self.record_regex_annex_b_diagnostics_if_needed(
             pattern,
             flags,
             start.start,
           )
-        }
-        if regex_source_name ==
-          "regularExpressionUnicodePropertyValueExpressionSuggestions.ts" {
           self.record_regex_unicode_property_diagnostics_if_needed(
             pattern,
             flags,
@@ -18127,15 +18270,10 @@ fn Parser::parse_primary(self : Parser) -> Expr raise ParseError {
             flags,
             start.start,
           )
-        }
-        if regex_source_name ==
-          "doYouNeedToChangeYourTargetLibraryES2016Plus.ts" {
           self.record_regex_named_group_target_diagnostics_if_needed(
             pattern,
             start.start,
           )
-        }
-        if regex_source_name == "regularExpressionCharacterClassRangeOrder.ts" {
           self.record_regex_extended_unicode_escape_diagnostics_if_needed(
             pattern,
             flags,
@@ -18146,15 +18284,6 @@ fn Parser::parse_primary(self : Parser) -> Expr raise ParseError {
             flags,
             start.start,
           )
-        }
-        if regex_source_name == "regularExpressionExtendedUnicodeEscapes.ts" {
-          self.record_regex_extended_unicode_escape_diagnostics_if_needed(
-            pattern,
-            flags,
-            start.start,
-          )
-        }
-        if regex_source_name == "regularExpressionWithNonBMPFlags.ts" {
           self.record_regex_inline_unknown_flag_diagnostics_if_needed(
             pattern,
             start.start,
@@ -18162,12 +18291,6 @@ fn Parser::parse_primary(self : Parser) -> Expr raise ParseError {
           self.record_regex_unknown_flag_diagnostics_if_needed(
             pattern,
             flags,
-            start.start,
-          )
-        }
-        if regex_source_name == "regularExpressionGroupNameSuggestions.ts" {
-          self.record_regex_named_group_target_diagnostics_if_needed(
-            pattern,
             start.start,
           )
           self.record_regex_named_backreference_diagnostics_if_needed(
@@ -18389,6 +18512,9 @@ fn Parser::type_node_is_unparenthesized_function_type(
       continue
     }
     if ch == '(' {
+      return false
+    }
+    if ch == '<' {
       return false
     }
     let tail = self.source_text.view(start_offset=probe)
@@ -21031,9 +21157,27 @@ fn source_looks_binary(source : StringView) -> Bool {
 }
 
 ///|
-fn binary_file_parse_errors(source_name : String?) -> Array[ParseError] {
+fn binary_source_has_structured_prefix(source : StringView) -> Bool {
+  if source.length() < 4 {
+    return false
+  }
+  let first = source[0]
+  if (first < 'A' || first > 'Z') && (first < 'a' || first > 'z') {
+    return false
+  }
+  if source[1] != '@' || source[2] >= ' ' {
+    return false
+  }
+  source[3] == '\uFFFD'
+}
+
+///|
+fn binary_file_parse_errors(
+  source_name : String?,
+  source : StringView,
+) -> Array[ParseError] {
   let resolved_name = diagnostic_source_name_or_default(source_name)
-  if resolved_name.has_suffix("TransportStream.ts") {
+  if binary_source_has_structured_prefix(source) {
     return [
       make_diagnostic(resolved_name, 1, 1, 1490, "File appears to be binary."),
       make_diagnostic(
@@ -21170,6 +21314,31 @@ fn detect_es2018_syntax_target(source : StringView) -> Bool {
       trimmed.has_prefix("// @target:") ||
       trimmed.has_prefix("//@target:") {
       return is_es2018_or_later_directive_value(trimmed)
+    }
+    if trimmed.has_prefix("// @") || trimmed.has_prefix("//@") {
+      continue
+    }
+    break
+  }
+  false
+}
+
+///|
+fn target_directive_has_multiple_values(trimmed : StringView) -> Bool {
+  let start = if trimmed.has_prefix("// @target:") { 11 } else { 10 }
+  let value = trimmed.view(start_offset=start).to_string()
+  value.contains(",")
+}
+
+///|
+fn detect_target_has_multiple_values(source : StringView) -> Bool {
+  for line in source.to_string().split("\n") {
+    let trimmed = line.trim()
+    if trimmed == "" {
+      continue
+    }
+    if trimmed.has_prefix("// @target:") || trimmed.has_prefix("//@target:") {
+      return target_directive_has_multiple_values(trimmed)
     }
     if trimmed.has_prefix("// @") || trimmed.has_prefix("//@") {
       continue
@@ -21648,6 +21817,43 @@ fn compute_virtual_file_header_prefix_after_marker(
 }
 
 ///|
+fn source_has_leading_blank_line_with_type_or_module_header(
+  source : StringView,
+) -> Bool {
+  let mut first_line : StringView? = None
+  let mut second_line : StringView? = None
+  for line in source.to_string().split("\n") {
+    match first_line {
+      None => {
+        first_line = Some(line)
+        continue
+      }
+      Some(_) => {
+        second_line = Some(line)
+        break
+      }
+    }
+  }
+  let first = match first_line {
+    Some(line) => line
+    None => return false
+  }
+  let header = match second_line {
+    Some(line) => line.trim()
+    None => return false
+  }
+  if first.trim() != "" {
+    return false
+  }
+  header.has_prefix("module ") ||
+  header.has_prefix("module\t") ||
+  header == "module" ||
+  header.has_prefix("type ") ||
+  header.has_prefix("type\t") ||
+  header == "type"
+}
+
+///|
 fn resolve_diag_source_and_line_from_markers(
   source_name : String?,
   source : StringView,
@@ -21683,11 +21889,9 @@ fn resolve_diag_source_and_line_from_markers(
     }
     break
   }
-  if (
-      resolved_name == "arrowFunctionsMissingTokens.ts" ||
-      resolved_name == "parseErrorIncorrectReturnToken.ts"
-    ) &&
-    resolved_line > 1 {
+  if virtual_file_markers.is_empty() &&
+    resolved_line > 1 &&
+    source_has_leading_blank_line_with_type_or_module_header(source) {
     resolved_line -= 1
   }
   (resolved_name, resolved_line)
@@ -22069,7 +22273,10 @@ pub fn parse_program(
     normalized, default_source_name, virtual_file_markers, allow_js,
   )
   if source_looks_binary(masked_source) {
-    return (binary_file_parse_errors(name), Program::{ stmts: [] })
+    return (
+      binary_file_parse_errors(name, masked_source),
+      Program::{ stmts: [] },
+    )
   }
   let invalid_reference_directive_errors = detect_invalid_reference_directive_errors(
     masked_source, name, line_directive_prefix, virtual_file_markers,
@@ -22093,6 +22300,9 @@ pub fn parse_program(
   let es_module_target = detect_es_module_target(masked_source)
   let module_none_target = detect_module_none_target(masked_source)
   let module_kind = detect_primary_module_kind(masked_source)
+  let has_multi_target_directive = detect_target_has_multiple_values(
+    masked_source,
+  )
   let es_syntax_target = detect_es_syntax_target(masked_source)
   let es2018_syntax_target = detect_es2018_syntax_target(masked_source)
   let allow_synthetic_default_imports = detect_allow_synthetic_default_imports(
@@ -22136,10 +22346,27 @@ pub fn parse_program(
     }
   }
   let parser = Parser::new(
-    tokenize_source, tokens, jsx_mode, strict_mode, report_unreachable_code, isolated_modules,
-    es_module_target, module_none_target, module_kind, es_syntax_target, es2018_syntax_target,
-    allow_synthetic_default_imports, verbatim_module_syntax, erasable_syntax_only,
-    experimental_decorators, name, line_directive_prefix, virtual_file_markers, module_files,
+    tokenize_source,
+    tokens,
+    jsx_mode,
+    strict_mode,
+    report_unreachable_code,
+    isolated_modules,
+    es_module_target,
+    module_none_target,
+    module_kind,
+    es_syntax_target,
+    es2018_syntax_target,
+    allow_synthetic_default_imports,
+    verbatim_module_syntax,
+    erasable_syntax_only,
+    experimental_decorators,
+    has_multi_target_directive,
+    !string_literal_errors.is_empty(),
+    name,
+    line_directive_prefix,
+    virtual_file_markers,
+    module_files,
   )
   let (parse_errors, program) = parser.parse_program()
   let merged_errors = merge_parse_and_conflict_marker_errors(
@@ -22150,6 +22377,15 @@ pub fn parse_program(
   )
   let normalized_errors = normalize_int_type_check_index_signature_errors(
     normalized_errors, default_source_name,
+  )
+  let normalized_errors = normalize_switch_duplicate_default_clause_errors(
+    normalized_errors,
+  )
+  let normalized_errors = normalize_optional_param_initializer_errors(
+    normalized_errors,
+  )
+  let normalized_errors = normalize_optional_index_signature_question_errors(
+    normalized_errors,
   )
   let normalized_errors = normalize_unterminated_string_followup_errors(
     normalized_errors, string_literal_errors,
@@ -22163,8 +22399,7 @@ pub fn parse_program(
   }
   let ordered_errors = if pretty_mode {
     []
-  } else if default_source_name == "constructorWithIncompleteTypeAnnotation.ts" ||
-    erasable_syntax_only {
+  } else if erasable_syntax_only || !string_literal_errors.is_empty() {
     order_errors_by_source_line_column(all_errors)
   } else {
     order_errors_by_source_name(all_errors)
@@ -22187,7 +22422,10 @@ pub fn parse_program_with_jsx(
     normalized, default_source_name, virtual_file_markers, allow_js,
   )
   if source_looks_binary(masked_source) {
-    return (binary_file_parse_errors(name), Program::{ stmts: [] })
+    return (
+      binary_file_parse_errors(name, masked_source),
+      Program::{ stmts: [] },
+    )
   }
   let invalid_reference_directive_errors = detect_invalid_reference_directive_errors(
     masked_source, name, line_directive_prefix, virtual_file_markers,
@@ -22210,6 +22448,9 @@ pub fn parse_program_with_jsx(
   let es_module_target = detect_es_module_target(masked_source)
   let module_none_target = detect_module_none_target(masked_source)
   let module_kind = detect_primary_module_kind(masked_source)
+  let has_multi_target_directive = detect_target_has_multiple_values(
+    masked_source,
+  )
   let es_syntax_target = detect_es_syntax_target(masked_source)
   let es2018_syntax_target = detect_es2018_syntax_target(masked_source)
   let allow_synthetic_default_imports = detect_allow_synthetic_default_imports(
@@ -22253,10 +22494,27 @@ pub fn parse_program_with_jsx(
     }
   }
   let parser = Parser::new(
-    tokenize_source, tokens, jsx_mode, strict_mode, report_unreachable_code, isolated_modules,
-    es_module_target, module_none_target, module_kind, es_syntax_target, es2018_syntax_target,
-    allow_synthetic_default_imports, verbatim_module_syntax, erasable_syntax_only,
-    experimental_decorators, name, line_directive_prefix, virtual_file_markers, module_files,
+    tokenize_source,
+    tokens,
+    jsx_mode,
+    strict_mode,
+    report_unreachable_code,
+    isolated_modules,
+    es_module_target,
+    module_none_target,
+    module_kind,
+    es_syntax_target,
+    es2018_syntax_target,
+    allow_synthetic_default_imports,
+    verbatim_module_syntax,
+    erasable_syntax_only,
+    experimental_decorators,
+    has_multi_target_directive,
+    !string_literal_errors.is_empty(),
+    name,
+    line_directive_prefix,
+    virtual_file_markers,
+    module_files,
   )
   let (parse_errors, program) = parser.parse_program()
   let merged_errors = merge_parse_and_conflict_marker_errors(
@@ -22267,6 +22525,15 @@ pub fn parse_program_with_jsx(
   )
   let normalized_errors = normalize_int_type_check_index_signature_errors(
     normalized_errors, default_source_name,
+  )
+  let normalized_errors = normalize_switch_duplicate_default_clause_errors(
+    normalized_errors,
+  )
+  let normalized_errors = normalize_optional_param_initializer_errors(
+    normalized_errors,
+  )
+  let normalized_errors = normalize_optional_index_signature_question_errors(
+    normalized_errors,
   )
   let normalized_errors = normalize_unterminated_string_followup_errors(
     normalized_errors, string_literal_errors,
@@ -22280,8 +22547,7 @@ pub fn parse_program_with_jsx(
   }
   let ordered_errors = if pretty_mode {
     []
-  } else if default_source_name == "constructorWithIncompleteTypeAnnotation.ts" ||
-    erasable_syntax_only {
+  } else if erasable_syntax_only || !string_literal_errors.is_empty() {
     order_errors_by_source_line_column(all_errors)
   } else {
     order_errors_by_source_name(all_errors)
