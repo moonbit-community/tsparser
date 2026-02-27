@@ -346,15 +346,65 @@ test "in modifier on class type parameter should be represented" {
 }
 
 ///|
-test "invalid type parameter names should error" {
+test "invalid type parameter should emit TS1139 (and empty parameter list should emit TS1109)" {
   let source =
-    #|declare function foo<function, "bar", 114514>();
-  debug_inspect(
-    parse_program(source).0,
-    content=(
-      #|<ArrayView: []>
-    ),
-  )
+    #|declare function foo<function>();
+    #|declare function foo<"bar">();
+    #|declare function foo<42>(); 
+  guard parse_program(source).0
+    is [
+      Diagnostic(
+        line=1,
+        column=22,
+        error_code=1139,
+        error_msg="Type parameter declaration expected.",
+        ..
+      ),
+      Diagnostic(
+        line=1,
+        column=30,
+        error_code=1003,
+        error_msg="Identifier expected.",
+        ..
+      ),
+      Diagnostic(
+        line=1,
+        column=32,
+        error_code=1109,
+        error_msg="Expression expected.",
+        ..
+      ),
+      Diagnostic(
+        line=2,
+        column=22,
+        error_code=1139,
+        error_msg="Type parameter declaration expected.",
+        ..
+      ),
+      Diagnostic(
+        line=2,
+        column=29,
+        error_code=1109,
+        error_msg="Expression expected.",
+        ..
+      ),
+      Diagnostic(
+        line=3,
+        column=22,
+        error_code=1139,
+        error_msg="Type parameter declaration expected.",
+        ..
+      ),
+      Diagnostic(
+        line=3,
+        column=26,
+        error_code=1109,
+        error_msg="Expression expected.",
+        ..
+      ),
+    ] else {
+    fail("parse '\{source}' should emit TS1139/TS1109")
+  }
 }
 
 ///|

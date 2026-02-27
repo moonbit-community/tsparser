@@ -6276,8 +6276,52 @@ fn Parser::parse_type_param(self : Parser) -> TypeParam raise ParseError {
     }
     break
   }
-  let (name, name_span) = self.expect_member_name()
-  self.record_strict_reserved_identifier_error_if_needed(name, name_span.start)
+  let token = self.current()
+  let mut invalid_name = false
+  let (name, name_span) = match token.kind {
+    TokenKind::Ident(found) => {
+      ignore(self.advance())
+      (found, token.span)
+    }
+    TokenKind::Keyword(kw) =>
+      if kw == Keyword::Function {
+        invalid_name = true
+        self.record_ts_error(
+          token.span.start,
+          1139,
+          "Type parameter declaration expected.",
+        )
+        ignore(self.advance())
+        if self.check(TokenKind::Gt) {
+          self.record_ts_error(
+            self.current().span.start,
+            1003,
+            "Identifier expected.",
+          )
+        }
+        ("", token.span)
+      } else {
+        ignore(self.advance())
+        (keyword_to_string(kw), token.span)
+      }
+    TokenKind::String(_) | TokenKind::Number(_) => {
+      invalid_name = true
+      self.record_ts_error(
+        token.span.start,
+        1139,
+        "Type parameter declaration expected.",
+      )
+      ignore(self.advance())
+      ("", token.span)
+    }
+    _ => raise ParseError::Expected(pos=token.span.start, "identifier")
+  }
+  if !invalid_name {
+    self.record_strict_reserved_identifier_error_if_needed(
+      name,
+      name_span.start,
+    )
+  }
   let mut constraint : TypeNode? = None
   if self.eat_keyword(Keyword::Extends) || self.eat_ident_name("extends") {
     constraint = Some(self.parse_type())
@@ -6309,9 +6353,14 @@ fn Parser::parse_type_params(
     return []
   }
   let params : Array[TypeParam] = []
+  let mut has_invalid_type_param = false
   if !self.check(TokenKind::Gt) {
     while true {
-      params.push(self.parse_type_param())
+      let param = self.parse_type_param()
+      if param.name == "" {
+        has_invalid_type_param = true
+      }
+      params.push(param)
       let mut recovered_constraint : TypeNode? = None
       if self.eat_keyword(Keyword::Extends) || self.eat_ident_name("extends") {
         recovered_constraint = Some(self.parse_type())
@@ -6346,6 +6395,15 @@ fn Parser::parse_type_params(
   }
   if !self.eat(TokenKind::Gt) {
     self.record_ts_error(self.current().span.start, 1005, "'>' expected.")
+  }
+  if has_invalid_type_param &&
+    self.check(TokenKind::LParen) &&
+    self.peek_kind(1) == Some(TokenKind::RParen) {
+    match self.peek(1) {
+      Some(rparen) =>
+        self.record_ts_error(rparen.span.start, 1109, "Expression expected.")
+      None => ()
+    }
   }
   params
 }
