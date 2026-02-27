@@ -693,8 +693,8 @@ pub enum TypeKind {
   Array(TypeNode)
   IndexAccess(TypeNode, TypeNode)
   Generic(TypeNode, Array[TypeNode])
-  Function(Array[TypeNode], TypeNode)
-  GenericFunction(Array[TypeParam], Array[TypeNode], TypeNode)
+  Function(Array[Param], TypeNode)
+  GenericFunction(Array[TypeParam], Array[Param], TypeNode)
 }
 pub impl @debug.Debug for TypeKind
 

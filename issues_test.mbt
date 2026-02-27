@@ -184,21 +184,42 @@ test "function type generic parameters should be preserved" {
 
 ///|
 test "function type parameters should preserve pattern optional and rest info" {
-  let rich_source =
+  let source =
     #|type foo = (bar?: baz, ...daz: fred[]) => quux
-  let erased_source =
-    #|type foo = (_: baz, _: fred[]) => quux
-  debug_inspect(
-    parse_program(rich_source).0,
-    content=(
-      #|<ArrayView: []>
-    ),
-  )
-  debug_inspect(
-    parse_program(erased_source).0,
-    content=(
-      #|<ArrayView: []>
-    ),
+  let (errors, program) = parse_program(source)
+  assert_true(errors is [])
+  assert_true(
+    program.stmts
+    is [
+      {
+        kind: TypeAliasDecl(
+          {
+            value: {
+              kind: Function(
+                [
+                  {
+                    pattern: { kind: Ident("bar"), .. },
+                    optional: true,
+                    is_rest: false,
+                    ..,
+                  },
+                  {
+                    pattern: { kind: Ident("daz"), .. },
+                    optional: false,
+                    is_rest: true,
+                    ..,
+                  },
+                ],
+                _
+              ),
+              ..,
+            },
+            ..,
+          }
+        ),
+        ..,
+      },
+    ],
   )
 }
 
