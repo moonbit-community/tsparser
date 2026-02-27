@@ -358,13 +358,149 @@ test "invalid type parameter names should error" {
 }
 
 ///|
-test "hard keyword should not be parsed as identifier" {
+test "hard keyword should not be parsed as identifier (emit TS1212)" {
   let source =
-    #|let let = let
-  debug_inspect(
-    parse_program(source).0,
-    content=(
-      #|<ArrayView: []>
-    ),
-  )
+    #|"use strict";
+    #|let implements = implements;
+    #|let interface = interface;
+    #|let let = let;
+    #|let package = package;
+    #|let private = private;
+    #|let protected = protected;
+    #|let public = public;
+    #|let static = static;
+    #|let yield = yield;
+  guard parse_program(source).0
+    is [
+      Diagnostic(
+        line=2,
+        column=5,
+        error_code=1212,
+        error_msg="Identifier expected. 'implements' is a reserved word in strict mode.",
+        ..
+      ),
+      Diagnostic(
+        line=2,
+        column=18,
+        error_code=1212,
+        error_msg="Identifier expected. 'implements' is a reserved word in strict mode.",
+        ..
+      ),
+      Diagnostic(
+        line=3,
+        column=5,
+        error_code=1212,
+        error_msg="Identifier expected. 'interface' is a reserved word in strict mode.",
+        ..
+      ),
+      Diagnostic(
+        line=3,
+        column=17,
+        error_code=1212,
+        error_msg="Identifier expected. 'interface' is a reserved word in strict mode.",
+        ..
+      ),
+      Diagnostic(
+        line=4,
+        column=5,
+        error_code=1212,
+        error_msg="Identifier expected. 'let' is a reserved word in strict mode.",
+        ..
+      ),
+      Diagnostic(
+        line=4,
+        column=11,
+        error_code=1212,
+        error_msg="Identifier expected. 'let' is a reserved word in strict mode.",
+        ..
+      ),
+      Diagnostic(
+        line=5,
+        column=5,
+        error_code=1212,
+        error_msg="Identifier expected. 'package' is a reserved word in strict mode.",
+        ..
+      ),
+      Diagnostic(
+        line=5,
+        column=15,
+        error_code=1212,
+        error_msg="Identifier expected. 'package' is a reserved word in strict mode.",
+        ..
+      ),
+      Diagnostic(
+        line=6,
+        column=5,
+        error_code=1212,
+        error_msg="Identifier expected. 'private' is a reserved word in strict mode.",
+        ..
+      ),
+      Diagnostic(
+        line=6,
+        column=15,
+        error_code=1212,
+        error_msg="Identifier expected. 'private' is a reserved word in strict mode.",
+        ..
+      ),
+      Diagnostic(
+        line=7,
+        column=5,
+        error_code=1212,
+        error_msg="Identifier expected. 'protected' is a reserved word in strict mode.",
+        ..
+      ),
+      Diagnostic(
+        line=7,
+        column=17,
+        error_code=1212,
+        error_msg="Identifier expected. 'protected' is a reserved word in strict mode.",
+        ..
+      ),
+      Diagnostic(
+        line=8,
+        column=5,
+        error_code=1212,
+        error_msg="Identifier expected. 'public' is a reserved word in strict mode.",
+        ..
+      ),
+      Diagnostic(
+        line=8,
+        column=14,
+        error_code=1212,
+        error_msg="Identifier expected. 'public' is a reserved word in strict mode.",
+        ..
+      ),
+      Diagnostic(
+        line=9,
+        column=5,
+        error_code=1212,
+        error_msg="Identifier expected. 'static' is a reserved word in strict mode.",
+        ..
+      ),
+      Diagnostic(
+        line=9,
+        column=14,
+        error_code=1212,
+        error_msg="Identifier expected. 'static' is a reserved word in strict mode.",
+        ..
+      ),
+      Diagnostic(
+        line=10,
+        column=5,
+        error_code=1212,
+        error_msg="Identifier expected. 'yield' is a reserved word in strict mode.",
+        ..
+      ),
+      Diagnostic(
+        line=10,
+        column=13,
+        error_code=1212,
+        error_msg="Identifier expected. 'yield' is a reserved word in strict mode.",
+        ..
+      ),
+    ] else {
+    fail(
+      "parse '\{source}' should emit TS1212 for all hard keywords in identifier positions",
+    )
+  }
 }

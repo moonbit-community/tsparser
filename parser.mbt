@@ -13998,6 +13998,10 @@ fn Parser::parse_unary(self : Parser) -> Expr raise ParseError {
       }
       if next_is_terminator {
         let token = self.advance().span
+        self.record_strict_reserved_identifier_error_if_needed(
+          "yield",
+          token.start,
+        )
         return { kind: ExprKind::Ident("yield"), span: token }
       }
     }
