@@ -58,9 +58,8 @@ test "parse_expression recovery should still collect errors" {
 test "undefined should be parsed as undefined type literal" {
   let source =
     #|declare const foo: undefined
-  let program = parse_program(source)
-  assert_true(program.0 is [])
-  let program = program.1
+  let (errors, program) = parse_program(source)
+  assert_true(errors is [])
   guard program.stmts
     is [
       {
@@ -80,9 +79,8 @@ test "undefined should be parsed as undefined type literal" {
 test "yield* should not be parsed as yield" {
   let source =
     #|function* foo() { yield* bar }
-  let program = parse_program(source)
-  assert_true(program.0 is [])
-  let program = program.1
+  let (errors, program) = parse_program(source)
+  assert_true(errors is [])
   guard program.stmts
     is [
       {
