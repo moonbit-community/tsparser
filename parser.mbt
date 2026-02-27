@@ -6256,6 +6256,7 @@ fn Parser::parse_function_decl(
 
 ///|
 fn Parser::parse_type_param(self : Parser) -> TypeParam raise ParseError {
+  let mut variance : TypeParamVariance? = None
   while true {
     let next_is_name = match self.peek_kind(1) {
       Some(TokenKind::Ident(_))
@@ -6269,8 +6270,13 @@ fn Parser::parse_type_param(self : Parser) -> TypeParam raise ParseError {
       ignore(self.advance())
       continue
     }
-    if (self.check_ident_name("in") || self.check_ident_name("out")) &&
-      next_is_name {
+    if self.check_ident_name("in") && next_is_name {
+      variance = Some(TypeParamVariance::In)
+      ignore(self.advance())
+      continue
+    }
+    if self.check_ident_name("out") && next_is_name {
+      variance = Some(TypeParamVariance::Out)
       ignore(self.advance())
       continue
     }
@@ -6342,7 +6348,7 @@ fn Parser::parse_type_param(self : Parser) -> TypeParam raise ParseError {
         None => ()
       }
   }
-  { name, constraint, default_type, span: name_span.merge(end_span) }
+  { name, variance, constraint, default_type, span: name_span.merge(end_span) }
 }
 
 ///|
@@ -6377,6 +6383,7 @@ fn Parser::parse_type_params(
             }
             params[last_index] = {
               name: last.name,
+              variance: last.variance,
               constraint: Some(constraint),
               default_type: last.default_type,
               span: last.span.merge(end_span),

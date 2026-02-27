@@ -203,8 +203,15 @@ pub struct CatchParam {
 } derive(Debug)
 
 ///|
+pub enum TypeParamVariance {
+  In
+  Out
+} derive(Debug)
+
+///|
 pub struct TypeParam {
   name : String
+  variance : TypeParamVariance?
   constraint : TypeNode?
   default_type : TypeNode?
   span : Span

@@ -723,11 +723,18 @@ pub impl @debug.Debug for TypeNode
 
 pub struct TypeParam {
   name : String
+  variance : TypeParamVariance?
   constraint : TypeNode?
   default_type : TypeNode?
   span : Span
 }
 pub impl @debug.Debug for TypeParam
+
+pub enum TypeParamVariance {
+  In
+  Out
+}
+pub impl @debug.Debug for TypeParamVariance
 
 pub struct UnaryExpr {
   op : UnaryOp

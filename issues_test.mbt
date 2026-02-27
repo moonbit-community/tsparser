@@ -331,18 +331,70 @@ test "in modifier on class type parameter should be represented" {
     #|class Bar<in T> {}
   let without_modifier_source =
     #|class Bar<T> {}
-  debug_inspect(
-    parse_program(with_modifier_source).0,
-    content=(
-      #|<ArrayView: []>
-    ),
+  let (with_modifier_errors, with_modifier_program) = parse_program(
+    with_modifier_source,
   )
-  debug_inspect(
-    parse_program(without_modifier_source).0,
-    content=(
-      #|<ArrayView: []>
-    ),
+  assert_true(with_modifier_errors is [])
+  guard with_modifier_program.stmts
+    is [
+      {
+        kind: ClassDecl(
+          {
+            name: Some("Bar"),
+            type_params: [
+              {
+                name: "T",
+                variance: Some(In),
+                constraint: None,
+                default_type: None,
+                ..,
+              },
+            ],
+            extends: None,
+            implements: [],
+            members: [],
+            ..,
+          }
+        ),
+        ..,
+      },
+    ] else {
+    fail(
+      "parse '\{with_modifier_source}' should preserve 'in' variance on class type parameter",
+    )
+  }
+  let (without_modifier_errors, without_modifier_program) = parse_program(
+    without_modifier_source,
   )
+  assert_true(without_modifier_errors is [])
+  guard without_modifier_program.stmts
+    is [
+      {
+        kind: ClassDecl(
+          {
+            name: Some("Bar"),
+            type_params: [
+              {
+                name: "T",
+                variance: None,
+                constraint: None,
+                default_type: None,
+                ..,
+              },
+            ],
+            extends: None,
+            implements: [],
+            members: [],
+            ..,
+          }
+        ),
+        ..,
+      },
+    ] else {
+    fail(
+      "parse '\{without_modifier_source}' should keep class type parameter variance empty",
+    )
+  }
 }
 
 ///|
