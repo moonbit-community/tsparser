@@ -314,15 +314,21 @@ test "typeof foo[baz] should not become TypeQuery(\"foo[baz]\")" {
 }
 
 ///|
-test "in modifier on function type parameter list should error" {
+test "in modifier on function type parameter list should emit TS1274" {
   let source =
     #|declare function foo<in T>(): T;
-  debug_inspect(
-    parse_program(source).0,
-    content=(
-      #|<ArrayView: []>
-    ),
-  )
+  guard parse_program(source).0
+    is [
+      Diagnostic(
+        line=1,
+        column=22,
+        error_code=1274,
+        error_msg="'in' modifier can only appear on a type parameter of a class, interface or type alias",
+        ..
+      ),
+    ] else {
+    fail("parse '\{source}' should emit TS1274")
+  }
 }
 
 ///|

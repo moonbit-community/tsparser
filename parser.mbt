@@ -6255,7 +6255,10 @@ fn Parser::parse_function_decl(
 }
 
 ///|
-fn Parser::parse_type_param(self : Parser) -> TypeParam raise ParseError {
+fn Parser::parse_type_param(
+  self : Parser,
+  allow_variance_modifiers : Bool,
+) -> TypeParam raise ParseError {
   let mut variance : TypeParamVariance? = None
   while true {
     let next_is_name = match self.peek_kind(1) {
@@ -6271,13 +6274,27 @@ fn Parser::parse_type_param(self : Parser) -> TypeParam raise ParseError {
       continue
     }
     if self.check_ident_name("in") && next_is_name {
+      let variance_token = self.advance()
       variance = Some(TypeParamVariance::In)
-      ignore(self.advance())
+      if !allow_variance_modifiers {
+        self.record_ts_error(
+          variance_token.span.start,
+          1274,
+          "'in' modifier can only appear on a type parameter of a class, interface or type alias",
+        )
+      }
       continue
     }
     if self.check_ident_name("out") && next_is_name {
+      let variance_token = self.advance()
       variance = Some(TypeParamVariance::Out)
-      ignore(self.advance())
+      if !allow_variance_modifiers {
+        self.record_ts_error(
+          variance_token.span.start,
+          1274,
+          "'out' modifier can only appear on a type parameter of a class, interface or type alias",
+        )
+      }
       continue
     }
     break
@@ -6354,6 +6371,7 @@ fn Parser::parse_type_param(self : Parser) -> TypeParam raise ParseError {
 ///|
 fn Parser::parse_type_params(
   self : Parser,
+  allow_variance_modifiers : Bool,
 ) -> Array[TypeParam] raise ParseError {
   if !self.eat(TokenKind::Lt) {
     return []
@@ -6362,7 +6380,7 @@ fn Parser::parse_type_params(
   let mut has_invalid_type_param = false
   if !self.check(TokenKind::Gt) {
     while true {
-      let param = self.parse_type_param()
+      let param = self.parse_type_param(allow_variance_modifiers)
       if param.name == "" {
         has_invalid_type_param = true
       }
@@ -6455,7 +6473,7 @@ fn Parser::parse_function_decl_value(
   } else if !allow_anonymous {
     raise ParseError::Expected(pos=self.current().span.start, "identifier")
   }
-  let type_params = self.parse_type_params()
+  let type_params = self.parse_type_params(false)
   let params = if self.check(TokenKind::LParen) {
     self.parse_params(false)
   } else if self.check(TokenKind::LBrace) {
@@ -8171,7 +8189,7 @@ fn Parser::parse_class_decl_value(
     } else {
       None
     }
-    type_params = self.parse_type_params()
+    type_params = self.parse_type_params(true)
     match class_type_param_lt_span {
       Some(lt_span) =>
         if type_params.length() == 0 {
@@ -9174,7 +9192,7 @@ fn Parser::parse_class_member(
       (self.check(TokenKind::LParen) || self.check(TokenKind::Lt)) {
       if self.check(TokenKind::Lt) {
         let lt_span = self.current().span
-        let type_params = self.parse_type_params()
+        let type_params = self.parse_type_params(false)
         if type_params.length() == 0 {
           self.record_ts_error(
             lt_span.start,
@@ -9369,7 +9387,7 @@ fn Parser::parse_class_member(
       span,
     }
   }
-  ignore(self.parse_type_params())
+  ignore(self.parse_type_params(false))
   if self.check(TokenKind::LParen) {
     if is_abstract_member && !is_abstract_class {
       match abstract_modifier_pos {
@@ -11315,7 +11333,7 @@ fn Parser::parse_type_alias(self : Parser) -> Stmt raise ParseError {
     )
   }
   self.register_local_type_only_binding(name, start.span.start)
-  let type_params = self.parse_type_params()
+  let type_params = self.parse_type_params(true)
   let suppress_missing_rhs_error = name_is_number &&
     self.check(TokenKind::LBrace)
   if suppress_missing_rhs_error {
@@ -12139,7 +12157,7 @@ fn Parser::parse_interface_decl(self : Parser) -> Stmt raise ParseError {
   if name != "_" {
     self.register_local_type_only_binding(name, start.span.start)
   }
-  let type_params = self.parse_type_params()
+  let type_params = self.parse_type_params(true)
   let extends : Array[TypeNode] = []
   if self.eat_keyword(Keyword::Extends) {
     while true {
@@ -12305,7 +12323,7 @@ fn Parser::parse_interface_member(
       self.peek_kind(1) == Some(TokenKind::LParen)
     ) {
     let start = self.expect_keyword(Keyword::New)
-    let type_params = self.parse_type_params()
+    let type_params = self.parse_type_params(false)
     self.enter_type_param_scope(type_params)
     let parsed_interface_member : InterfaceMember = try {
       let params = self.parse_params(false)
@@ -12381,7 +12399,7 @@ fn Parser::parse_interface_member(
     return parsed_interface_member
   }
   if self.check(TokenKind::Lt) || self.check(TokenKind::LParen) {
-    let type_params = self.parse_type_params()
+    let type_params = self.parse_type_params(false)
     if self.check(TokenKind::LParen) {
       self.enter_type_param_scope(type_params)
       let parsed_interface_member : InterfaceMember = try {
@@ -12583,7 +12601,7 @@ fn Parser::parse_interface_member(
       optional = false
     }
   }
-  let type_params = self.parse_type_params()
+  let type_params = self.parse_type_params(false)
   if self.check(TokenKind::LParen) {
     self.enter_type_param_scope(type_params)
     let parsed_interface_member : InterfaceMember = try {
@@ -12670,7 +12688,7 @@ fn Parser::parse_type_member(self : Parser) -> TypeMember raise ParseError {
     leading_index_signature_modifier = Some((modifier_name, modifier_pos))
   }
   if self.check(TokenKind::Lt) {
-    let type_params = self.parse_type_params()
+    let type_params = self.parse_type_params(false)
     if self.check(TokenKind::LParen) {
       self.enter_type_param_scope(type_params)
       let parsed_type_member : TypeMember = try {
@@ -12774,7 +12792,7 @@ fn Parser::parse_type_member(self : Parser) -> TypeMember raise ParseError {
     if self.eat(TokenKind::Question) {
       optional = true
     }
-    let type_params = self.parse_type_params()
+    let type_params = self.parse_type_params(false)
     self.enter_type_param_scope(type_params)
     let parsed_type_member : TypeMember = try {
       ignore(self.expect(TokenKind::LParen, "'('"))
@@ -12928,7 +12946,7 @@ fn Parser::parse_type_member(self : Parser) -> TypeMember raise ParseError {
       optional = false
     }
   }
-  let type_params = self.parse_type_params()
+  let type_params = self.parse_type_params(false)
   if self.check(TokenKind::LParen) {
     self.enter_type_param_scope(type_params)
     let parsed_type_member : TypeMember = try {
@@ -13800,7 +13818,7 @@ fn Parser::parse_unary(self : Parser) -> Expr raise ParseError {
     let mut type_params : Array[TypeParam] = []
     let mut parsed_type_params = false
     try {
-      type_params = self.parse_type_params()
+      type_params = self.parse_type_params(false)
       parsed_type_params = true
     } catch {
       _ => self.index = saved
@@ -16473,7 +16491,7 @@ fn Parser::parse_object_literal(self : Parser) -> Expr raise ParseError {
           }
           _ => raise ParseError::Expected(pos=token.span.start, "property name")
         }
-        let type_params = self.parse_type_params()
+        let type_params = self.parse_type_params(false)
         if self.eat(TokenKind::Question) {
           self.record_ts_error(
             self.previous().span.start,
@@ -18341,11 +18359,12 @@ fn Parser::parse_primary(self : Parser) -> Expr raise ParseError {
         { kind: ExprKind::Ident(name), span: token.span }
       } else if name == "async" && self.peek_kind(1) == Some(TokenKind::Lt) {
         let saved = self.index
+        let saved_error_count = self.errors.length()
         let async_start = self.advance().span
         let mut type_params : Array[TypeParam] = []
         let mut parsed_type_params = false
         try {
-          type_params = self.parse_type_params()
+          type_params = self.parse_type_params(false)
           parsed_type_params = true
         } catch {
           _ => ()
@@ -18364,6 +18383,9 @@ fn Parser::parse_primary(self : Parser) -> Expr raise ParseError {
           }
           self.async_function_depth -= 1
           return arrow
+        }
+        while self.errors.length() > saved_error_count {
+          ignore(self.errors.pop())
         }
         self.index = saved
         ignore(self.advance())
@@ -20120,7 +20142,7 @@ fn Parser::parse_constructor_type_signature(
   start_span : Span,
 ) -> TypeNode raise ParseError {
   let type_params = if self.check(TokenKind::Lt) {
-    self.parse_type_params()
+    self.parse_type_params(false)
   } else {
     []
   }
@@ -20162,7 +20184,7 @@ fn Parser::parse_constructor_type_signature(
 ///|
 fn Parser::parse_type_primary(self : Parser) -> TypeNode raise ParseError {
   if self.check(TokenKind::Lt) && self.is_type_args_before_call() {
-    let type_params = self.parse_type_params()
+    let type_params = self.parse_type_params(false)
     self.enter_type_param_scope(type_params)
     let node = try {
       let inner = self.parse_type_primary()
