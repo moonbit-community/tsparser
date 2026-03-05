@@ -3998,44 +3998,10 @@ fn Parser::parse_type_query_target(
     name = first
     span = first_span
   }
-  while true {
-    if self.eat(TokenKind::Dot) {
-      let (part, part_span) = self.parse_ident_name()
-      name = "\{name}.\{part}"
-      span = span.merge(part_span)
-      continue
-    }
-    if self.check(TokenKind::LBracket) &&
-      self.peek_kind(1) == Some(TokenKind::RBracket) {
-      break
-    }
-    if self.eat(TokenKind::LBracket) {
-      let token = self.current()
-      let part = match token.kind {
-        TokenKind::String(value) => {
-          ignore(self.advance())
-          "\"\{value}\""
-        }
-        TokenKind::Number(value) => {
-          ignore(self.advance())
-          value
-        }
-        TokenKind::Ident(value) => {
-          ignore(self.advance())
-          value
-        }
-        TokenKind::Keyword(kw) => {
-          ignore(self.advance())
-          keyword_to_string(kw)
-        }
-        _ => raise ParseError::Expected(pos=token.span.start, "property name")
-      }
-      let end = self.expect(TokenKind::RBracket, "']'")
-      name = "\{name}[\{part}]"
-      span = span.merge(end.span)
-      continue
-    }
-    break
+  while self.eat(TokenKind::Dot) {
+    let (part, part_span) = self.parse_ident_name()
+    name = "\{name}.\{part}"
+    span = span.merge(part_span)
   }
   (name, span)
 }

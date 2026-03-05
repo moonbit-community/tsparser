@@ -305,11 +305,15 @@ test "typeof foo[baz] should not become TypeQuery(\"foo[baz]\")" {
   let source =
     #|const foo: number = 42
     #|type bar = typeof foo[baz]
-  debug_inspect(
-    parse_program(source).0,
-    content=(
-      #|<ArrayView: []>
-    ),
+  let (errors, program) = parse_program(source)
+  assert_true(errors is [])
+  guard program.stmts
+    is [_, { kind: TypeAliasDecl({ value: type_value, .. }), .. }] else {
+    fail("parse '\\{source}' should produce a type alias declaration")
+  }
+  assert_true(
+    type_value.kind
+    is IndexAccess({ kind: TypeQuery("foo"), .. }, { kind: Ident("baz"), .. }),
   )
 }
 
