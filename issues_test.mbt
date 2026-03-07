@@ -234,7 +234,7 @@ test "untyped rest parameter in function type should infer any[]" {
 }
 
 ///|
-test "adjacent expression statements should emit TS1005" {
+test "adjacent expression statements without semicolon separate should emit TS1005" {
   let source =
     #|1 1 4 5 1 4
   debug_inspect(
@@ -249,55 +249,81 @@ test "adjacent expression statements should emit TS1005" {
 test "numeric literal member access should emit TS1351" {
   let source =
     #|0.foo
-  debug_inspect(
-    parse_program(source).0,
-    content=(
-      #|<ArrayView:
-      #|  [
-      #|    Diagnostic(
-      #|      filename="",
-      #|      line=1,
-      #|      column=3,
-      #|      error_code=1351,
-      #|      error_msg="An identifier or keyword cannot immediately follow a numeric literal.",
-      #|    ),
-      #|  ]>
-    ),
-  )
+  guard parse_program(source).0
+    is [
+      Diagnostic(
+        line=1,
+        column=3,
+        error_code=1351,
+        error_msg="An identifier or keyword cannot immediately follow a numeric literal.",
+        ..
+      ),
+    ] else {
+    fail("parse '\{source}' should emit TS1351")
+  }
 }
 
 ///|
-test "typeof import with extra token should error" {
+test "typeof import with extra token should emit TS1005" {
   let source =
     #|type foo = typeof import("bar" baz)
-  debug_inspect(
-    parse_program(source).0,
-    content=(
-      #|<ArrayView:
-      #|  [
-      #|    Diagnostic(
-      #|      filename="",
-      #|      line=1,
-      #|      column=32,
-      #|      error_code=1005,
-      #|      error_msg="')' expected.",
-      #|    ),
-      #|  ]>
-    ),
-  )
+  guard parse_program(source).0
+    is [
+      Diagnostic(
+        line=1,
+        column=32,
+        error_code=1005,
+        error_msg="')' expected.",
+        ..
+      ),
+    ] else {
+    fail("parse '\\{source}' should emit TS1005 at ')' location")
+  }
 }
 
 ///|
-test "typeof foo[] should be parsed as array type" {
+test "typeof foo[] should be parsed as array of (typeof foo)" {
   let source =
     #|const foo: number = 42
     #|type bar = typeof foo[]
-  debug_inspect(
-    parse_program(source).0,
-    content=(
-      #|<ArrayView: []>
-    ),
-  )
+  let (errors, program) = parse_program(source)
+  guard errors is [] else {
+    fail("parse '\{source}' should not emit diagnostics")
+  }
+  guard program.stmts
+    is [
+      {
+        kind: VarDecl(
+          {
+            kind: Const,
+            decls: [
+              {
+                pattern: { kind: Ident("foo"), .. },
+                type_ann: Some({ kind: Ident("number"), .. }),
+                init: Some({ kind: Number("42"), .. }),
+                ..,
+              },
+            ],
+          }
+        ),
+        ..,
+      },
+      {
+        kind: TypeAliasDecl(
+          {
+            name: "bar",
+            type_params: [],
+            value: { kind: Array({ kind: TypeQuery("foo"), .. }), .. },
+            ..,
+          }
+        ),
+        ..,
+      },
+    ] else {
+    fail(
+      "parse '\{source}' should treat `typeof foo[]` as `Array(TypeQuery(\"foo\"))`",
+    )
+  }
 }
 
 ///|
