@@ -316,7 +316,7 @@ fn Parser::expect(
   if self.check(kind) {
     self.advance()
   } else {
-    raise self.expected_error(self.current().span.start, expected)
+    raise self.expected_error(self.current().span.start, expected, false)
   }
 }
 
@@ -330,7 +330,8 @@ fn Parser::expect_keyword(
   } else {
     raise self.expected_error(
       self.current().span.start,
-      "keyword \{@debug.to_string(kw)}",
+      @debug.to_string(kw),
+      true,
     )
   }
 }
@@ -352,7 +353,7 @@ fn Parser::expect_ident(self : Parser) -> (String, Span) raise ParseError {
       ignore(self.advance())
       (name, token.span)
     }
-    _ => raise self.expected_error(token.span.start, "identifier")
+    _ => raise self.expected_error(token.span.start, "identifier", false)
   }
 }
 
@@ -448,6 +449,7 @@ fn Parser::expected_error(
   self : Parser,
   pos : Position,
   expected : String,
+  is_keyword : Bool,
 ) -> ParseError {
   if expected == "identifier" {
     return self.make_ts_error(pos, 1003, "Identifier expected.")
@@ -458,9 +460,8 @@ fn Parser::expected_error(
   if expected == "catch or finally" {
     return self.make_ts_error(pos, 1005, "'try' expected.")
   }
-  if expected.has_prefix("keyword ") {
-    let keyword_name = expected.view(start_offset=8).to_string()
-    return self.make_ts_error(pos, 1005, "'\{keyword_name}' expected.")
+  if is_keyword {
+    return self.make_ts_error(pos, 1005, "'\{expected}' expected.")
   }
   self.make_ts_error(pos, 1005, "\{expected} expected.")
 }
@@ -3881,7 +3882,7 @@ fn Parser::parse_ident_name(self : Parser) -> (String, Span) raise ParseError {
       }
       (name, token.span)
     }
-    _ => raise self.expected_error(token.span.start, "identifier")
+    _ => raise self.expected_error(token.span.start, "identifier", false)
   }
 }
 
@@ -3969,7 +3970,7 @@ fn Parser::expect_member_name(self : Parser) -> (String, Span) raise ParseError 
       ignore(self.advance())
       (keyword_to_string(kw), token.span)
     }
-    _ => raise self.expected_error(token.span.start, "member name")
+    _ => raise self.expected_error(token.span.start, "member name", false)
   }
 }
 
@@ -4023,7 +4024,7 @@ fn Parser::expect_string(self : Parser) -> (String, Span) raise ParseError {
       ignore(self.advance())
       (value, token.span)
     }
-    _ => raise self.expected_error(token.span.start, "string literal")
+    _ => raise self.expected_error(token.span.start, "string literal", false)
   }
 }
 
@@ -4039,7 +4040,7 @@ fn Parser::expect_module_specifier(
       self.record_ts_error(span.start, 1141, "String literal expected.")
       (name, span)
     }
-    _ => raise self.expected_error(token.span.start, "module specifier")
+    _ => raise self.expected_error(token.span.start, "module specifier", false)
   }
 }
 
@@ -6224,7 +6225,7 @@ fn Parser::parse_type_param(
       ignore(self.advance())
       ("", token.span)
     }
-    _ => raise self.expected_error(token.span.start, "identifier")
+    _ => raise self.expected_error(token.span.start, "identifier", false)
   }
   if !invalid_name {
     self.record_strict_reserved_identifier_error_if_needed(
@@ -6358,7 +6359,7 @@ fn Parser::parse_function_decl_value(
     )
     name = Some(found)
   } else if !allow_anonymous {
-    raise self.expected_error(self.current().span.start, "identifier")
+    raise self.expected_error(self.current().span.start, "identifier", false)
   }
   let type_params = self.parse_type_params(false)
   let params = if self.check(TokenKind::LParen) {
@@ -8069,7 +8070,7 @@ fn Parser::parse_class_decl_value(
       let (found, _) = self.parse_ident_name()
       name = Some(found)
     } else if !allow_anonymous {
-      raise self.expected_error(self.current().span.start, "identifier")
+      raise self.expected_error(self.current().span.start, "identifier", false)
     }
     let class_type_param_lt_span = if self.check(TokenKind::Lt) {
       Some(self.current().span)
@@ -9490,7 +9491,7 @@ fn Parser::parse_binding_pattern(
     }
     TokenKind::LBrace => self.parse_object_pattern()
     TokenKind::LBracket => self.parse_array_pattern()
-    _ => raise self.expected_error(token.span.start, "binding pattern")
+    _ => raise self.expected_error(token.span.start, "binding pattern", false)
   }
 }
 
@@ -10882,7 +10883,11 @@ fn Parser::parse_switch_stmt(self : Parser) -> Stmt raise ParseError {
     }
     self.breakable_depth -= 1
     ignore(self.breakable_function_depth_stack.pop())
-    raise self.expected_error(self.current().span.start, "case or default")
+    raise self.expected_error(
+      self.current().span.start,
+      "case or default",
+      false,
+    )
   }
   let end = self.expect(TokenKind::RBrace, "'}'")
   self.breakable_depth -= 1
@@ -11021,7 +11026,7 @@ fn Parser::parse_throw_stmt(self : Parser) -> Stmt raise ParseError {
   if self.check(TokenKind::Semicolon) ||
     self.check(TokenKind::RBrace) ||
     self.at_end() {
-    raise self.expected_error(start.span.end, "expression")
+    raise self.expected_error(start.span.end, "expression", false)
   }
   let expr = self.parse_expression()
   let mut end_span = expr.span
@@ -11187,7 +11192,11 @@ fn Parser::parse_try_stmt(self : Parser) -> Stmt raise ParseError {
     }
   }
   if handler is None && finalizer is None {
-    raise self.expected_error(self.current().span.start, "catch or finally")
+    raise self.expected_error(
+      self.current().span.start,
+      "catch or finally",
+      false,
+    )
   }
   {
     kind: StmtKind::Try({ block, handler, finalizer }),
@@ -16373,7 +16382,8 @@ fn Parser::parse_object_literal(self : Parser) -> Expr raise ParseError {
             )
             (numeric_name, numeric_span, false)
           }
-          _ => raise self.expected_error(token.span.start, "property name")
+          _ =>
+            raise self.expected_error(token.span.start, "property name", false)
         }
         let type_params = self.parse_type_params(false)
         if self.eat(TokenKind::Question) {
@@ -18051,7 +18061,7 @@ fn Parser::expect_template_chunk(
       ignore(self.advance())
       (value, token.span)
     }
-    _ => raise self.expected_error(token.span.start, "template chunk")
+    _ => raise self.expected_error(token.span.start, "template chunk", false)
   }
 }
 
@@ -18495,7 +18505,7 @@ fn Parser::parse_primary(self : Parser) -> Expr raise ParseError {
     TokenKind::Keyword(kw) => {
       match kw {
         Keyword::Try | Keyword::Catch | Keyword::Else =>
-          raise self.expected_error(token.span.start, "expression")
+          raise self.expected_error(token.span.start, "expression", false)
         _ => ()
       }
       ignore(self.advance())
@@ -18541,7 +18551,7 @@ fn Parser::parse_primary(self : Parser) -> Expr raise ParseError {
     TokenKind::LBracket => self.parse_array_literal()
     TokenKind::TemplateStart => self.parse_template_literal(true)
     TokenKind::Eof => { kind: ExprKind::Ident("undefined"), span: token.span }
-    _ => raise self.expected_error(token.span.start, "expression")
+    _ => raise self.expected_error(token.span.start, "expression", false)
   }
 }
 
@@ -19929,7 +19939,7 @@ fn Parser::parse_object_computed_property_name(
     }
   }
   if depth != 0 {
-    raise self.expected_error(self.current().span.start, "']'")
+    raise self.expected_error(self.current().span.start, "']'", false)
   }
   let key = normalize_computed_property_key(
     self.source_text.view(
@@ -19970,7 +19980,7 @@ fn Parser::parse_bracket_member_name(
     }
   }
   if depth != 0 {
-    raise self.expected_error(self.current().span.start, "']'")
+    raise self.expected_error(self.current().span.start, "']'", false)
   }
   ("[computed]", start.span.merge(end_span))
 }
@@ -20016,7 +20026,7 @@ fn Parser::parse_bracket_member_name_with_computed_name_error(
     }
   }
   if depth != 0 {
-    raise self.expected_error(self.current().span.start, "']'")
+    raise self.expected_error(self.current().span.start, "']'", false)
   }
   if saw_initializer {
     let diag_pos = if code == 1020 {
@@ -20207,7 +20217,7 @@ fn Parser::parse_type_primary(self : Parser) -> TypeNode raise ParseError {
         span: start.span.merge(end.span),
       })
     }
-    raise self.expected_error(end.span.start, "function type")
+    raise self.expected_error(end.span.start, "function type", false)
   }
   if self.check(TokenKind::LBracket) {
     let start = self.expect(TokenKind::LBracket, "'['")
@@ -20612,7 +20622,7 @@ fn Parser::parse_type_primary(self : Parser) -> TypeNode raise ParseError {
       }
       self.parse_type_postfix(node)
     }
-    _ => raise self.expected_error(token.span.start, "type")
+    _ => raise self.expected_error(token.span.start, "type", false)
   }
 }
 
