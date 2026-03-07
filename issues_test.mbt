@@ -225,11 +225,37 @@ test "function type parameters should preserve pattern optional and rest info" {
 test "untyped rest parameter in function type should infer any[]" {
   let source =
     #|type foo = (...baz) => daz
-  debug_inspect(
-    parse_program(source).0,
-    content=(
-      #|<ArrayView: []>
-    ),
+  let (errors, program) = parse_program(source)
+  assert_true(errors is [])
+  assert_true(
+    program.stmts
+    is [
+      {
+        kind: TypeAliasDecl(
+          {
+            value: {
+              kind: Function(
+                [
+                  {
+                    pattern: { kind: Ident("baz"), .. },
+                    optional: false,
+                    is_rest: true,
+                    type_ann: Some(
+                      { kind: Array({ kind: Ident("any"), .. }), .. }
+                    ),
+                    ..,
+                  },
+                ],
+                _
+              ),
+              ..,
+            },
+            ..,
+          }
+        ),
+        ..,
+      },
+    ],
   )
 }
 

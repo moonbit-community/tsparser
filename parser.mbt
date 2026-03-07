@@ -2858,10 +2858,20 @@ fn make_any_type_node(span : Span) -> TypeNode {
 }
 
 ///|
+fn make_implicit_param_type_node(is_rest : Bool, span : Span) -> TypeNode {
+  let any_node = make_any_type_node(span)
+  if is_rest {
+    { kind: TypeKind::Array(any_node), span }
+  } else {
+    any_node
+  }
+}
+
+///|
 fn normalize_param_for_type_signature(param : Param) -> Param {
   let type_ann = match param.type_ann {
     Some(ty) => ty
-    None => make_any_type_node(param.span)
+    None => make_implicit_param_type_node(param.is_rest, param.span)
   }
   {
     pattern: param.pattern,
@@ -2886,7 +2896,7 @@ fn normalize_params_for_type_signature(params : Array[Param]) -> Array[Param] {
 fn function_type_param_type_or_any(param : Param) -> TypeNode {
   match param.type_ann {
     Some(ty) => ty
-    None => make_any_type_node(param.span)
+    None => make_implicit_param_type_node(param.is_rest, param.span)
   }
 }
 
@@ -19167,7 +19177,7 @@ fn Parser::parse_function_type_param(self : Parser) -> Param raise ParseError {
           } else {
             pattern.span
           }
-          make_any_type_node(span)
+          make_implicit_param_type_node(is_rest, span)
         }
         let start = match start_span {
           Some(span) => span
@@ -19198,7 +19208,7 @@ fn Parser::parse_function_type_param(self : Parser) -> Param raise ParseError {
     if !self.check(TokenKind::Comma) && !self.check(TokenKind::RParen) {
       self.skip_call_arg_junk()
     }
-    let type_ann = make_any_type_node(name_span)
+    let type_ann = make_implicit_param_type_node(is_rest, name_span)
     let start = match start_span {
       Some(span) => span
       None => pattern.span
@@ -19251,9 +19261,9 @@ fn Parser::parse_function_type_param(self : Parser) -> Param raise ParseError {
           }
           let (optional, type_ann) = if self.eat(TokenKind::Question) {
             let span = name_span.merge(self.previous().span)
-            (true, make_any_type_node(span))
+            (true, make_implicit_param_type_node(is_rest, span))
           } else {
-            (false, make_any_type_node(name_span))
+            (false, make_implicit_param_type_node(is_rest, name_span))
           }
           let start = match start_span {
             Some(span) => span
