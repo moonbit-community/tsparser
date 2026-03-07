@@ -21932,24 +21932,6 @@ fn detect_erasable_syntax_only(source : StringView) -> Bool {
 }
 
 ///|
-fn detect_pretty_mode(source : StringView) -> Bool {
-  for line in source.to_string().split("\n") {
-    let trimmed = line.trim()
-    if trimmed == "" {
-      continue
-    }
-    if trimmed.has_prefix("// @pretty:") || trimmed.has_prefix("//@pretty:") {
-      return parse_first_boolean_directive_value(trimmed)
-    }
-    if trimmed.has_prefix("//") {
-      continue
-    }
-    break
-  }
-  false
-}
-
-///|
 fn detect_experimental_decorators(source : StringView) -> Bool {
   for line in source.to_string().split("\n") {
     let trimmed = line.trim()
@@ -22684,7 +22666,6 @@ pub fn parse_program(
   )
   let verbatim_module_syntax = detect_verbatim_module_syntax(masked_source)
   let erasable_syntax_only = detect_erasable_syntax_only(masked_source)
-  let pretty_mode = detect_pretty_mode(masked_source)
   let experimental_decorators = detect_experimental_decorators(masked_source)
   let module_files = detect_module_files(
     masked_source, default_source_name, virtual_file_markers,
@@ -22771,9 +22752,8 @@ pub fn parse_program(
   for err in string_literal_errors {
     all_errors.push(err)
   }
-  let ordered_errors = if pretty_mode {
-    []
-  } else if erasable_syntax_only || !string_literal_errors.is_empty() {
+  let ordered_errors = if erasable_syntax_only ||
+    !string_literal_errors.is_empty() {
     order_errors_by_source_line_column(all_errors)
   } else {
     order_errors_by_source_name(all_errors)
@@ -22832,7 +22812,6 @@ pub fn parse_program_with_jsx(
   )
   let verbatim_module_syntax = detect_verbatim_module_syntax(masked_source)
   let erasable_syntax_only = detect_erasable_syntax_only(masked_source)
-  let pretty_mode = detect_pretty_mode(masked_source)
   let experimental_decorators = detect_experimental_decorators(masked_source)
   let module_files = detect_module_files(
     masked_source, default_source_name, virtual_file_markers,
@@ -22919,9 +22898,8 @@ pub fn parse_program_with_jsx(
   for err in string_literal_errors {
     all_errors.push(err)
   }
-  let ordered_errors = if pretty_mode {
-    []
-  } else if erasable_syntax_only || !string_literal_errors.is_empty() {
+  let ordered_errors = if erasable_syntax_only ||
+    !string_literal_errors.is_empty() {
     order_errors_by_source_line_column(all_errors)
   } else {
     order_errors_by_source_name(all_errors)

@@ -666,3 +666,13 @@ test "hard keyword should not be parsed as identifier (emit TS1212)" {
     )
   }
 }
+
+///|
+test "@pretty should not drop diagnostics" {
+  let source =
+    #|// @pretty: true
+    #|foo(,)
+  guard parse_program(source).0 is [Diagnostic(error_code=1135, ..), ..] else {
+    fail("parse '\{source}' should still emit diagnostics in pretty mode")
+  }
+}
