@@ -13022,6 +13022,12 @@ fn Parser::parse_expr_stmt(self : Parser) -> Stmt raise ParseError {
     self.current().span.start.line == end_span.end.line &&
     self.current().kind is TokenKind::String(_) {
     self.record_ts_error(self.current().span.start, 1005, "';' expected.")
+  } else if !self.check(TokenKind::RBrace) &&
+    !self.at_end() &&
+    self.current().span.start.line == end_span.end.line &&
+    self.current().kind is TokenKind::Number(_) &&
+    expr.kind is ExprKind::Number(_) {
+    self.record_ts_error(self.current().span.start, 1005, "';' expected.")
   }
   { kind: StmtKind::ExprStmt(expr), span: expr_span.merge(end_span) }
 }

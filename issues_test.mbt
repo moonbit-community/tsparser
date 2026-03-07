@@ -237,12 +237,10 @@ test "untyped rest parameter in function type should infer any[]" {
 test "adjacent expression statements without semicolon separate should emit TS1005" {
   let source =
     #|1 1 4 5 1 4
-  debug_inspect(
-    parse_program(source).0,
-    content=(
-      #|<ArrayView: []>
-    ),
-  )
+  guard parse_program(source).0[0]
+    is Diagnostic(error_code=1005, error_msg="';' expected.", ..) else {
+    fail("parse '\{source}' should emit TS1005")
+  }
 }
 
 ///|
