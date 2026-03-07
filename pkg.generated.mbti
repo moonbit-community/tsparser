@@ -23,9 +23,6 @@ pub impl @debug.Debug for LexError
 
 pub(all) suberror ParseError {
   LexErr(LexError)
-  UnexpectedEof(pos~ : Position)
-  UnexpectedToken(pos~ : Position, String)
-  Expected(pos~ : Position, String)
   Diagnostic(filename~ : String, line~ : Int, column~ : Int, error_code~ : Int, error_msg~ : String)
 }
 pub impl Eq for ParseError

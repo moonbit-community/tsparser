@@ -316,7 +316,7 @@ fn Parser::expect(
   if self.check(kind) {
     self.advance()
   } else {
-    raise ParseError::Expected(pos=self.current().span.start, expected)
+    raise self.expected_error(self.current().span.start, expected)
   }
 }
 
@@ -328,8 +328,8 @@ fn Parser::expect_keyword(
   if self.check_keyword(kw) {
     self.advance()
   } else {
-    raise ParseError::Expected(
-      pos=self.current().span.start,
+    raise self.expected_error(
+      self.current().span.start,
       "keyword \{@debug.to_string(kw)}",
     )
   }
@@ -352,7 +352,7 @@ fn Parser::expect_ident(self : Parser) -> (String, Span) raise ParseError {
       ignore(self.advance())
       (name, token.span)
     }
-    _ => raise ParseError::Expected(pos=token.span.start, "identifier")
+    _ => raise self.expected_error(token.span.start, "identifier")
   }
 }
 
@@ -417,19 +417,6 @@ fn Parser::record_error(self : Parser, err : ParseError) -> Unit {
       }
       self.errors.push(err)
     }
-    ParseError::Expected(pos~, expected) =>
-      if expected == "expression" {
-        self.record_ts_error(pos, 1109, "Expression expected.")
-      } else if expected == "identifier" {
-        self.record_ts_error(pos, 1003, "Identifier expected.")
-      } else if expected == "catch or finally" {
-        self.record_ts_error(pos, 1005, "'try' expected.")
-      } else if expected.has_prefix("keyword ") {
-        let keyword_name = expected.view(start_offset=8).to_string()
-        self.record_ts_error(pos, 1005, "'\{keyword_name}' expected.")
-      } else {
-        self.record_ts_error(pos, 1005, "\{expected} expected.")
-      }
     _ => self.errors.push(err)
   }
 }
@@ -446,16 +433,56 @@ fn make_diagnostic(
 }
 
 ///|
+fn Parser::make_ts_error(
+  self : Parser,
+  pos : Position,
+  code : Int,
+  message : String,
+) -> ParseError {
+  let (source_name, line) = self.resolve_diag_source_and_line(pos)
+  make_diagnostic(source_name, line, pos.column, code, message)
+}
+
+///|
+fn Parser::expected_error(
+  self : Parser,
+  pos : Position,
+  expected : String,
+) -> ParseError {
+  if expected == "identifier" {
+    return self.make_ts_error(pos, 1003, "Identifier expected.")
+  }
+  if expected == "expression" {
+    return self.make_ts_error(pos, 1109, "Expression expected.")
+  }
+  if expected == "catch or finally" {
+    return self.make_ts_error(pos, 1005, "'try' expected.")
+  }
+  if expected.has_prefix("keyword ") {
+    let keyword_name = expected.view(start_offset=8).to_string()
+    return self.make_ts_error(pos, 1005, "'\{keyword_name}' expected.")
+  }
+  self.make_ts_error(pos, 1005, "\{expected} expected.")
+}
+
+///|
+fn Parser::class_member_unexpected_token_error(
+  self : Parser,
+  pos : Position,
+) -> ParseError {
+  self.make_ts_error(
+    pos, 1068, "Unexpected token. A constructor, method, accessor, or property was expected.",
+  )
+}
+
+///|
 fn Parser::record_ts_error(
   self : Parser,
   pos : Position,
   code : Int,
   message : String,
 ) -> Unit {
-  let (source_name, line) = self.resolve_diag_source_and_line(pos)
-  self.record_error(
-    make_diagnostic(source_name, line, pos.column, code, message),
-  )
+  self.record_error(self.make_ts_error(pos, code, message))
 }
 
 ///|
@@ -1290,37 +1317,6 @@ fn set_source_min_line(
 }
 
 ///|
-fn contains_source_line(
-  pairs : Array[(String, Int)],
-  source : String,
-  line : Int,
-) -> Bool {
-  for pair in pairs {
-    let (name, value_line) = pair
-    if name == source && value_line == line {
-      return true
-    }
-  }
-  false
-}
-
-///|
-fn contains_source_line_column(
-  triples : Array[(String, Int, Int)],
-  source : String,
-  line : Int,
-  column : Int,
-) -> Bool {
-  for triple in triples {
-    let (name, value_line, value_column) = triple
-    if name == source && value_line == line && value_column == column {
-      return true
-    }
-  }
-  false
-}
-
-///|
 fn shift_diag_pos_to_next_line(pos : Position) -> Position {
   { offset: pos.offset, line: pos.line + 1, column: pos.column }
 }
@@ -1359,87 +1355,6 @@ fn merge_parse_and_conflict_marker_errors(
     merged.push(err)
   }
   merged
-}
-
-///|
-fn normalize_import_type_attribute_recovery_errors(
-  errors : Array[ParseError],
-  source : StringView,
-  source_name : String?,
-  line_directive_prefix : Array[Int],
-  virtual_file_markers : Array[(Int, String)],
-) -> Array[ParseError] {
-  let mut has_import_type_attr_diag = false
-  for err in errors {
-    match err {
-      ParseError::Diagnostic(filename~, error_code~, error_msg~, ..) =>
-        if error_code == 1340 &&
-          error_msg.has_prefix("Module '") &&
-          filename == "/index.ts" {
-          has_import_type_attr_diag = true
-          break
-        }
-      _ => ()
-    }
-  }
-  if !has_import_type_attr_diag {
-    return errors
-  }
-  let target_lines : Array[(String, Int)] = []
-  let target_positions : Array[(String, Int, Int)] = []
-  let without_expected : Array[ParseError] = []
-  for err in errors {
-    match err {
-      ParseError::Expected(pos~, "':'") => {
-        let (resolved_name, resolved_line) = resolve_diag_source_and_line_from_markers(
-          source_name, source, line_directive_prefix, virtual_file_markers, pos,
-        )
-        if resolved_name == "/index.ts" {
-          target_lines.push((resolved_name, resolved_line))
-          target_positions.push((resolved_name, resolved_line, pos.column + 4))
-        } else {
-          without_expected.push(err)
-        }
-      }
-      _ => without_expected.push(err)
-    }
-  }
-  if target_lines.is_empty() {
-    return without_expected
-  }
-  let replaced_positions : Array[(String, Int, Int)] = []
-  let normalized : Array[ParseError] = []
-  for err in without_expected {
-    match err {
-      ParseError::Diagnostic(filename~, line~, column~, error_code~, error_msg~) => {
-        let mut replaced = false
-        if contains_source_line_column(target_positions, filename, line, column) &&
-          error_code == 1128 &&
-          !contains_source_line_column(
-            replaced_positions, filename, line, column,
-          ) {
-          normalized.push(
-            make_diagnostic(filename, line, column, 1005, "':' expected."),
-          )
-          replaced_positions.push((filename, line, column))
-          replaced = true
-        }
-        if replaced {
-          continue
-        }
-        if contains_source_line(target_lines, filename, line) &&
-          (
-            error_code == 1128 ||
-            (error_code == 1005 && error_msg == "';' expected.")
-          ) {
-          continue
-        }
-        normalized.push(err)
-      }
-      _ => normalized.push(err)
-    }
-  }
-  normalized
 }
 
 ///|
@@ -3966,7 +3881,7 @@ fn Parser::parse_ident_name(self : Parser) -> (String, Span) raise ParseError {
       }
       (name, token.span)
     }
-    _ => raise ParseError::Expected(pos=token.span.start, "identifier")
+    _ => raise self.expected_error(token.span.start, "identifier")
   }
 }
 
@@ -4054,7 +3969,7 @@ fn Parser::expect_member_name(self : Parser) -> (String, Span) raise ParseError 
       ignore(self.advance())
       (keyword_to_string(kw), token.span)
     }
-    _ => raise ParseError::Expected(pos=token.span.start, "member name")
+    _ => raise self.expected_error(token.span.start, "member name")
   }
 }
 
@@ -4108,7 +4023,7 @@ fn Parser::expect_string(self : Parser) -> (String, Span) raise ParseError {
       ignore(self.advance())
       (value, token.span)
     }
-    _ => raise ParseError::Expected(pos=token.span.start, "string literal")
+    _ => raise self.expected_error(token.span.start, "string literal")
   }
 }
 
@@ -4124,7 +4039,7 @@ fn Parser::expect_module_specifier(
       self.record_ts_error(span.start, 1141, "String literal expected.")
       (name, span)
     }
-    _ => raise ParseError::Expected(pos=token.span.start, "module specifier")
+    _ => raise self.expected_error(token.span.start, "module specifier")
   }
 }
 
@@ -4179,20 +4094,16 @@ fn Parser::parse_program(self : Parser) -> (ArrayView[ParseError], Program) {
         let mut expected_left_brace = false
         let mut expected_left_brace_line = 0
         match err {
-          ParseError::Expected(pos~, expected) =>
-            if expected == "expression" {
-              self.record_ts_error(pos, 1109, "Expression expected.")
-            } else if expected == "')'" {
+          ParseError::Diagnostic(error_code~, error_msg~, ..) =>
+            if error_code == 1005 && error_msg == "')' expected." {
               self.record_ts_error(
                 self.current().span.start,
                 1005,
                 "')' expected.",
               )
-            } else if expected == "'}'" {
-              self.record_ts_error(pos, 1005, "'}' expected.")
-            } else if expected == "'{'" {
+            } else if error_code == 1005 && error_msg == "'{' expected." {
               expected_left_brace = true
-              expected_left_brace_line = pos.line
+              expected_left_brace_line = self.current().span.start.line
               self.record_error(err)
               if self.current().kind == TokenKind::LParen &&
                 self.peek_kind(1) == Some(TokenKind::RParen) {
@@ -6313,7 +6224,7 @@ fn Parser::parse_type_param(
       ignore(self.advance())
       ("", token.span)
     }
-    _ => raise ParseError::Expected(pos=token.span.start, "identifier")
+    _ => raise self.expected_error(token.span.start, "identifier")
   }
   if !invalid_name {
     self.record_strict_reserved_identifier_error_if_needed(
@@ -6447,7 +6358,7 @@ fn Parser::parse_function_decl_value(
     )
     name = Some(found)
   } else if !allow_anonymous {
-    raise ParseError::Expected(pos=self.current().span.start, "identifier")
+    raise self.expected_error(self.current().span.start, "identifier")
   }
   let type_params = self.parse_type_params(false)
   let params = if self.check(TokenKind::LParen) {
@@ -8158,7 +8069,7 @@ fn Parser::parse_class_decl_value(
       let (found, _) = self.parse_ident_name()
       name = Some(found)
     } else if !allow_anonymous {
-      raise ParseError::Expected(pos=self.current().span.start, "identifier")
+      raise self.expected_error(self.current().span.start, "identifier")
     }
     let class_type_param_lt_span = if self.check(TokenKind::Lt) {
       Some(self.current().span)
@@ -8336,8 +8247,14 @@ fn Parser::parse_class_decl_value(
       err => {
         let mut class_member_error_line : Int? = None
         match err {
-          ParseError::UnexpectedToken(pos~, "class member") =>
-            class_member_error_line = Some(pos.line)
+          ParseError::Diagnostic(error_code~, error_msg~, ..) =>
+            if error_code == 1068 &&
+              error_msg ==
+              "Unexpected token. A constructor, method, accessor, or property was expected." {
+              class_member_error_line = Some(self.current().span.start.line)
+            } else {
+              self.record_error(err)
+            }
           _ => self.record_error(err)
         }
         let mut paren_depth = 0
@@ -8610,10 +8527,7 @@ fn Parser::parse_class_member(
       1068,
       "Unexpected token. A constructor, method, accessor, or property was expected.",
     )
-    raise ParseError::UnexpectedToken(
-      pos=self.current().span.start,
-      "class member",
-    )
+    raise self.class_member_unexpected_token_error(self.current().span.start)
   }
   if self.check_keyword(Keyword::Case) || self.check_keyword(Keyword::Default) {
     let invalid_start = self.advance().span
@@ -8931,10 +8845,7 @@ fn Parser::parse_class_member(
               !self.at_end() {
           ignore(self.advance())
         }
-        raise ParseError::UnexpectedToken(
-          pos=variable_kw_span.start,
-          "class member",
-        )
+        raise self.class_member_unexpected_token_error(variable_kw_span.start)
       }
       self.record_ts_error(
         variable_kw_span.start,
@@ -8966,10 +8877,7 @@ fn Parser::parse_class_member(
           }
         }
       }
-      raise ParseError::UnexpectedToken(
-        pos=variable_kw_span.start,
-        "class member",
-      )
+      raise self.class_member_unexpected_token_error(variable_kw_span.start)
     }
   }
   let allow_missing_body = self.ambient_context_depth > 0 || is_abstract_member
@@ -9035,9 +8943,8 @@ fn Parser::parse_class_member(
               }
             }
           }
-          raise ParseError::UnexpectedToken(
-            pos=self.current().span.start,
-            "class member",
+          raise self.class_member_unexpected_token_error(
+            self.current().span.start,
           )
         }
         None => {
@@ -9054,9 +8961,8 @@ fn Parser::parse_class_member(
               "Unexpected token. A constructor, method, accessor, or property was expected.",
             )
           }
-          raise ParseError::UnexpectedToken(
-            pos=self.current().span.start,
-            "class member",
+          raise self.class_member_unexpected_token_error(
+            self.current().span.start,
           )
         }
       }
@@ -9515,10 +9421,7 @@ fn Parser::parse_class_member(
       "Unexpected token. A constructor, method, accessor, or property was expected.",
     )
     self.record_ts_error(self.current().span.start, 1005, "';' expected.")
-    raise ParseError::UnexpectedToken(
-      pos=self.current().span.start,
-      "class member",
-    )
+    raise self.class_member_unexpected_token_error(self.current().span.start)
   }
   let suppress_computed_name_type_error = disallow_member_decorators &&
     !member_decorators.is_empty()
@@ -9587,7 +9490,7 @@ fn Parser::parse_binding_pattern(
     }
     TokenKind::LBrace => self.parse_object_pattern()
     TokenKind::LBracket => self.parse_array_pattern()
-    _ => raise ParseError::Expected(pos=token.span.start, "binding pattern")
+    _ => raise self.expected_error(token.span.start, "binding pattern")
   }
 }
 
@@ -10979,7 +10882,7 @@ fn Parser::parse_switch_stmt(self : Parser) -> Stmt raise ParseError {
     }
     self.breakable_depth -= 1
     ignore(self.breakable_function_depth_stack.pop())
-    raise ParseError::Expected(pos=self.current().span.start, "case or default")
+    raise self.expected_error(self.current().span.start, "case or default")
   }
   let end = self.expect(TokenKind::RBrace, "'}'")
   self.breakable_depth -= 1
@@ -11118,7 +11021,7 @@ fn Parser::parse_throw_stmt(self : Parser) -> Stmt raise ParseError {
   if self.check(TokenKind::Semicolon) ||
     self.check(TokenKind::RBrace) ||
     self.at_end() {
-    raise ParseError::Expected(pos=start.span.end, "expression")
+    raise self.expected_error(start.span.end, "expression")
   }
   let expr = self.parse_expression()
   let mut end_span = expr.span
@@ -11284,10 +11187,7 @@ fn Parser::parse_try_stmt(self : Parser) -> Stmt raise ParseError {
     }
   }
   if handler is None && finalizer is None {
-    raise ParseError::Expected(
-      pos=self.current().span.start,
-      "catch or finally",
-    )
+    raise self.expected_error(self.current().span.start, "catch or finally")
   }
   {
     kind: StmtKind::Try({ block, handler, finalizer }),
@@ -13082,8 +12982,9 @@ fn Parser::recover_expression_from_parse_error(
   err : ParseError,
 ) -> Expr {
   match err {
-    ParseError::Expected(pos~, expected) =>
-      if expected == "expression" {
+    ParseError::Diagnostic(error_code~, error_msg~, ..) =>
+      if error_code == 1109 && error_msg == "Expression expected." {
+        let pos = self.current().span.start
         let missing_semicolon_context = match self.current().kind {
           TokenKind::LBrace | TokenKind::RParen => true
           _ => self.index > 0 && self.previous().kind == TokenKind::RParen
@@ -13162,7 +13063,8 @@ fn Parser::recover_expression_from_parse_error(
             return { kind: ExprKind::Ident("undefined"), span: gt_span }
           }
         }
-      } else if expected == "')'" {
+      } else if error_code == 1005 && error_msg == "')' expected." {
+        let pos = self.current().span.start
         let mut diag_pos = pos
         if self.current().span.start.line == pos.line {
           let mut offset = 0
@@ -16471,7 +16373,7 @@ fn Parser::parse_object_literal(self : Parser) -> Expr raise ParseError {
             )
             (numeric_name, numeric_span, false)
           }
-          _ => raise ParseError::Expected(pos=token.span.start, "property name")
+          _ => raise self.expected_error(token.span.start, "property name")
         }
         let type_params = self.parse_type_params(false)
         if self.eat(TokenKind::Question) {
@@ -18149,7 +18051,7 @@ fn Parser::expect_template_chunk(
       ignore(self.advance())
       (value, token.span)
     }
-    _ => raise ParseError::Expected(pos=token.span.start, "template chunk")
+    _ => raise self.expected_error(token.span.start, "template chunk")
   }
 }
 
@@ -18593,7 +18495,7 @@ fn Parser::parse_primary(self : Parser) -> Expr raise ParseError {
     TokenKind::Keyword(kw) => {
       match kw {
         Keyword::Try | Keyword::Catch | Keyword::Else =>
-          raise ParseError::Expected(pos=token.span.start, "expression")
+          raise self.expected_error(token.span.start, "expression")
         _ => ()
       }
       ignore(self.advance())
@@ -18608,12 +18510,24 @@ fn Parser::parse_primary(self : Parser) -> Expr raise ParseError {
       if self.is_arrow_after_paren() {
         let saved = self.index
         self.parse_arrow_from_paren() catch {
-          ParseError::Expected(pos~, expected) =>
-            if expected == "binding pattern" {
+          ParseError::Diagnostic(
+            filename~,
+            line~,
+            column~,
+            error_code~,
+            error_msg~
+          ) =>
+            if error_code == 1005 && error_msg == "binding pattern expected." {
               self.index = saved
               self.parse_parenthesized_expression()
             } else {
-              raise ParseError::Expected(pos~, expected)
+              raise ParseError::Diagnostic(
+                filename~,
+                line~,
+                column~,
+                error_code~,
+                error_msg~,
+              )
             }
           err => {
             self.index = saved
@@ -18627,7 +18541,7 @@ fn Parser::parse_primary(self : Parser) -> Expr raise ParseError {
     TokenKind::LBracket => self.parse_array_literal()
     TokenKind::TemplateStart => self.parse_template_literal(true)
     TokenKind::Eof => { kind: ExprKind::Ident("undefined"), span: token.span }
-    _ => raise ParseError::Expected(pos=token.span.start, "expression")
+    _ => raise self.expected_error(token.span.start, "expression")
   }
 }
 
@@ -20015,7 +19929,7 @@ fn Parser::parse_object_computed_property_name(
     }
   }
   if depth != 0 {
-    raise ParseError::Expected(pos=self.current().span.start, "']'")
+    raise self.expected_error(self.current().span.start, "']'")
   }
   let key = normalize_computed_property_key(
     self.source_text.view(
@@ -20056,7 +19970,7 @@ fn Parser::parse_bracket_member_name(
     }
   }
   if depth != 0 {
-    raise ParseError::Expected(pos=self.current().span.start, "']'")
+    raise self.expected_error(self.current().span.start, "']'")
   }
   ("[computed]", start.span.merge(end_span))
 }
@@ -20102,7 +20016,7 @@ fn Parser::parse_bracket_member_name_with_computed_name_error(
     }
   }
   if depth != 0 {
-    raise ParseError::Expected(pos=self.current().span.start, "']'")
+    raise self.expected_error(self.current().span.start, "']'")
   }
   if saw_initializer {
     let diag_pos = if code == 1020 {
@@ -20293,7 +20207,7 @@ fn Parser::parse_type_primary(self : Parser) -> TypeNode raise ParseError {
         span: start.span.merge(end.span),
       })
     }
-    raise ParseError::Expected(pos=end.span.start, "function type")
+    raise self.expected_error(end.span.start, "function type")
   }
   if self.check(TokenKind::LBracket) {
     let start = self.expect(TokenKind::LBracket, "'['")
@@ -20698,7 +20612,7 @@ fn Parser::parse_type_primary(self : Parser) -> TypeNode raise ParseError {
       }
       self.parse_type_postfix(node)
     }
-    _ => raise ParseError::Expected(pos=token.span.start, "type")
+    _ => raise self.expected_error(token.span.start, "type")
   }
 }
 
@@ -22727,11 +22641,8 @@ pub fn parse_program(
   let merged_errors = merge_parse_and_conflict_marker_errors(
     parse_errors, conflict_marker_errors,
   )
-  let normalized_errors = normalize_import_type_attribute_recovery_errors(
-    merged_errors, masked_source, name, line_directive_prefix, virtual_file_markers,
-  )
   let normalized_errors = normalize_int_type_check_index_signature_errors(
-    normalized_errors, default_source_name,
+    merged_errors, default_source_name,
   )
   let normalized_errors = normalize_switch_duplicate_default_clause_errors(
     normalized_errors,
@@ -22873,11 +22784,8 @@ pub fn parse_program_with_jsx(
   let merged_errors = merge_parse_and_conflict_marker_errors(
     parse_errors, conflict_marker_errors,
   )
-  let normalized_errors = normalize_import_type_attribute_recovery_errors(
-    merged_errors, masked_source, name, line_directive_prefix, virtual_file_markers,
-  )
   let normalized_errors = normalize_int_type_check_index_signature_errors(
-    normalized_errors, default_source_name,
+    merged_errors, default_source_name,
   )
   let normalized_errors = normalize_switch_duplicate_default_clause_errors(
     normalized_errors,
