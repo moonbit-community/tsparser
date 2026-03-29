@@ -9,6 +9,194 @@ test "`...` in arrow parameter should emit TS1003" {
 }
 
 ///|
+test "ambient implementations are deferred beyond parser" {
+  let cases = [
+    "declare function f() {}", "declare class C { constructor() {} }", "declare class C { m() {} }",
+    "declare class C { get x() { return 1 } }", "declare namespace N { function f() {} }",
+    "declare class C { static {} }",
+  ]
+  for source in cases {
+    let (errors, _) = parse_program(source, name="x.ts")
+    guard errors is [] else {
+      fail("parse '\{source}' should not emit parser diagnostics")
+    }
+  }
+}
+
+///|
+test "nested declare modifiers are deferred beyond parser" {
+  let cases = [
+    "declare namespace N { declare const x: number; }", "declare namespace N { declare class C {} }",
+    "declare namespace N { declare function f(); }",
+  ]
+  for source in cases {
+    let (errors, _) = parse_program(source, name="x.ts")
+    guard errors is [] else {
+      fail("parse '\{source}' should not emit parser diagnostics")
+    }
+  }
+}
+
+///|
+test "interface method bodies still use ordinary parse errors" {
+  let source =
+    #|interface I { m(): void {} }
+  let (errors, _) = parse_program(source, name="x.ts")
+  guard errors
+    is [
+      Diagnostic(error_code=1005, error_msg="';' expected.", ..),
+      Diagnostic(
+        error_code=1128,
+        error_msg="Declaration or statement expected.",
+        ..
+      ),
+    ] else {
+    fail("parse '\{source}' should keep the standard parse-error recovery path")
+  }
+}
+
+///|
+test "type literal method bodies still use ordinary parse errors" {
+  let source =
+    #|type T = { m(): void {} }
+  let (errors, _) = parse_program(source, name="x.ts")
+  guard errors
+    is [
+      Diagnostic(error_code=1005, error_msg="';' expected.", ..),
+      Diagnostic(
+        error_code=1128,
+        error_msg="Declaration or statement expected.",
+        ..
+      ),
+    ] else {
+    fail("parse '\{source}' should keep the standard parse-error recovery path")
+  }
+}
+
+///|
+test "untyped interface property initializers still use ordinary parse errors" {
+  let source =
+    #|interface I { x = 1 }
+  let (errors, _) = parse_program(source, name="x.ts")
+  guard errors
+    is [
+      Diagnostic(
+        error_code=1131,
+        error_msg="Property or signature expected.",
+        ..
+      ),
+      Diagnostic(
+        error_code=1128,
+        error_msg="Declaration or statement expected.",
+        ..
+      ),
+    ] else {
+    fail("parse '\{source}' should recover like the official parser")
+  }
+}
+
+///|
+test "untyped type literal property initializers still use ordinary parse errors" {
+  let source =
+    #|type T = { x = 1 }
+  let (errors, _) = parse_program(source, name="x.ts")
+  guard errors
+    is [
+      Diagnostic(
+        error_code=1131,
+        error_msg="Property or signature expected.",
+        ..
+      ),
+      Diagnostic(
+        error_code=1128,
+        error_msg="Declaration or statement expected.",
+        ..
+      ),
+    ] else {
+    fail("parse '\{source}' should recover like the official parser")
+  }
+}
+
+///|
+test "typed interface property initializers are deferred beyond parser" {
+  let source =
+    #|interface I { x: number = 1 }
+  let (errors, _) = parse_program(source, name="x.ts")
+  guard errors is [] else {
+    fail("parse '\{source}' should not emit parser diagnostics")
+  }
+}
+
+///|
+test "typed type literal property initializers are deferred beyond parser" {
+  let source =
+    #|type T = { x: number = 1 }
+  let (errors, _) = parse_program(source, name="x.ts")
+  guard errors is [] else {
+    fail("parse '\{source}' should not emit parser diagnostics")
+  }
+}
+
+///|
+test "class member implementation checks are deferred beyond parser" {
+  let cases = [
+    "class C { constructor() }", "class C { constructor(); }", "class C { m(): void }",
+    "class C { m(): void; }", "class C { get x(): number }", "class C { get x(): number; }",
+    "class C { set x(v: number) }", "class C { set x(v: number); }",
+  ]
+  for source in cases {
+    let (errors, _) = parse_program(source, name="x.ts")
+    guard errors is [] else {
+      fail("parse '\{source}' should not emit parser diagnostics")
+    }
+  }
+}
+
+///|
+test "abstract class-member placement checks are deferred beyond parser" {
+  let cases = [
+    "class C { abstract m(): void }", "class C { abstract get x(): number }", "class C { abstract set x(v: number) }",
+    "class C { abstract x: number }",
+  ]
+  for source in cases {
+    let (errors, _) = parse_program(source, name="x.ts")
+    guard errors is [] else {
+      fail("parse '\{source}' should not emit parser diagnostics")
+    }
+  }
+}
+
+///|
+test "index signature grammar checks are deferred beyond parser" {
+  let cases = [
+    "interface I { [x?: string]: number }", "type T = { [public x: string]: number }",
+    "class C { [...x: string]: number }", "interface I { [x, y: string]: number }",
+    "class C { [x: string,]: number }", "type T = { [x: string] }", "interface I { public [x: string]: number }",
+    "class C { [x: \"foo\"]: number }",
+  ]
+  for source in cases {
+    let (errors, _) = parse_program(source, name="x.ts")
+    guard errors is [] else {
+      fail("parse '\{source}' should not emit parser diagnostics")
+    }
+  }
+}
+
+///|
+test "statement context grammar errors are deferred beyond parser" {
+  let cases = [
+    "return;", "break;", "continue;", "label: { break label; }", "label: { continue label; }",
+    "declare namespace N { while (0) {} }",
+  ]
+  for source in cases {
+    let (errors, _) = parse_program(source, name="x.ts")
+    guard errors is [] else {
+      fail("parse '\{source}' should not emit parser diagnostics")
+    }
+  }
+}
+
+///|
 test "invalid arrow parameter modifier should emit TS2369" {
   let source =
     #|(public foo) => {}
@@ -284,6 +472,90 @@ test "numeric literal member access should emit TS1351" {
       ),
     ] else {
     fail("parse '\{source}' should emit TS1351")
+  }
+}
+
+///|
+test "escaped keywords still tokenize as keywords and emit TS1260" {
+  let source =
+    #|cl\u0061ss C {}
+  let (errors, program) = parse_program(source, name="x.ts")
+  guard errors
+    is [
+      Diagnostic(
+        error_code=1260,
+        error_msg="Keywords cannot contain escape characters.",
+        ..
+      ),
+    ] else {
+    fail("parse '\{source}' should emit TS1260")
+  }
+  guard program.stmts is [{ kind: ClassDecl({ name: Some("C"), .. }), .. }] else {
+    fail("escaped class keyword should still parse as a class declaration")
+  }
+}
+
+///|
+test "consecutive numeric separators should emit TS6189" {
+  let source =
+    #|const value = 1__0
+  guard parse_program(source, name="x.ts").0
+    is [
+      Diagnostic(
+        error_code=6189,
+        error_msg="Multiple consecutive numeric separators are not permitted.",
+        ..
+      ),
+    ] else {
+    fail("parse '\{source}' should emit TS6189")
+  }
+}
+
+///|
+test "trailing numeric separators should emit TS6188" {
+  let source =
+    #|const value = 1_
+  guard parse_program(source, name="x.ts").0
+    is [
+      Diagnostic(
+        error_code=6188,
+        error_msg="Numeric separators are not allowed here.",
+        ..
+      ),
+    ] else {
+    fail("parse '\{source}' should emit TS6188")
+  }
+}
+
+///|
+test "prefix numeric separators should emit TS6188" {
+  let source =
+    #|const value = 0x_FF
+  guard parse_program(source, name="x.ts").0
+    is [
+      Diagnostic(
+        error_code=6188,
+        error_msg="Numeric separators are not allowed here.",
+        ..
+      ),
+    ] else {
+    fail("parse '\{source}' should emit TS6188")
+  }
+}
+
+///|
+test "exponent numeric separators should emit TS6188" {
+  let source =
+    #|const value = 1e_1
+  guard parse_program(source, name="x.ts").0
+    is [
+      Diagnostic(
+        error_code=6188,
+        error_msg="Numeric separators are not allowed here.",
+        ..
+      ),
+    ] else {
+    fail("parse '\{source}' should emit TS6188")
   }
 }
 
@@ -674,5 +946,233 @@ test "@pretty should not drop diagnostics" {
     #|foo(,)
   guard parse_program(source).0 is [Diagnostic(error_code=1135, ..), ..] else {
     fail("parse '\{source}' should still emit diagnostics in pretty mode")
+  }
+}
+
+///|
+test "async newline before bare arrow is not parsed as async arrow" {
+  let source =
+    #|const f = async
+    #|x => x
+  let (errors, program) = parse_program(source, name="x.ts")
+  guard errors is [] else {
+    fail("parse '\{source}' should not emit diagnostics")
+  }
+  guard program.stmts
+    is [
+      {
+        kind: VarDecl(
+          { decls: [{ init: Some({ kind: Ident("async"), .. }), .. }], .. }
+        ),
+        ..,
+      },
+      { kind: ExprStmt({ kind: Arrow(_), .. }), .. },
+    ] else {
+    fail("newline after async should split the arrow head")
+  }
+}
+
+///|
+test "async newline before parenthesized arrow is not parsed as async arrow" {
+  let source =
+    #|const f = async
+    #|(x) => x
+  let (errors, program) = parse_program(source, name="x.ts")
+  guard errors is [Diagnostic(error_code=1005, error_msg="';' expected.", ..)] else {
+    fail("parse '\{source}' should emit TS1005 for the missing semicolon")
+  }
+  guard program.stmts
+    is [{ kind: VarDecl({ decls: [{ init: Some(init), .. }], .. }), .. }, ..] else {
+    fail(
+      "newline after async should keep the parenthesized form out of async-arrow parsing",
+    )
+  }
+  match init.kind {
+    Arrow(_) =>
+      fail(
+        "parenthesized arrow after a newline should not be attached to async",
+      )
+    _ => ()
+  }
+}
+
+///|
+test "async newline before generic arrow is not parsed as async arrow" {
+  let source =
+    #|const f = async
+    #|<T>(x: T) => x
+  let (errors, program) = parse_program(source, name="x.ts")
+  guard errors is [Diagnostic(error_code=1005, ..), ..] else {
+    fail(
+      "parse '\{source}' should report parse errors instead of building an async arrow",
+    )
+  }
+  guard program.stmts
+    is [{ kind: VarDecl({ decls: [{ init: Some(init), .. }], .. }), .. }, ..] else {
+    fail("newline after async should still produce a split statement sequence")
+  }
+  match init.kind {
+    Arrow(_) =>
+      fail("generic arrow after a newline should not be attached to async")
+    _ => ()
+  }
+}
+
+///|
+test "export type star reexport parses as type-only export" {
+  let source =
+    #|export type * from "m"
+  let (errors, program) = parse_program(source, name="x.ts")
+  guard errors is [] else {
+    fail("parse '\{source}' should not emit diagnostics")
+  }
+  guard program.stmts
+    is [
+      {
+        kind: ExportDecl(
+          Named(
+            {
+              is_type_only: true,
+              specs: [{ name: "*", as_name: None, .. }],
+              from: Some("m"),
+            }
+          )
+        ),
+        ..,
+      },
+    ] else {
+    fail("export type * should stay as a type-only export declaration")
+  }
+}
+
+///|
+test "export type namespace reexport parses as type-only export" {
+  let source =
+    #|export type * as ns from "m"
+  let (errors, program) = parse_program(source, name="x.ts")
+  guard errors is [] else {
+    fail("parse '\{source}' should not emit diagnostics")
+  }
+  guard program.stmts
+    is [
+      {
+        kind: ExportDecl(
+          Named(
+            {
+              is_type_only: true,
+              specs: [{ name: "*", as_name: Some("ns"), .. }],
+              from: Some("m"),
+            }
+          )
+        ),
+        ..,
+      },
+    ] else {
+    fail("export type * as ns should stay as a type-only export declaration")
+  }
+}
+
+///|
+test "decorators are preserved on exported classes" {
+  let source =
+    #|@dec export class C {}
+  let (errors, program) = parse_program(source, name="x.ts")
+  guard errors is [] else {
+    fail("parse '\{source}' should not emit diagnostics")
+  }
+  guard program.stmts
+    is [
+      {
+        kind: ExportDecl(
+          Declaration(
+            {
+              kind: ClassDecl(
+                {
+                  name: Some("C"),
+                  decorators: [{ kind: Ident("dec"), .. }],
+                  ..,
+                }
+              ),
+              ..,
+            }
+          )
+        ),
+        ..,
+      },
+    ] else {
+    fail("exported class declarations should retain leading decorators")
+  }
+}
+
+///|
+test "for-of right side still reports empty element access after using" {
+  let source =
+    #|for (using of of []) {}
+  let (errors, program) = parse_program(source, name="x.ts")
+  guard errors
+    is [
+      Diagnostic(
+        error_code=1011,
+        error_msg="An element access expression should take an argument.",
+        ..
+      ),
+    ] else {
+    fail("parse '\{source}' should emit TS1011")
+  }
+  guard program.stmts is [{ kind: ForOf(_), .. }] else {
+    fail("the for-of statement should still be preserved")
+  }
+}
+
+///|
+test "optional chains with private identifiers should emit TS18030" {
+  let source =
+    #|obj?.#value
+  let (errors, program) = parse_program(source, name="x.ts")
+  guard errors
+    is [
+      Diagnostic(
+        error_code=18030,
+        error_msg="An optional chain cannot contain private identifiers.",
+        ..
+      ),
+    ] else {
+    fail("parse '\{source}' should emit TS18030")
+  }
+  guard program.stmts
+    is [
+      {
+        kind: ExprStmt(
+          {
+            kind: Member({ property: Private("value"), optional: true, .. }),
+            ..,
+          }
+        ),
+        ..,
+      },
+    ] else {
+    fail("optional-chain private identifier should still preserve member AST")
+  }
+}
+
+///|
+test "logical and exponent assignment operators keep dedicated AST ops" {
+  let source =
+    #|a ||= b;
+    #|c &&= d;
+    #|e ??= f;
+    #|g **= h;
+  let (errors, program) = parse_program(source, name="x.ts")
+  guard errors is [] else {
+    fail("parse '\{source}' should not emit diagnostics")
+  }
+  guard program.stmts
+    is [
+      { kind: ExprStmt({ kind: Assign({ op: LogicalOrAssign, .. }), .. }), .. },
+      { kind: ExprStmt({ kind: Assign({ op: LogicalAndAssign, .. }), .. }), .. },
+      { kind: ExprStmt({ kind: Assign({ op: NullishAssign, .. }), .. }), .. },
+      { kind: ExprStmt({ kind: Assign({ op: PowAssign, .. }), .. }), .. },
+    ] else {
+    fail("assignment operators should not be collapsed to plain '=' or '*='")
   }
 }

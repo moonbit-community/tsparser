@@ -38,6 +38,8 @@ pub enum StmtKind {
   Break(String?)
   Continue(String?)
   Throw(Expr)
+  With(WithStmt)
+  Debugger
   Try(TryStmt)
   Labeled(LabeledStmt)
   ExprStmt(Expr)
@@ -52,6 +54,12 @@ pub struct LabeledStmt {
 } derive(Debug)
 
 ///|
+pub struct WithStmt {
+  object : Expr
+  body : Stmt
+} derive(Debug)
+
+///|
 pub struct NamespaceDecl {
   name : String
   body : Block
@@ -63,7 +71,9 @@ pub enum VarKind {
   Let
   Const
   Var
-} derive(Debug)
+  Using
+  AwaitUsing
+} derive(Eq, Debug)
 
 ///|
 pub struct VarDecl {
@@ -270,7 +280,7 @@ pub struct EnumMember {
 
 ///|
 pub struct InterfaceMember {
-  name : String
+  name : TypeMemberName
   optional : Bool
   type_ann : TypeNode
   span : Span
@@ -334,6 +344,7 @@ pub struct ExportSpec {
 ///|
 pub struct ClassDecl {
   name : String?
+  decorators : Array[Expr]
   type_params : Array[TypeParam]
   extends : Expr?
   implements : Array[TypeNode]
@@ -344,6 +355,7 @@ pub struct ClassDecl {
 ///|
 pub struct ClassMember {
   kind : ClassMemberKind
+  decorators : Array[Expr]
   is_static : Bool
   access : AccessModifier?
   is_readonly : Bool
@@ -351,12 +363,22 @@ pub struct ClassMember {
 } derive(Debug)
 
 ///|
+pub enum MemberName {
+  Ident(String)
+  String(String)
+  Number(String)
+  Computed(String)
+  Private(String)
+} derive(Debug)
+
+///|
 pub enum ClassMemberKind {
+  StaticBlock(Block)
   Constructor(Array[Param], Block)
-  Method(String, Array[Param], TypeNode?, Block)
-  Getter(String, TypeNode?, Block)
-  Setter(String, Param, Block)
-  Field(String, TypeNode?, Expr?)
+  Method(MemberName, Array[Param], TypeNode?, Block)
+  Getter(MemberName, TypeNode?, Block)
+  Setter(MemberName, Param, Block)
+  Field(MemberName, TypeNode?, Expr?)
 } derive(Debug)
 
 ///|
@@ -375,6 +397,7 @@ pub struct Expr {
 ///|
 pub enum ExprKind {
   Ident(String)
+  PrivateIdent(String)
   Number(String)
   String(String)
   Bool(Bool)
@@ -388,6 +411,10 @@ pub enum ExprKind {
   Arrow(ArrowFunction)
   New(NewExpr)
   TypeAssert(TypeAssert)
+  As(AsExpr)
+  Satisfies(SatisfiesExpr)
+  JSXElement(JSXElement)
+  JSXFragment(JSXFragment)
   Template(TemplateLiteral)
   Unary(UnaryExpr)
   Update(UpdateExpr)
@@ -452,7 +479,71 @@ pub struct TemplateLiteral {
 } derive(Debug)
 
 ///|
+pub struct JSXElement {
+  name : String
+  type_args : Array[TypeNode]
+  attrs : Array[JSXAttr]
+  children : Array[JSXChild]
+  self_closing : Bool
+  closing_name : String?
+  opening_span : Span
+  closing_span : Span?
+} derive(Debug)
+
+///|
+pub struct JSXFragment {
+  children : Array[JSXChild]
+  opening_span : Span
+  closing_span : Span
+} derive(Debug)
+
+///|
+pub enum JSXAttr {
+  Attribute(JSXAttribute)
+  Spread(JSXExprContainer)
+} derive(Debug)
+
+///|
+pub struct JSXAttribute {
+  name : String
+  value : JSXAttrValue?
+  span : Span
+} derive(Debug)
+
+///|
+pub enum JSXAttrValue {
+  String(String)
+  Expr(JSXExprContainer)
+  Element(Expr)
+} derive(Debug)
+
+///|
+pub enum JSXChild {
+  Text(String)
+  Expr(JSXExprContainer)
+  Element(Expr)
+} derive(Debug)
+
+///|
+pub struct JSXExprContainer {
+  expr : Expr
+  span : Span
+} derive(Debug)
+
+///|
 pub struct TypeAssert {
+  expr : Expr
+  type_ann : TypeNode
+} derive(Debug)
+
+///|
+pub struct AsExpr {
+  expr : Expr
+  type_ann : TypeNode
+} derive(Debug)
+
+///|
+pub struct SatisfiesExpr {
   expr : Expr
   type_ann : TypeNode
 } derive(Debug)
@@ -542,6 +633,10 @@ pub enum AssignOp {
   MulAssign
   DivAssign
   ModAssign
+  PowAssign
+  LogicalAndAssign
+  LogicalOrAssign
+  NullishAssign
   BitAndAssign
   BitOrAssign
   BitXorAssign
@@ -567,6 +662,7 @@ pub struct CallExpr {
 ///|
 pub enum MemberProp {
   Ident(String)
+  Private(String)
   Expr(Expr)
 } derive(Debug)
 
@@ -585,12 +681,86 @@ pub struct TypeNode {
 } derive(Debug)
 
 ///|
+pub struct TemplateLiteralType {
+  quasis : Array[String]
+  types : Array[TypeNode]
+} derive(Debug)
+
+///|
+pub struct InferType {
+  type_param : TypeParam
+} derive(Debug)
+
+///|
+pub struct ConstructorType {
+  type_params : Array[TypeParam]
+  params : Array[Param]
+  return_type : TypeNode
+  is_abstract : Bool
+} derive(Debug)
+
+///|
+pub struct ParenthesizedType {
+  inner : TypeNode
+} derive(Debug)
+
+///|
+pub struct ImportType {
+  argument : String
+  attributes : ImportAttributes?
+  qualifier : String?
+  type_args : Array[TypeNode]
+  is_typeof : Bool
+} derive(Debug)
+
+///|
+pub struct ImportAttributes {
+  fields : Array[ImportAttribute]
+  span : Span
+} derive(Debug)
+
+///|
+pub struct ImportAttribute {
+  name : String
+  value : ImportAttributeValue
+  span : Span
+} derive(Debug)
+
+///|
+pub enum ImportAttributeValue {
+  String(String)
+  Object(Array[ImportAttribute])
+} derive(Debug)
+
+///|
+pub enum MappedTypeModifier {
+  Add
+  Remove
+} derive(Debug)
+
+///|
+pub struct MappedType {
+  readonly_modifier : MappedTypeModifier?
+  type_param_name : String
+  source_type : TypeNode
+  name_type : TypeNode?
+  optional_modifier : MappedTypeModifier?
+  value_type : TypeNode?
+} derive(Debug)
+
+///|
 pub enum TypeKind {
   Ident(String)
   TypeQuery(String)
+  ImportType(ImportType)
   Literal(TypeLiteral)
   Tuple(Array[TypeNode])
   Object(Array[TypeMember])
+  MappedType(MappedType)
+  TemplateLiteral(TemplateLiteralType)
+  InferType(InferType)
+  Constructor(ConstructorType)
+  Parenthesized(ParenthesizedType)
   Union(Array[TypeNode])
   Intersection(Array[TypeNode])
   Conditional(TypeNode, TypeNode, TypeNode, TypeNode)
@@ -614,8 +784,15 @@ pub enum TypeLiteral {
 
 ///|
 pub struct TypeMember {
-  name : String
+  name : TypeMemberName
   optional : Bool
   type_ann : TypeNode
   span : Span
+} derive(Debug)
+
+///|
+pub enum TypeMemberName {
+  Named(MemberName)
+  Call
+  Construct
 } derive(Debug)

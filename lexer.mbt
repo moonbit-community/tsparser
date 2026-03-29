@@ -205,6 +205,80 @@ fn Lexer::backslash_likely_in_regex_literal(
 }
 
 ///|
+fn Lexer::slash_likely_in_regex_literal(
+  self : Lexer,
+  slash_offset : Int,
+) -> Bool {
+  if slash_offset < 0 ||
+    slash_offset >= self.source.length() ||
+    self.source[slash_offset] != '/' {
+    return false
+  }
+  let mut line_start = slash_offset
+  while line_start > 0 {
+    let prev = self.source[line_start - 1]
+    if is_line_break_code_unit(prev) {
+      break
+    }
+    line_start -= 1
+  }
+  let mut candidate = slash_offset
+  while candidate > line_start {
+    candidate -= 1
+    if self.source[candidate] != '/' {
+      continue
+    }
+    if candidate + 1 < self.source.length() {
+      let next = self.source[candidate + 1]
+      if next == '/' || next == '*' {
+        continue
+      }
+    }
+    let mut cursor = candidate + 1
+    let mut in_escape = false
+    let mut in_character_class = false
+    let mut reached_target = false
+    while cursor < slash_offset {
+      let ch = self.source[cursor]
+      if is_line_break_code_unit(ch) {
+        break
+      }
+      if in_escape {
+        in_escape = false
+        cursor += 1
+        continue
+      }
+      if ch == '\\' {
+        in_escape = true
+        cursor += 1
+        continue
+      }
+      if ch == '[' {
+        in_character_class = true
+        cursor += 1
+        continue
+      }
+      if ch == ']' {
+        in_character_class = false
+        cursor += 1
+        continue
+      }
+      if ch == '/' && !in_character_class {
+        break
+      }
+      cursor += 1
+    }
+    if cursor == slash_offset && in_character_class {
+      reached_target = true
+    }
+    if reached_target {
+      return true
+    }
+  }
+  false
+}
+
+///|
 fn keyword_from_ident(name : String) -> Keyword? {
   match name {
     "let" => Some(Keyword::Let)
@@ -260,6 +334,12 @@ fn keyword_from_ident(name : String) -> Keyword? {
 }
 
 ///|
+fn keyword_from_raw_ident(name : String) -> Keyword? {
+  let decoded = decode_identifier_unicode_escapes_for_keyword(name)
+  keyword_from_ident(decoded)
+}
+
+///|
 fn Lexer::skip_ws_and_comments(self : Lexer) -> Unit raise LexError {
   let mut progressed = true
   while progressed {
@@ -306,26 +386,34 @@ fn Lexer::skip_ws_and_comments(self : Lexer) -> Unit raise LexError {
         self.consume_prefix(input, rest)
         progressed = true
       }
-      ("//[^\n]*", rest) => {
-        self.consume_prefix(input, rest)
-        progressed = true
-      }
+      ("//[^\n]*", rest) =>
+        if self.slash_likely_in_regex_literal(self.pos) {
+
+        } else {
+          self.consume_prefix(input, rest)
+          progressed = true
+        }
       ("/\*", _) => {
-        let comment_start = self.position()
-        self.bump_n(2)
-        let mut closed = false
-        while self.peek() is Some(b) {
-          if b == '*' && self.peek_n(1) == Some('/') {
-            self.bump_n(2)
-            closed = true
-            break
+        let slash_is_regex = self.pos > 0 &&
+          self.source[self.pos - 1] == '\\' &&
+          self.backslash_likely_in_regex_literal(self.pos - 1)
+        if !slash_is_regex {
+          let comment_start = self.position()
+          self.bump_n(2)
+          let mut closed = false
+          while self.peek() is Some(b) {
+            if b == '*' && self.peek_n(1) == Some('/') {
+              self.bump_n(2)
+              closed = true
+              break
+            }
+            self.bump()
           }
-          self.bump()
+          if !closed {
+            raise LexError::UnterminatedComment(pos=comment_start)
+          }
+          progressed = true
         }
-        if !closed {
-          raise LexError::UnterminatedComment(pos=comment_start)
-        }
-        progressed = true
       }
       _ => ()
     }
@@ -507,7 +595,81 @@ fn Lexer::read_string(self : Lexer, quote : UInt16) -> String raise LexError {
 }
 
 ///|
-fn Lexer::next_template_token(self : Lexer) -> Token raise LexError {
+priv struct RegexLiteralScanResult {
+  pattern_end_offset : Int
+  flags_start_offset : Int
+  flags_end_offset : Int
+  terminated : Bool
+}
+
+///|
+fn rescan_regex_literal(
+  source : StringView,
+  slash_offset : Int,
+) -> RegexLiteralScanResult {
+  let len = source.length()
+  let mut cursor = slash_offset + 1
+  let mut in_escape = false
+  let mut in_character_class = false
+  while cursor < len {
+    let ch = source[cursor]
+    if is_line_break_code_unit(ch) {
+      return {
+        pattern_end_offset: cursor,
+        flags_start_offset: cursor,
+        flags_end_offset: cursor,
+        terminated: false,
+      }
+    }
+    if in_escape {
+      in_escape = false
+      cursor += 1
+      continue
+    }
+    if ch == '\\' {
+      in_escape = true
+      cursor += 1
+      continue
+    }
+    if ch == '[' {
+      in_character_class = true
+      cursor += 1
+      continue
+    }
+    if ch == ']' {
+      in_character_class = false
+      cursor += 1
+      continue
+    }
+    if ch == '/' && !in_character_class {
+      let pattern_end_offset = cursor
+      let flags_start_offset = cursor + 1
+      let mut flags_end_offset = flags_start_offset
+      if flags_end_offset < len && is_ident_start(source[flags_end_offset]) {
+        flags_end_offset += 1
+        while flags_end_offset < len && is_ident_part(source[flags_end_offset]) {
+          flags_end_offset += 1
+        }
+      }
+      return {
+        pattern_end_offset,
+        flags_start_offset,
+        flags_end_offset,
+        terminated: true,
+      }
+    }
+    cursor += 1
+  }
+  {
+    pattern_end_offset: len,
+    flags_start_offset: len,
+    flags_end_offset: len,
+    terminated: false,
+  }
+}
+
+///|
+fn Lexer::next_template_token(self : Lexer) -> Token {
   let chunk_start_pos = self.position()
   let start = self.pos
   while self.peek() is Some(b) {
@@ -549,7 +711,10 @@ fn Lexer::next_template_token(self : Lexer) -> Token raise LexError {
     }
     self.bump()
   }
-  raise LexError::UnterminatedString(pos=self.position())
+  let chunk = self.slice_to_string(start, self.pos)
+  let chunk_span = span_from(chunk_start_pos, self.position())
+  self.pop_mode()
+  Token::{ kind: TokenKind::TemplateChunk(chunk), span: chunk_span }
 }
 
 ///|
@@ -666,7 +831,7 @@ fn Lexer::next_token(self : Lexer) -> Token raise LexError {
       if is_ident_start(b) {
         let name = self.read_ident()
         let end = self.position()
-        match keyword_from_ident(name) {
+        match keyword_from_raw_ident(name) {
           Some(kw) =>
             Token::{ kind: TokenKind::Keyword(kw), span: span_from(start, end) }
           None =>
@@ -702,9 +867,18 @@ fn Lexer::next_token(self : Lexer) -> Token raise LexError {
               let saved_column = self.column
               try {
                 let ident = self.read_ident()
-                return Token::{
-                  kind: TokenKind::Ident(ident),
-                  span: span_from(start, self.position()),
+                let end = self.position()
+                match keyword_from_raw_ident(ident) {
+                  Some(kw) =>
+                    return Token::{
+                      kind: TokenKind::Keyword(kw),
+                      span: span_from(start, end),
+                    }
+                  None =>
+                    return Token::{
+                      kind: TokenKind::Ident(ident),
+                      span: span_from(start, end),
+                    }
                 }
               } catch {
                 _ => {
@@ -752,7 +926,7 @@ fn Lexer::next_token(self : Lexer) -> Token raise LexError {
                 let name = self.read_ident()
                 let end = self.position()
                 Token::{
-                  kind: TokenKind::Ident("#\{name}"),
+                  kind: TokenKind::PrivateIdent(name),
                   span: span_from(start, end),
                 }
               } catch {

@@ -53,6 +53,7 @@ pub enum Keyword {
 ///|
 pub enum TokenKind {
   Ident(String)
+  PrivateIdent(String)
   Number(String)
   String(String)
   Keyword(Keyword)

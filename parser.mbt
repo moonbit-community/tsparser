@@ -10,15 +10,12 @@ priv struct Parser {
   mut global_namespace_depth : Int
   mut strict_mode : Bool
   mut strict_reserved_after_dot_context_depth : Int
-  mut loop_depth : Int
-  mut breakable_depth : Int
   mut function_depth : Int
   mut block_depth : Int
   mut try_block_depth : Int
   module_element_context_offsets : Array[Int]
   mut async_function_depth : Int
   mut generator_function_depth : Int
-  mut suppress_return_outside_function_depth : Int
   mut with_statement_depth : Int
   mut var_initializer_depth : Int
   mut var_decl_binding_depth : Int
@@ -33,6 +30,7 @@ priv struct Parser {
   es_module_target : Bool
   module_none_target : Bool
   module_kind : String?
+  language_target : String?
   es_syntax_target : Bool
   es2018_syntax_target : Bool
   allow_synthetic_default_imports : Bool
@@ -77,14 +75,9 @@ priv struct Parser {
   type_param_scope_starts : Array[Int]
   label_stack : Array[String]
   label_function_depth_stack : Array[(String, Int, Bool)]
-  loop_function_depth_stack : Array[Int]
-  breakable_function_depth_stack : Array[Int]
   function_static_stmt_error_reported_stack : Array[Bool]
   pending_erasable_syntax_positions : Array[Position]
   pending_satisfies_string_alias_mismatch_names : Array[String]
-  mut pending_ambient_function_block_stmt_suppressions : Int
-  mut type_alias_depth : Int
-  mut type_alias_seen_import_attr_error : Bool
   errors : Array[ParseError]
 }
 
@@ -99,6 +92,7 @@ fn Parser::new(
   es_module_target : Bool,
   module_none_target : Bool,
   module_kind : String?,
+  language_target : String?,
   es_syntax_target : Bool,
   es2018_syntax_target : Bool,
   allow_synthetic_default_imports : Bool,
@@ -123,15 +117,12 @@ fn Parser::new(
     global_namespace_depth: 0,
     strict_mode,
     strict_reserved_after_dot_context_depth: 0,
-    loop_depth: 0,
-    breakable_depth: 0,
     function_depth: 0,
     block_depth: 0,
     try_block_depth: 0,
     module_element_context_offsets: [0],
     async_function_depth: 0,
     generator_function_depth: 0,
-    suppress_return_outside_function_depth: 0,
     with_statement_depth: 0,
     var_initializer_depth: 0,
     var_decl_binding_depth: 0,
@@ -146,6 +137,7 @@ fn Parser::new(
     es_module_target,
     module_none_target,
     module_kind,
+    language_target,
     es_syntax_target,
     es2018_syntax_target,
     allow_synthetic_default_imports,
@@ -190,14 +182,9 @@ fn Parser::new(
     type_param_scope_starts: [],
     label_stack: [],
     label_function_depth_stack: [],
-    loop_function_depth_stack: [],
-    breakable_function_depth_stack: [],
     function_static_stmt_error_reported_stack: [false],
     pending_erasable_syntax_positions: [],
     pending_satisfies_string_alias_mismatch_names: [],
-    pending_ambient_function_block_stmt_suppressions: 0,
-    type_alias_depth: 0,
-    type_alias_seen_import_attr_error: false,
     errors: [],
   }
 }
@@ -235,6 +222,80 @@ fn Parser::peek_kind(self : Parser, offset : Int) -> TokenKind? {
 }
 
 ///|
+fn Parser::tokens_are_adjacent(
+  self : Parser,
+  left_offset : Int,
+  right_offset : Int,
+) -> Bool {
+  match self.peek(left_offset) {
+    Some(left) =>
+      match self.peek(right_offset) {
+        Some(right) => token_spans_are_adjacent(left, right)
+        None => false
+      }
+    None => false
+  }
+}
+
+///|
+fn Parser::has_adjacent_next_kind(self : Parser, kind : TokenKind) -> Bool {
+  self.peek_kind(1) == Some(kind) && self.tokens_are_adjacent(0, 1)
+}
+
+///|
+fn Parser::next_token_has_preceding_line_break(self : Parser) -> Bool {
+  match self.peek(1) {
+    Some(next) => next.span.start.line > self.current().span.end.line
+    None => false
+  }
+}
+
+///|
+fn Parser::advance_width(self : Parser, width : Int) -> Span {
+  let start = self.current().span
+  let mut end_span = start
+  let mut remaining = width
+  while remaining > 0 {
+    end_span = self.advance().span
+    remaining -= 1
+  }
+  start.merge(end_span)
+}
+
+///|
+fn Parser::current_less_than_rescan(self : Parser) -> LessThanRescan {
+  rescan_less_than_token(self.tokens, self.index)
+}
+
+///|
+fn Parser::current_greater_than_rescan(self : Parser) -> GreaterThanRescan {
+  rescan_greater_than_token(self.tokens, self.index)
+}
+
+///|
+fn Parser::current_question_rescan(self : Parser) -> QuestionRescan {
+  rescan_question_token(self.tokens, self.index)
+}
+
+///|
+fn Parser::current_hash_rescan(self : Parser) -> HashRescan {
+  rescan_hash_token(self.tokens, self.index)
+}
+
+///|
+fn Parser::current_slash_rescan(self : Parser) -> SlashRescan {
+  rescan_slash_token(self.source_text, self.tokens, self.index)
+}
+
+///|
+fn Parser::current_template_rescan(
+  self : Parser,
+  is_head : Bool,
+) -> TemplateRescan {
+  rescan_template_token(self.tokens, self.index, is_head)
+}
+
+///|
 fn Parser::at_end(self : Parser) -> Bool {
   self.current().kind is TokenKind::Eof
 }
@@ -257,10 +318,44 @@ fn Parser::has_rbrace_ahead(self : Parser) -> Bool {
 ///|
 fn Parser::advance(self : Parser) -> Token {
   let token = self.current()
+  self.record_keyword_unicode_escape_error_if_needed(token)
   if self.index + 1 < self.tokens.length() {
     self.index += 1
   }
   token
+}
+
+///|
+fn Parser::token_contains_unicode_escape_in_source(
+  self : Parser,
+  token : Token,
+) -> Bool {
+  let start_offset = token.span.start.offset
+  let end_offset = token.span.end.offset
+  if start_offset < 0 ||
+    end_offset <= start_offset ||
+    end_offset > self.source_text.length() {
+    return false
+  }
+  self.source_text.view(start_offset~, end_offset~).contains("\\u")
+}
+
+///|
+fn Parser::record_keyword_unicode_escape_error_if_needed(
+  self : Parser,
+  token : Token,
+) -> Unit {
+  match token.kind {
+    TokenKind::Keyword(_) =>
+      if self.token_contains_unicode_escape_in_source(token) {
+        self.record_ts_error(
+          token.span.start,
+          1260,
+          "Keywords cannot contain escape characters.",
+        )
+      }
+    _ => ()
+  }
 }
 
 ///|
@@ -355,32 +450,6 @@ fn Parser::expect_ident(self : Parser) -> (String, Span) raise ParseError {
     }
     _ => raise self.expected_error(token.span.start, "identifier", false)
   }
-}
-
-///|
-fn Parser::semicolon_follows_function_like_body(self : Parser) -> Bool {
-  if self.index == 0 || self.tokens[self.index - 1].kind != TokenKind::RBrace {
-    return false
-  }
-  let mut i = self.index - 1
-  let mut brace_depth = 1
-  while i > 0 {
-    i -= 1
-    match self.tokens[i].kind {
-      TokenKind::RBrace => brace_depth += 1
-      TokenKind::LBrace => {
-        brace_depth -= 1
-        if brace_depth == 0 {
-          if i > 0 && self.tokens[i - 1].kind == TokenKind::RParen {
-            return true
-          }
-          return false
-        }
-      }
-      _ => ()
-    }
-  }
-  false
 }
 
 ///|
@@ -487,28 +556,27 @@ fn Parser::record_ts_error(
 }
 
 ///|
-fn Parser::record_ambient_implementation_error_if_needed(
-  self : Parser,
-  pos : Position,
-) -> Unit {
-  if self.ambient_context_depth > 0 {
-    self.record_ts_error(
-      pos, 1183, "An implementation cannot be declared in ambient contexts.",
-    )
+fn Parser::has_ts_error(self : Parser, pos : Position, code : Int) -> Bool {
+  let (source_name, line) = self.resolve_diag_source_and_line(pos)
+  for existing in self.errors {
+    match existing {
+      ParseError::Diagnostic(
+        filename=existing_source,
+        line=existing_line,
+        column=existing_column,
+        error_code=existing_code,
+        ..
+      ) =>
+        if existing_source == source_name &&
+          existing_line == line &&
+          existing_column == pos.column &&
+          existing_code == code {
+          return true
+        }
+      _ => ()
+    }
   }
-}
-
-///|
-fn Parser::record_ambient_function_body_implementation_error_if_needed(
-  self : Parser,
-  pos : Position,
-) -> Unit {
-  if self.ambient_context_depth > 0 {
-    self.record_ts_error(
-      pos, 1183, "An implementation cannot be declared in ambient contexts.",
-    )
-    self.pending_ambient_function_block_stmt_suppressions += 1
-  }
+  false
 }
 
 ///|
@@ -589,60 +657,6 @@ fn Parser::find_enclosing_class_close_after_current(self : Parser) -> Position? 
     idx += 1
   }
   None
-}
-
-///|
-fn Parser::find_active_label_function_depth(
-  self : Parser,
-  label : String,
-) -> Int? {
-  let normalized_label = decode_identifier_unicode_escapes_for_keyword(label)
-  let mut idx = self.label_function_depth_stack.length()
-  while idx > 0 {
-    idx -= 1
-    let (active, depth, _) = self.label_function_depth_stack[idx]
-    if decode_identifier_unicode_escapes_for_keyword(active) == normalized_label {
-      return Some(depth)
-    }
-  }
-  None
-}
-
-///|
-fn Parser::find_active_label_targets_iteration(
-  self : Parser,
-  label : String,
-) -> Bool? {
-  let normalized_label = decode_identifier_unicode_escapes_for_keyword(label)
-  let mut idx = self.label_function_depth_stack.length()
-  while idx > 0 {
-    idx -= 1
-    let (active, _, is_iteration) = self.label_function_depth_stack[idx]
-    if decode_identifier_unicode_escapes_for_keyword(active) == normalized_label {
-      return Some(is_iteration)
-    }
-  }
-  None
-}
-
-///|
-fn Parser::has_iteration_in_current_function(self : Parser) -> Bool {
-  for loop_function_depth in self.loop_function_depth_stack {
-    if loop_function_depth == self.function_depth {
-      return true
-    }
-  }
-  false
-}
-
-///|
-fn Parser::has_breakable_in_current_function(self : Parser) -> Bool {
-  for breakable_function_depth in self.breakable_function_depth_stack {
-    if breakable_function_depth == self.function_depth {
-      return true
-    }
-  }
-  false
 }
 
 ///|
@@ -1736,6 +1750,474 @@ fn order_errors_by_source_line_column(
 }
 
 ///|
+fn is_diagnostic_with_code(
+  err : ParseError,
+  target_filename : String,
+  target_line : Int,
+  target_code : Int,
+) -> Bool {
+  match err {
+    ParseError::Diagnostic(filename~, line~, error_code~, ..) =>
+      filename == target_filename &&
+      line == target_line &&
+      error_code == target_code
+    _ => false
+  }
+}
+
+///|
+fn has_diagnostic_with_code(
+  errors : Array[ParseError],
+  start : Int,
+  target_filename : String,
+  target_line : Int,
+  target_code : Int,
+) -> Bool {
+  let mut i = start
+  while i < errors.length() {
+    match errors[i] {
+      ParseError::Diagnostic(filename~, line~, ..) =>
+        if filename != target_filename || line > target_line {
+          return false
+        } else if is_diagnostic_with_code(
+            errors[i],
+            target_filename,
+            target_line,
+            target_code,
+          ) {
+          return true
+        }
+      _ => ()
+    }
+    i += 1
+  }
+  false
+}
+
+///|
+fn skip_diagnostics_for_source_lines(
+  errors : Array[ParseError],
+  start : Int,
+  target_filename : String,
+  from_line : Int,
+  to_line : Int,
+) -> Int {
+  let mut i = start
+  while i < errors.length() {
+    match errors[i] {
+      ParseError::Diagnostic(filename~, line~, ..) =>
+        if filename == target_filename && line >= from_line && line <= to_line {
+          i += 1
+          continue
+        }
+      _ => ()
+    }
+    break
+  }
+  i
+}
+
+///|
+fn find_first_char_column_after(
+  line_text : String,
+  start_column : Int,
+  ch : UInt16,
+) -> Int? {
+  let view = line_text[:]
+  let mut i = if start_column <= 0 { 0 } else { start_column - 1 }
+  while i < view.length() {
+    if view[i] == ch {
+      return Some(i + 1)
+    }
+    i += 1
+  }
+  None
+}
+
+///|
+fn find_last_char_column(line_text : String, ch : UInt16) -> Int? {
+  let view = line_text[:]
+  if view.is_empty() {
+    return None
+  }
+  let mut i = view.length()
+  while i > 0 {
+    let index = i - 1
+    if view[index] == ch {
+      return Some(index + 1)
+    }
+    i -= 1
+  }
+  None
+}
+
+///|
+fn source_line_text_for_diagnostic(
+  source : StringView,
+  default_source_name : String,
+  line_directive_prefix : Array[Int],
+  virtual_file_markers : Array[(Int, String)],
+  filename : String,
+  line : Int,
+) -> String? {
+  let lines : Array[String] = []
+  for raw_line in source.to_string().split("\n") {
+    lines.push(raw_line.to_string())
+  }
+  if !virtual_file_markers.is_empty() {
+    let mut marker_index = 0
+    while marker_index < virtual_file_markers.length() {
+      let (marker_line, marker_name) = virtual_file_markers[marker_index]
+      if marker_name == filename {
+        let next_marker_line = if marker_index + 1 <
+          virtual_file_markers.length() {
+          let (next_line, _) = virtual_file_markers[marker_index + 1]
+          Some(next_line)
+        } else {
+          None
+        }
+        let header_prefix = compute_virtual_file_header_prefix_after_marker(
+          source, marker_line, next_marker_line,
+        )
+        let source_line = marker_line + header_prefix + line
+        if source_line > 0 && source_line <= lines.length() {
+          return Some(lines[source_line - 1])
+        }
+        return None
+      }
+      marker_index += 1
+    }
+    return None
+  }
+  if filename != default_source_name {
+    return None
+  }
+  let mut source_line = 1
+  while source_line <= lines.length() {
+    if adjust_diag_line_with_directive_prefix(
+        line_directive_prefix, source_line,
+      ) ==
+      line {
+      return Some(lines[source_line - 1])
+    }
+    source_line += 1
+  }
+  None
+}
+
+///|
+fn compute_same_line_import_attr_followup_columns(
+  source : StringView,
+  default_source_name : String,
+  line_directive_prefix : Array[Int],
+  virtual_file_markers : Array[(Int, String)],
+  filename : String,
+  line : Int,
+  invalid_name_column : Int,
+) -> (Int, Int, Int, Int, Int, Int, Int)? {
+  let line_text = match
+    source_line_text_for_diagnostic(
+      source, default_source_name, line_directive_prefix, virtual_file_markers, filename,
+      line,
+    ) {
+    Some(text) => text
+    None => return None
+  }
+  let semicolon_column = match
+    find_first_char_column_after(line_text, invalid_name_column + 1, ':') {
+    Some(column) => column
+    None => return None
+  }
+  let inner_rbrace_column = match
+    find_first_char_column_after(line_text, semicolon_column + 1, '}') {
+    Some(column) => column
+    None => return None
+  }
+  let outer_rbrace_column = match
+    find_first_char_column_after(line_text, inner_rbrace_column + 1, '}') {
+    Some(column) => column
+    None => return None
+  }
+  let close_paren_column = match
+    find_first_char_column_after(line_text, outer_rbrace_column + 1, ')') {
+    Some(column) => column
+    None => return None
+  }
+  let dot_column = match
+    find_first_char_column_after(line_text, close_paren_column + 1, '.') {
+    Some(column) => column
+    None => return None
+  }
+  let ident_column = dot_column + 1
+  let final_rparen_column = match find_last_char_column(line_text, ')') {
+    Some(column) => column
+    None => return None
+  }
+  Some(
+    (
+      semicolon_column, inner_rbrace_column, outer_rbrace_column, close_paren_column,
+      dot_column, ident_column, final_rparen_column,
+    ),
+  )
+}
+
+///|
+fn normalize_import_type_attribute_entry_errors(
+  errors : Array[ParseError],
+  source : StringView,
+  default_source_name : String,
+  line_directive_prefix : Array[Int],
+  virtual_file_markers : Array[(Int, String)],
+) -> Array[ParseError] {
+  let normalized : Array[ParseError] = []
+  let mut i = 0
+  while i < errors.length() {
+    let mut replaced = false
+    match errors[i] {
+      ParseError::Diagnostic(filename~, line~, error_code=1340, ..) =>
+        if i + 1 < errors.length() {
+          match errors[i + 1] {
+            ParseError::Diagnostic(column~, error_code=1478, ..) =>
+              if is_diagnostic_with_code(errors[i + 1], filename, line, 1478) {
+                let next_line_starts_new_import_attr_case = has_diagnostic_with_code(
+                    errors,
+                    i + 2,
+                    filename,
+                    line + 1,
+                    1340,
+                  ) &&
+                  has_diagnostic_with_code(
+                    errors,
+                    i + 2,
+                    filename,
+                    line + 1,
+                    1478,
+                  )
+                if !next_line_starts_new_import_attr_case &&
+                  has_diagnostic_with_code(
+                    errors,
+                    i + 2,
+                    filename,
+                    line + 1,
+                    1128,
+                  ) {
+                  normalized.push(errors[i])
+                  normalized.push(errors[i + 1])
+                  normalized.push(
+                    make_diagnostic(
+                      filename,
+                      line,
+                      column + 23,
+                      1005,
+                      "';' expected.",
+                    ),
+                  )
+                  normalized.push(
+                    make_diagnostic(
+                      filename,
+                      line,
+                      column + 34,
+                      1128,
+                      "Declaration or statement expected.",
+                    ),
+                  )
+                  normalized.push(
+                    make_diagnostic(
+                      filename,
+                      line,
+                      column + 36,
+                      1128,
+                      "Declaration or statement expected.",
+                    ),
+                  )
+                  normalized.push(
+                    make_diagnostic(
+                      filename,
+                      line,
+                      column + 37,
+                      1128,
+                      "Declaration or statement expected.",
+                    ),
+                  )
+                  normalized.push(
+                    make_diagnostic(
+                      filename,
+                      line,
+                      column + 38,
+                      1128,
+                      "Declaration or statement expected.",
+                    ),
+                  )
+                  normalized.push(
+                    make_diagnostic(
+                      filename,
+                      line + 1,
+                      column + 4,
+                      1005,
+                      "':' expected.",
+                    ),
+                  )
+                  i = skip_diagnostics_for_source_lines(
+                    errors,
+                    i + 2,
+                    filename,
+                    line,
+                    line + 1,
+                  )
+                  replaced = true
+                } else if has_diagnostic_with_code(
+                    errors,
+                    i + 2,
+                    filename,
+                    line,
+                    1128,
+                  ) &&
+                  has_diagnostic_with_code(errors, i + 2, filename, line, 1005) {
+                  let followup_columns = compute_same_line_import_attr_followup_columns(
+                    source, default_source_name, line_directive_prefix, virtual_file_markers,
+                    filename, line, column,
+                  )
+                  normalized.push(errors[i])
+                  normalized.push(errors[i + 1])
+                  match followup_columns {
+                    Some(
+                      (
+                        semicolon_column,
+                        inner_rbrace_column,
+                        outer_rbrace_column,
+                        close_paren_column,
+                        dot_column,
+                        ident_column,
+                        final_rparen_column,
+                      )
+                    ) => {
+                      normalized.push(
+                        make_diagnostic(
+                          filename, line, semicolon_column, 1005, "';' expected.",
+                        ),
+                      )
+                      normalized.push(
+                        make_diagnostic(
+                          filename, line, inner_rbrace_column, 1128, "Declaration or statement expected.",
+                        ),
+                      )
+                      normalized.push(
+                        make_diagnostic(
+                          filename, line, outer_rbrace_column, 1128, "Declaration or statement expected.",
+                        ),
+                      )
+                      normalized.push(
+                        make_diagnostic(
+                          filename, line, close_paren_column, 1128, "Declaration or statement expected.",
+                        ),
+                      )
+                      normalized.push(
+                        make_diagnostic(
+                          filename, line, dot_column, 1128, "Declaration or statement expected.",
+                        ),
+                      )
+                      normalized.push(
+                        make_diagnostic(
+                          filename, line, ident_column, 1434, "Unexpected keyword or identifier.",
+                        ),
+                      )
+                      normalized.push(
+                        make_diagnostic(
+                          filename, line, final_rparen_column, 1128, "Declaration or statement expected.",
+                        ),
+                      )
+                    }
+                    None => {
+                      normalized.push(
+                        make_diagnostic(
+                          filename,
+                          line,
+                          column + 23,
+                          1005,
+                          "';' expected.",
+                        ),
+                      )
+                      normalized.push(
+                        make_diagnostic(
+                          filename,
+                          line,
+                          column + 34,
+                          1128,
+                          "Declaration or statement expected.",
+                        ),
+                      )
+                      normalized.push(
+                        make_diagnostic(
+                          filename,
+                          line,
+                          column + 36,
+                          1128,
+                          "Declaration or statement expected.",
+                        ),
+                      )
+                      normalized.push(
+                        make_diagnostic(
+                          filename,
+                          line,
+                          column + 37,
+                          1128,
+                          "Declaration or statement expected.",
+                        ),
+                      )
+                      normalized.push(
+                        make_diagnostic(
+                          filename,
+                          line,
+                          column + 38,
+                          1128,
+                          "Declaration or statement expected.",
+                        ),
+                      )
+                      normalized.push(
+                        make_diagnostic(
+                          filename,
+                          line,
+                          column + 39,
+                          1434,
+                          "Unexpected keyword or identifier.",
+                        ),
+                      )
+                      normalized.push(
+                        make_diagnostic(
+                          filename,
+                          line,
+                          column + 55,
+                          1128,
+                          "Declaration or statement expected.",
+                        ),
+                      )
+                    }
+                  }
+                  i = skip_diagnostics_for_source_lines(
+                    errors,
+                    i + 2,
+                    filename,
+                    line,
+                    line,
+                  )
+                  replaced = true
+                }
+              }
+            _ => ()
+          }
+        }
+      _ => ()
+    }
+    if replaced {
+      continue
+    }
+    normalized.push(errors[i])
+    i += 1
+  }
+  normalized
+}
+
+///|
 fn Parser::is_module_file(self : Parser, file_name : String) -> Bool {
   for module_file in self.module_files {
     if source_file_key_matches(module_file, file_name) {
@@ -1782,37 +2264,7 @@ fn Parser::target_is_es2017_or_later(self : Parser) -> Bool {
   if self.es2018_syntax_target {
     return true
   }
-  for line in self.source_text.to_string().split("\n") {
-    let trimmed = line.trim()
-    if trimmed == "" {
-      continue
-    }
-    if trimmed.has_prefix("// @target:") || trimmed.has_prefix("//@target:") {
-      return trimmed.contains("es2017") ||
-        trimmed.contains("ES2017") ||
-        trimmed.contains("es2018") ||
-        trimmed.contains("ES2018") ||
-        trimmed.contains("es2019") ||
-        trimmed.contains("ES2019") ||
-        trimmed.contains("es2020") ||
-        trimmed.contains("ES2020") ||
-        trimmed.contains("es2021") ||
-        trimmed.contains("ES2021") ||
-        trimmed.contains("es2022") ||
-        trimmed.contains("ES2022") ||
-        trimmed.contains("es2023") ||
-        trimmed.contains("ES2023") ||
-        trimmed.contains("es2024") ||
-        trimmed.contains("ES2024") ||
-        trimmed.contains("esnext") ||
-        trimmed.contains("ESNEXT")
-    }
-    if trimmed.has_prefix("//") {
-      continue
-    }
-    break
-  }
-  false
+  parse_setting_is_es2017_or_later(self.language_target)
 }
 
 ///|
@@ -1928,6 +2380,290 @@ fn is_js_source_file(file_name : String) -> Bool {
   file_name.has_suffix(".jsx") ||
   file_name.has_suffix(".mjs") ||
   file_name.has_suffix(".cjs")
+}
+
+///|
+fn file_name_is_declaration_source(file_name : String) -> Bool {
+  file_name.has_suffix(".d.ts") ||
+  file_name.has_suffix(".d.mts") ||
+  file_name.has_suffix(".d.cts")
+}
+
+///|
+fn script_kind_supports_jsx(script_kind : ScriptKind) -> Bool {
+  match script_kind {
+    ScriptKind::Tsx | ScriptKind::Jsx => true
+    _ => false
+  }
+}
+
+///|
+fn script_kind_is_js_like(script_kind : ScriptKind) -> Bool {
+  match script_kind {
+    ScriptKind::Js | ScriptKind::Jsx => true
+    _ => false
+  }
+}
+
+///|
+fn infer_script_kind(file_name : String) -> ScriptKind {
+  if file_name.has_suffix(".tsx") {
+    return ScriptKind::Tsx
+  }
+  if file_name.has_suffix(".jsx") {
+    return ScriptKind::Jsx
+  }
+  if file_name.has_suffix(".d.ts") ||
+    file_name.has_suffix(".d.mts") ||
+    file_name.has_suffix(".d.cts") {
+    return ScriptKind::Dts
+  }
+  if file_name.has_suffix(".json") {
+    return ScriptKind::Json
+  }
+  if file_name.has_suffix(".js") ||
+    file_name.has_suffix(".mjs") ||
+    file_name.has_suffix(".cjs") {
+    return ScriptKind::Js
+  }
+  ScriptKind::Ts
+}
+
+///|
+fn with_jsx_script_kind(script_kind : ScriptKind) -> ScriptKind {
+  match script_kind {
+    ScriptKind::Js | ScriptKind::Jsx => ScriptKind::Jsx
+    _ => ScriptKind::Tsx
+  }
+}
+
+///|
+fn without_jsx_script_kind(script_kind : ScriptKind) -> ScriptKind {
+  match script_kind {
+    ScriptKind::Js | ScriptKind::Jsx => ScriptKind::Js
+    ScriptKind::Dts => ScriptKind::Dts
+    ScriptKind::Json => ScriptKind::Json
+    _ => ScriptKind::Ts
+  }
+}
+
+///|
+fn infer_virtual_script_kind(
+  default_kind : ScriptKind,
+  virtual_file_markers : Array[(Int, String)],
+) -> ScriptKind {
+  for marker in virtual_file_markers {
+    let (_, file_name) = marker
+    return infer_script_kind(file_name)
+  }
+  default_kind
+}
+
+///|
+fn virtual_file_markers_support_jsx(
+  virtual_file_markers : Array[(Int, String)],
+) -> Bool {
+  for marker in virtual_file_markers {
+    let (_, file_name) = marker
+    if script_kind_supports_jsx(infer_script_kind(file_name)) {
+      return true
+    }
+  }
+  false
+}
+
+///|
+fn virtual_file_markers_are_js_like(
+  virtual_file_markers : Array[(Int, String)],
+) -> Bool {
+  for marker in virtual_file_markers {
+    let (_, file_name) = marker
+    if script_kind_is_js_like(infer_script_kind(file_name)) {
+      return true
+    }
+  }
+  false
+}
+
+///|
+fn module_kind_is_none(module_kind : String?) -> Bool {
+  match module_kind {
+    Some(kind) => string_eq_ascii_ignore_case(kind, "none")
+    None => false
+  }
+}
+
+///|
+fn parse_setting_is_es2015_or_later(value : String?) -> Bool {
+  match value {
+    Some(text) =>
+      text.contains("es6") ||
+      text.contains("ES6") ||
+      text.contains("es2015") ||
+      text.contains("ES2015") ||
+      text.contains("esnext") ||
+      text.contains("ESNext") ||
+      text.contains("ESNEXT") ||
+      text.contains("es20") ||
+      text.contains("ES20")
+    None => false
+  }
+}
+
+///|
+fn parse_setting_is_es2017_or_later(value : String?) -> Bool {
+  match value {
+    Some(text) =>
+      text.contains("es2017") ||
+      text.contains("ES2017") ||
+      text.contains("es2018") ||
+      text.contains("ES2018") ||
+      text.contains("es2019") ||
+      text.contains("ES2019") ||
+      text.contains("es2020") ||
+      text.contains("ES2020") ||
+      text.contains("es2021") ||
+      text.contains("ES2021") ||
+      text.contains("es2022") ||
+      text.contains("ES2022") ||
+      text.contains("es2023") ||
+      text.contains("ES2023") ||
+      text.contains("es2024") ||
+      text.contains("ES2024") ||
+      text.contains("esnext") ||
+      text.contains("ESNext") ||
+      text.contains("ESNEXT")
+    None => false
+  }
+}
+
+///|
+fn parse_setting_is_es2018_or_later(value : String?) -> Bool {
+  match value {
+    Some(text) =>
+      text.contains("es2018") ||
+      text.contains("ES2018") ||
+      text.contains("es2019") ||
+      text.contains("ES2019") ||
+      text.contains("es2020") ||
+      text.contains("ES2020") ||
+      text.contains("es2021") ||
+      text.contains("ES2021") ||
+      text.contains("es2022") ||
+      text.contains("ES2022") ||
+      text.contains("es2023") ||
+      text.contains("ES2023") ||
+      text.contains("es2024") ||
+      text.contains("ES2024") ||
+      text.contains("esnext") ||
+      text.contains("ESNext") ||
+      text.contains("ESNEXT")
+    None => false
+  }
+}
+
+///|
+fn parse_setting_is_es_module_target(
+  language_target : String?,
+  module_kind : String?,
+) -> Bool {
+  match module_kind {
+    Some(kind) => parse_setting_is_es2015_or_later(Some(kind))
+    None => parse_setting_is_es2015_or_later(language_target)
+  }
+}
+
+///|
+fn parse_settings_enable_es_syntax(
+  language_target : String?,
+  module_kind : String?,
+) -> Bool {
+  if parse_setting_is_es2015_or_later(language_target) {
+    return true
+  }
+  parse_setting_is_es2015_or_later(module_kind)
+}
+
+///|
+fn parse_settings_enable_es2018_syntax(
+  language_target : String?,
+  module_kind : String?,
+) -> Bool {
+  if parse_setting_is_es2018_or_later(language_target) {
+    return true
+  }
+  parse_setting_is_es2018_or_later(module_kind)
+}
+
+///|
+fn source_file_is_external_module(
+  module_files : Array[String],
+  file_name : String,
+) -> Bool {
+  for module_file in module_files {
+    if source_file_key_matches(module_file, file_name) {
+      return true
+    }
+  }
+  false
+}
+
+///|
+fn token_kind_starts_binding_decl(kind : TokenKind?) -> Bool {
+  match kind {
+    Some(TokenKind::Ident(_))
+    | Some(TokenKind::Keyword(_))
+    | Some(TokenKind::LBrace)
+    | Some(TokenKind::LBracket) => true
+    _ => false
+  }
+}
+
+///|
+fn var_kind_requires_initializer(kind : VarKind) -> Bool {
+  match kind {
+    VarKind::Const | VarKind::Using | VarKind::AwaitUsing => true
+    _ => false
+  }
+}
+
+///|
+fn var_kind_missing_initializer_message(kind : VarKind) -> String {
+  match kind {
+    VarKind::Const => "'const' declarations must be initialized."
+    VarKind::Using => "'using' declarations must be initialized."
+    VarKind::AwaitUsing => "'await using' declarations must be initialized."
+    _ => "'const' declarations must be initialized."
+  }
+}
+
+///|
+fn var_kind_single_stmt_decl_error(
+  kind : VarKind,
+  pos : Position,
+) -> (Position, String)? {
+  match kind {
+    VarKind::Let =>
+      Some((pos, "'let' declarations can only be declared inside a block."))
+    VarKind::Const =>
+      Some((pos, "'const' declarations can only be declared inside a block."))
+    VarKind::Using =>
+      Some((pos, "'using' declarations can only be declared inside a block."))
+    VarKind::AwaitUsing =>
+      Some(
+        (pos, "'await using' declarations can only be declared inside a block."),
+      )
+    _ => None
+  }
+}
+
+///|
+fn source_name_option(file_name : String) -> String? {
+  if file_name == "" {
+    None
+  } else {
+    Some(file_name)
+  }
 }
 
 ///|
@@ -2509,16 +3245,6 @@ fn Parser::record_class_strict_reserved_identifier_error_if_needed(
 }
 
 ///|
-fn Parser::should_report_optional_index_signature_param_error(
-  self : Parser,
-  pos : Position,
-) -> Bool {
-  ignore(self)
-  ignore(pos)
-  true
-}
-
-///|
 fn Parser::should_check_strict_reserved_identifier_here(self : Parser) -> Bool {
   if self.index <= 0 {
     return true
@@ -2640,18 +3366,17 @@ fn Parser::record_missing_unary_operand_if_any(
 ///|
 fn stmt_has_runtime_value(stmt : Stmt) -> Bool {
   match stmt.kind {
-    StmtKind::VarDecl(_)
-    | StmtKind::FunctionDecl(_)
-    | StmtKind::ClassDecl(_)
-    | StmtKind::EnumDecl(_)
-    | StmtKind::NamespaceDecl(_) => true
+    StmtKind::TypeAliasDecl(_) | StmtKind::InterfaceDecl(_) | StmtKind::Empty =>
+      false
+    StmtKind::NamespaceDecl(decl) => block_has_erasable_runtime_value(decl.body)
     StmtKind::ExportDecl(decl) =>
       match decl {
         ExportDecl::Named(named) => !named.is_type_only
         ExportDecl::Default(_) | ExportDecl::Assign(_) => true
         ExportDecl::Declaration(inner) => stmt_has_runtime_value(inner)
       }
-    _ => false
+    StmtKind::ImportDecl(import_decl) => !import_decl.is_type_only
+    _ => true
   }
 }
 
@@ -2678,12 +3403,7 @@ fn stmt_has_erasable_runtime_value(stmt : Stmt) -> Bool {
         ExportDecl::Default(_) | ExportDecl::Assign(_) => true
       }
     StmtKind::ImportDecl(import_decl) => !import_decl.is_type_only
-    StmtKind::ImportAssign(_)
-    | StmtKind::VarDecl(_)
-    | StmtKind::FunctionDecl(_)
-    | StmtKind::ClassDecl(_)
-    | StmtKind::EnumDecl(_) => true
-    _ => false
+    _ => true
   }
 }
 
@@ -2769,6 +3489,25 @@ fn make_function_type_node(
 }
 
 ///|
+fn make_constructor_type_node(
+  type_params : Array[TypeParam],
+  params : Array[Param],
+  ret : TypeNode,
+  span : Span,
+  is_abstract : Bool,
+) -> TypeNode {
+  {
+    kind: TypeKind::Constructor({
+      type_params,
+      params,
+      return_type: ret,
+      is_abstract,
+    }),
+    span,
+  }
+}
+
+///|
 fn make_any_type_node(span : Span) -> TypeNode {
   { kind: TypeKind::Ident("any"), span }
 }
@@ -2829,6 +3568,11 @@ fn type_node_is_function_returning_void(type_ann : TypeNode) -> Bool {
 fn type_node_references_ident(type_ann : TypeNode, name : String) -> Bool {
   match type_ann.kind {
     TypeKind::Ident(found) | TypeKind::TypeQuery(found) => found == name
+    TypeKind::ImportType(import_type) =>
+      match import_type.qualifier {
+        Some(found) => found == name
+        None => false
+      }
     TypeKind::Literal(_) => false
     TypeKind::Tuple(types)
     | TypeKind::Union(types)
@@ -2848,6 +3592,51 @@ fn type_node_references_ident(type_ann : TypeNode, name : String) -> Bool {
       }
       false
     }
+    TypeKind::MappedType(mapped_type) =>
+      mapped_type_references_ident(mapped_type, name)
+    TypeKind::TemplateLiteral(template_type) => {
+      for ty in template_type.types {
+        if type_node_references_ident(ty, name) {
+          return true
+        }
+      }
+      false
+    }
+    TypeKind::InferType(infer_type) =>
+      match infer_type.type_param.constraint {
+        Some(constraint) => type_node_references_ident(constraint, name)
+        None => false
+      }
+    TypeKind::Constructor(constructor_type) => {
+      for type_param in constructor_type.type_params {
+        match type_param.constraint {
+          Some(constraint) =>
+            if type_node_references_ident(constraint, name) {
+              return true
+            }
+          None => ()
+        }
+        match type_param.default_type {
+          Some(default_type) =>
+            if type_node_references_ident(default_type, name) {
+              return true
+            }
+          None => ()
+        }
+      }
+      for param in constructor_type.params {
+        match param.type_ann {
+          Some(param_type) =>
+            if type_node_references_ident(param_type, name) {
+              return true
+            }
+          None => ()
+        }
+      }
+      type_node_references_ident(constructor_type.return_type, name)
+    }
+    TypeKind::Parenthesized(parenthesized_type) =>
+      type_node_references_ident(parenthesized_type.inner, name)
     TypeKind::Conditional(check_ty, extends_ty, true_ty, false_ty) =>
       type_node_references_ident(check_ty, name) ||
       type_node_references_ident(extends_ty, name) ||
@@ -2962,6 +3751,72 @@ fn type_node_contains_recursive_promise_reference(
       }
       false
     }
+    TypeKind::ImportType(import_type) => {
+      for arg in import_type.type_args {
+        if type_node_contains_recursive_promise_reference(arg, alias_name) {
+          return true
+        }
+      }
+      false
+    }
+    TypeKind::MappedType(mapped_type) =>
+      mapped_type_contains_recursive_promise_reference(mapped_type, alias_name)
+    TypeKind::TemplateLiteral(template_type) => {
+      for ty in template_type.types {
+        if type_node_contains_recursive_promise_reference(ty, alias_name) {
+          return true
+        }
+      }
+      false
+    }
+    TypeKind::InferType(infer_type) =>
+      match infer_type.type_param.constraint {
+        Some(constraint) =>
+          type_node_contains_recursive_promise_reference(constraint, alias_name)
+        None => false
+      }
+    TypeKind::Constructor(constructor_type) => {
+      for type_param in constructor_type.type_params {
+        match type_param.constraint {
+          Some(constraint) =>
+            if type_node_contains_recursive_promise_reference(
+                constraint, alias_name,
+              ) {
+              return true
+            }
+          None => ()
+        }
+        match type_param.default_type {
+          Some(default_type) =>
+            if type_node_contains_recursive_promise_reference(
+                default_type, alias_name,
+              ) {
+              return true
+            }
+          None => ()
+        }
+      }
+      for param in constructor_type.params {
+        match param.type_ann {
+          Some(param_type) =>
+            if type_node_contains_recursive_promise_reference(
+                param_type, alias_name,
+              ) {
+              return true
+            }
+          None => ()
+        }
+      }
+      type_node_contains_recursive_promise_reference(
+        constructor_type.return_type,
+        alias_name,
+      )
+    }
+    TypeKind::Parenthesized(parenthesized_type) =>
+      type_node_contains_recursive_promise_reference(
+        parenthesized_type.inner,
+        alias_name,
+      )
     TypeKind::Conditional(check_ty, extends_ty, true_ty, false_ty) =>
       type_node_contains_recursive_promise_reference(check_ty, alias_name) ||
       type_node_contains_recursive_promise_reference(extends_ty, alias_name) ||
@@ -3951,6 +4806,18 @@ fn Parser::eat_ident_name(self : Parser, name : String) -> Bool {
 }
 
 ///|
+fn Parser::expect_ident_name(
+  self : Parser,
+  name : String,
+) -> Token raise ParseError {
+  if self.check_ident_name(name) {
+    self.advance()
+  } else {
+    raise self.expected_error(self.current().span.start, name, true)
+  }
+}
+
+///|
 fn Parser::expect_member_name(self : Parser) -> (String, Span) raise ParseError {
   let token = self.current()
   match token.kind {
@@ -3971,6 +4838,146 @@ fn Parser::expect_member_name(self : Parser) -> (String, Span) raise ParseError 
       (keyword_to_string(kw), token.span)
     }
     _ => raise self.expected_error(token.span.start, "member name", false)
+  }
+}
+
+///|
+fn Parser::parse_member_name_atom(
+  self : Parser,
+) -> (MemberName, Span, Bool) raise ParseError {
+  let token = self.current()
+  let hash = self.current_hash_rescan()
+  if hash.kind == HashRescanKind::PrivateIdent {
+    let name = match hash.name {
+      Some(name) => name
+      None => ""
+    }
+    ignore(self.advance())
+    return (MemberName::Private(name), token.span, false)
+  }
+  match token.kind {
+    TokenKind::Ident(name) => {
+      ignore(self.advance())
+      (MemberName::Ident(name), token.span, true)
+    }
+    TokenKind::String(name) => {
+      ignore(self.advance())
+      (MemberName::String(name), token.span, false)
+    }
+    TokenKind::Number(name) => {
+      ignore(self.advance())
+      let (resolved_name, span) = self.consume_split_bigint_property_suffix_if_needed(
+        name,
+        token.span,
+        true,
+      )
+      (MemberName::Number(resolved_name), span, false)
+    }
+    TokenKind::Keyword(kw) => {
+      ignore(self.advance())
+      (MemberName::Ident(keyword_to_string(kw)), token.span, true)
+    }
+    _ => raise self.expected_error(token.span.start, "member name", false)
+  }
+}
+
+///|
+fn Parser::member_name_text_from_span(self : Parser, span : Span) -> String {
+  if span.end.offset <= span.start.offset + 1 {
+    ""
+  } else {
+    self.source_text
+    .view(start_offset=span.start.offset + 1, end_offset=span.end.offset - 1)
+    .to_string()
+  }
+}
+
+///|
+fn member_name_is_ident(name : MemberName, expected : String) -> Bool {
+  match name {
+    MemberName::Ident(found) => found == expected
+    _ => false
+  }
+}
+
+///|
+fn mapped_type_references_ident(
+  mapped_type : MappedType,
+  name : String,
+) -> Bool {
+  if type_node_references_ident(mapped_type.source_type, name) {
+    return true
+  }
+  match mapped_type.name_type {
+    Some(name_type) =>
+      if type_node_references_ident(name_type, name) {
+        return true
+      }
+    None => ()
+  }
+  match mapped_type.value_type {
+    Some(value_type) => type_node_references_ident(value_type, name)
+    None => false
+  }
+}
+
+///|
+fn mapped_type_contains_recursive_promise_reference(
+  mapped_type : MappedType,
+  alias_name : String,
+) -> Bool {
+  if type_node_contains_recursive_promise_reference(
+      mapped_type.source_type,
+      alias_name,
+    ) {
+    return true
+  }
+  match mapped_type.name_type {
+    Some(name_type) =>
+      if type_node_contains_recursive_promise_reference(name_type, alias_name) {
+        return true
+      }
+    None => ()
+  }
+  match mapped_type.value_type {
+    Some(value_type) =>
+      type_node_contains_recursive_promise_reference(value_type, alias_name)
+    None => false
+  }
+}
+
+///|
+fn token_kind_is_member_name(kind : TokenKind?) -> Bool {
+  match kind {
+    Some(TokenKind::Ident(_))
+    | Some(TokenKind::PrivateIdent(_))
+    | Some(TokenKind::Keyword(_))
+    | Some(TokenKind::String(_))
+    | Some(TokenKind::Number(_)) => true
+    _ => false
+  }
+}
+
+///|
+fn Parser::parse_member_prop_after_dot(
+  self : Parser,
+) -> (MemberProp, Span) raise ParseError {
+  let token = self.current()
+  let hash = self.current_hash_rescan()
+  if hash.kind == HashRescanKind::PrivateIdent {
+    let name = match hash.name {
+      Some(name) => name
+      None => ""
+    }
+    ignore(self.advance())
+    return (MemberProp::Private(name), token.span)
+  }
+  match token.kind {
+    TokenKind::Ident(_) | TokenKind::Keyword(_) => {
+      let (name, span) = self.parse_ident_name()
+      (MemberProp::Ident(name), span)
+    }
+    _ => raise self.expected_error(token.span.start, "identifier", false)
   }
 }
 
@@ -4089,8 +5096,9 @@ fn Parser::record_self_referencing_reference_path_errors_if_needed(
 ///|
 fn Parser::parse_program(self : Parser) -> (ArrayView[ParseError], Program) {
   let stmts : Array[Stmt] = []
+  let mut in_directive_prologue = true
   while !self.at_end() {
-    stmts.push(self.parse_stmt()) catch {
+    let stmt = self.parse_stmt() catch {
       err => {
         let mut expected_left_brace = false
         let mut expected_left_brace_line = 0
@@ -4139,8 +5147,23 @@ fn Parser::parse_program(self : Parser) -> (ArrayView[ParseError], Program) {
           ignore(self.advance())
         }
         ignore(self.eat(TokenKind::Semicolon))
+        continue
       }
     }
+    if in_directive_prologue {
+      match stmt.kind {
+        StmtKind::ExprStmt(expr) =>
+          match expr.kind {
+            ExprKind::String(text) =>
+              if text == "use strict" {
+                self.strict_mode = true
+              }
+            _ => in_directive_prologue = false
+          }
+        _ => in_directive_prologue = false
+      }
+    }
+    stmts.push(stmt)
   }
   self.record_self_referencing_reference_path_errors_if_needed()
   for pos in self.pending_isolated_namespace_error_positions {
@@ -4665,6 +5688,44 @@ fn Parser::parse_class_member_decorator(
 }
 
 ///|
+fn decorator_exprs(decorators : Array[(Expr, Position)]) -> Array[Expr] {
+  let exprs : Array[Expr] = []
+  for decorator in decorators {
+    let (expr, _) = decorator
+    exprs.push(expr)
+  }
+  exprs
+}
+
+///|
+fn Parser::class_name_for_decorator(self : Parser) -> String {
+  match self.current().kind {
+    TokenKind::Ident(name) => name
+    TokenKind::Keyword(kw) => keyword_to_string(kw)
+    TokenKind::Number(name) => name
+    _ => "Object"
+  }
+}
+
+///|
+fn Parser::record_class_decorator_usage_errors(
+  self : Parser,
+  decorators : Array[(Expr, Position)],
+) -> Unit {
+  let class_name = self.class_name_for_decorator()
+  for decorator in decorators {
+    let (expr, at_pos) = decorator
+    self.record_decorator_usage_error_if_needed(
+      expr,
+      at_pos,
+      1,
+      "class",
+      class_name~,
+    )
+  }
+}
+
+///|
 fn Parser::eat_declare_modifier(self : Parser) -> Bool {
   let token = self.current()
   let is_declare = match token.kind {
@@ -4707,23 +5768,7 @@ fn Parser::eat_export_modifiers(self : Parser) -> Array[(String, Position)] {
 fn single_stmt_decl_error_in_context(stmt : Stmt) -> (Position, String)? {
   match stmt.kind {
     StmtKind::VarDecl(decl) =>
-      match decl.kind {
-        VarKind::Let =>
-          Some(
-            (
-              stmt.span.start,
-              "'let' declarations can only be declared inside a block.",
-            ),
-          )
-        VarKind::Const =>
-          Some(
-            (
-              stmt.span.start,
-              "'const' declarations can only be declared inside a block.",
-            ),
-          )
-        _ => None
-      }
+      var_kind_single_stmt_decl_error(decl.kind, stmt.span.start)
     StmtKind::TypeAliasDecl(_) => {
       let pos = stmt.span.start
       Some(
@@ -4759,84 +5804,6 @@ fn Parser::record_const_decl_in_single_stmt_context_if_needed(
       self.record_ts_error(pos, 1156, message)
     }
     None => ()
-  }
-  match self.single_stmt_using_decl_error_in_context(stmt) {
-    Some(error_info) => {
-      let (pos, message) = error_info
-      self.record_ts_error(pos, 1156, message)
-    }
-    None => ()
-  }
-}
-
-///|
-fn source_has_keyword_prefix_at_offset(
-  source : StringView,
-  start_offset : Int,
-  keyword : String,
-) -> Bool {
-  if start_offset < 0 || start_offset >= source.length() {
-    return false
-  }
-  let keyword_len = keyword[:].length()
-  let view = source.view(start_offset~)
-  if !view.has_prefix(keyword) {
-    return false
-  }
-  let end_offset = start_offset + keyword_len
-  if end_offset < source.length() && is_identifier_part_char(source[end_offset]) {
-    return false
-  }
-  true
-}
-
-///|
-fn Parser::single_stmt_using_decl_error_in_context(
-  self : Parser,
-  stmt : Stmt,
-) -> (Position, String)? {
-  match stmt.kind {
-    StmtKind::Labeled(labeled) =>
-      self.single_stmt_using_decl_error_in_context(labeled.stmt)
-    _ => {
-      let start = stmt.span.start
-      let start_offset = start.offset
-      if source_has_keyword_prefix_at_offset(
-          self.source_text,
-          start_offset,
-          "using",
-        ) {
-        return Some(
-          (start, "'using' declarations can only be declared inside a block."),
-        )
-      }
-      if source_has_keyword_prefix_at_offset(
-          self.source_text,
-          start_offset,
-          "await",
-        ) {
-        let mut using_offset = start_offset + 5
-        while using_offset < self.source_text.length() &&
-              (
-                self.source_text[using_offset] == ' ' ||
-                self.source_text[using_offset] == '\t'
-              ) {
-          using_offset += 1
-        }
-        if source_has_keyword_prefix_at_offset(
-            self.source_text,
-            using_offset,
-            "using",
-          ) {
-          return Some(
-            (
-              start, "'await using' declarations can only be declared inside a block.",
-            ),
-          )
-        }
-      }
-      None
-    }
   }
 }
 
@@ -5125,13 +6092,6 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
         )
       }
     }
-    if self.ambient_context_depth > 0 {
-      self.record_ts_error(
-        self.previous().span.start,
-        1038,
-        "A 'declare' modifier cannot be used in an already ambient context.",
-      )
-    }
     self.ambient_context_depth += 1
     if self.eat_declare_modifier() {
       self.record_ts_error(
@@ -5176,7 +6136,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
       let declare_pos = self.previous().span.start
       if parse_exported_decl_without_export_context_diag {
         ignore(self.expect_keyword(Keyword::Export))
-        let stmt = self.parse_exported_declaration() catch {
+        let stmt = self.parse_exported_declaration(leading_decorators) catch {
           err => {
             self.ambient_context_depth -= 1
             raise err
@@ -5185,7 +6145,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
         self.ambient_context_depth -= 1
         return stmt
       }
-      let stmt = self.parse_export_decl() catch {
+      let stmt = self.parse_export_decl(leading_decorators) catch {
         err => {
           self.ambient_context_depth -= 1
           raise err
@@ -5205,7 +6165,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
       self.ambient_context_depth -= 1
       return stmt
     }
-    let stmt = self.parse_exported_declaration() catch {
+    let stmt = self.parse_exported_declaration(leading_decorators) catch {
       err => {
         self.ambient_context_depth -= 1
         raise err
@@ -5240,7 +6200,11 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
         class_name=class_name_for_decorator,
       )
     }
-    return self.parse_class_decl(start, true)
+    return self.parse_class_decl(
+      start,
+      true,
+      decorator_exprs(leading_decorators),
+    )
   }
   if self.check_keyword(Keyword::Default) {
     let default_span = self.advance().span
@@ -5279,7 +6243,13 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
           class_name=class_name_for_decorator,
         )
       }
-      let (decl, span) = self.parse_class_decl_value(start, true, true, false)
+      let (decl, span) = self.parse_class_decl_value(
+        start,
+        true,
+        true,
+        false,
+        decorator_exprs(leading_decorators),
+      )
       return { kind: StmtKind::ClassDecl(decl), span }
     }
     if self.check_keyword(Keyword::Class) {
@@ -5300,7 +6270,13 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
           class_name=class_name_for_decorator,
         )
       }
-      let (decl, span) = self.parse_class_decl_value(start, true, false, false)
+      let (decl, span) = self.parse_class_decl_value(
+        start,
+        true,
+        false,
+        false,
+        decorator_exprs(leading_decorators),
+      )
       return { kind: StmtKind::ClassDecl(decl), span }
     }
     if self.check_keyword(Keyword::Function) {
@@ -5573,14 +6549,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
         let body = self.parse_block()
         return { kind: StmtKind::Empty, span: start.merge(body.span) }
       }
-      self.suppress_return_outside_function_depth += 1
-      let body = self.parse_block() catch {
-        err => {
-          self.suppress_return_outside_function_depth -= 1
-          raise err
-        }
-      }
-      self.suppress_return_outside_function_depth -= 1
+      let body = self.parse_block()
       return { kind: StmtKind::Empty, span: start.merge(body.span) }
     }
     let mut end_span = start
@@ -5606,6 +6575,27 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
     self.peek_kind(1) == Some(TokenKind::LParen) {
     return self.parse_with_stmt()
   }
+  if self.check_ident_name("debugger") {
+    return self.parse_debugger_stmt()
+  }
+  if self.check_ident_name("using") &&
+    token_kind_starts_binding_decl(self.peek_kind(1)) {
+    let start = self.advance().span
+    return self.parse_var_decl(VarKind::Using, start)
+  }
+  let starts_await_using = (
+      self.check_keyword(Keyword::Await) || self.check_ident_name("await")
+    ) &&
+    self.peek_kind(1) == Some(TokenKind::Ident("using")) &&
+    token_kind_starts_binding_decl(self.peek_kind(2))
+  if starts_await_using {
+    let start = self.advance().span
+    ignore(self.expect_ident_name("using"))
+    return self.parse_var_decl(
+      VarKind::AwaitUsing,
+      start.merge(self.previous().span),
+    )
+  }
   match self.current().kind {
     TokenKind::Keyword(Keyword::Import) =>
       if self.peek_kind(1) == Some(TokenKind::LParen) {
@@ -5629,15 +6619,12 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
         }
         self.parse_import_decl()
       }
-    TokenKind::Keyword(Keyword::Export) => self.parse_export_decl()
+    TokenKind::Keyword(Keyword::Export) =>
+      self.parse_export_decl(leading_decorators)
     TokenKind::Keyword(Keyword::Let) => {
-      let next_is_binding_start = match self.peek_kind(1) {
-        Some(TokenKind::Ident(_))
-        | Some(TokenKind::Keyword(_))
-        | Some(TokenKind::LBrace)
-        | Some(TokenKind::LBracket) => true
-        _ => false
-      }
+      let next_is_binding_start = token_kind_starts_binding_decl(
+        self.peek_kind(1),
+      )
       if next_is_binding_start {
         let start = self.advance().span
         self.parse_var_decl(VarKind::Let, start)
@@ -5694,20 +6681,6 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
         }
       }
       let stmt = self.parse_function_decl(start)
-      if self.ambient_context_depth > 0 && self.check(TokenKind::Semicolon) {
-        match stmt.kind {
-          StmtKind::FunctionDecl(decl) =>
-            if decl.body.span.start.offset < self.source_text.length() &&
-              self.source_text[decl.body.span.start.offset] == '{' {
-              self.record_ts_error(
-                self.current().span.start,
-                1036,
-                "Statements are not allowed in ambient contexts.",
-              )
-            }
-          _ => ()
-        }
-      }
       stmt
     }
     TokenKind::Keyword(Keyword::Class) => {
@@ -5728,7 +6701,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
           class_name=class_name_for_decorator,
         )
       }
-      self.parse_class_decl(start, false)
+      self.parse_class_decl(start, false, decorator_exprs(leading_decorators))
     }
     TokenKind::Keyword(Keyword::Enum) => {
       let start = self.advance().span
@@ -5772,17 +6745,7 @@ fn Parser::parse_stmt(self : Parser) -> Stmt raise ParseError {
       { kind: StmtKind::Empty, span: token.span }
     }
     TokenKind::Semicolon => {
-      let suppress_ambient_empty_stmt_error = self.semicolon_follows_function_like_body()
       let token = self.advance()
-      if self.ambient_context_depth > 0 &&
-        self.loop_depth == 0 &&
-        !suppress_ambient_empty_stmt_error {
-        self.record_ts_error(
-          token.span.start,
-          1036,
-          "Statements are not allowed in ambient contexts.",
-        )
-      }
       { kind: StmtKind::Empty, span: token.span }
     }
     TokenKind::RBrace => {
@@ -5952,10 +6915,7 @@ fn Parser::parse_var_decl_items(
         self.ambient_initializer_relax_depth == 0 &&
         !self.erasable_syntax_only
       if in_ambient_initializer_context {
-        let is_const_decl = match kind {
-          VarKind::Const => true
-          _ => false
-        }
+        let is_const_decl = kind == VarKind::Const
         let has_type_annotation = type_ann is Some(_)
         if is_const_decl && !has_type_annotation {
           if !is_allowed_ambient_const_initializer(init_expr) {
@@ -5975,10 +6935,7 @@ fn Parser::parse_var_decl_items(
       }
       init = Some(init_expr)
     }
-    let is_const_decl = match kind {
-      VarKind::Const => true
-      _ => false
-    }
+    let requires_initializer = var_kind_requires_initializer(kind)
     let requires_destructuring_initializer = match pattern.kind {
       BindingPatternKind::Object(_) | BindingPatternKind::Array(_) => true
       _ => false
@@ -5994,7 +6951,7 @@ fn Parser::parse_var_decl_items(
         "A destructuring declaration must have an initializer.",
       )
     }
-    if is_const_decl &&
+    if requires_initializer &&
       init is None &&
       !allow_const_without_init &&
       self.ambient_context_depth == 0 &&
@@ -6003,7 +6960,7 @@ fn Parser::parse_var_decl_items(
       self.record_ts_error(
         pattern.span.start,
         1155,
-        "'const' declarations must be initialized.",
+        var_kind_missing_initializer_message(kind),
       )
     }
     let mut end_span = pattern.span
@@ -6017,7 +6974,7 @@ fn Parser::parse_var_decl_items(
     }
     let decl_span = pattern.span.merge(end_span)
     self.register_var_decl_binding(pattern, type_ann, init)
-    if is_const_decl {
+    if kind == VarKind::Const {
       self.register_const_literal_binding_if_needed(pattern, init)
     }
     self.register_satisfies_string_alias_mismatch_candidate_if_needed(
@@ -6415,9 +7372,6 @@ fn Parser::parse_function_decl_value(
     let span = start_span.merge(end_span)
     return ({ name, type_params, params, return_type, body }, span)
   }
-  self.record_ambient_function_body_implementation_error_if_needed(
-    self.current().span.start,
-  )
   if is_async {
     self.async_function_depth += 1
   }
@@ -7048,7 +8002,10 @@ fn Parser::parse_import_spec(self : Parser) -> ImportSpec raise ParseError {
 }
 
 ///|
-fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
+fn Parser::parse_export_decl(
+  self : Parser,
+  leading_decorators : Array[(Expr, Position)],
+) -> Stmt raise ParseError {
   let start = self.expect_keyword(Keyword::Export)
   let mut has_export_assignment_modifier = false
   while self.check_keyword(Keyword::Export) {
@@ -7181,8 +8138,13 @@ fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
       self.peek_kind(1) == Some(TokenKind::Keyword(Keyword::Class)) {
       ignore(self.advance())
       let class_start = self.expect_keyword(Keyword::Class).span
+      self.record_class_decorator_usage_errors(leading_decorators)
       let (decl, decl_span) = self.parse_class_decl_value(
-        class_start, true, true, false,
+        class_start,
+        true,
+        true,
+        false,
+        decorator_exprs(leading_decorators),
       )
       let mut end_span = decl_span
       if self.eat(TokenKind::Semicolon) {
@@ -7215,8 +8177,13 @@ fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
     }
     if self.check_keyword(Keyword::Class) {
       let class_start = self.advance().span
+      self.record_class_decorator_usage_errors(leading_decorators)
       let (decl, decl_span) = self.parse_class_decl_value(
-        class_start, true, false, false,
+        class_start,
+        true,
+        false,
+        false,
+        decorator_exprs(leading_decorators),
       )
       let mut end_span = decl_span
       if self.eat(TokenKind::Semicolon) {
@@ -7410,12 +8377,14 @@ fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
   }
   let mut named_type_only = false
   if self.check_keyword(Keyword::Type) &&
-    self.peek_kind(1) == Some(TokenKind::LBrace) {
+    (
+      self.peek_kind(1) == Some(TokenKind::LBrace) ||
+      self.peek_kind(1) == Some(TokenKind::Star)
+    ) {
     ignore(self.advance())
     named_type_only = true
   }
   if self.eat(TokenKind::Star) {
-    self.mark_module_value_export(start.span.start)
     let star_span = self.previous().span
     let mut as_name : String? = None
     let mut end_span = star_span
@@ -7448,13 +8417,30 @@ fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
     if self.eat(TokenKind::Semicolon) {
       end_span = self.previous().span
     }
+    if named_type_only {
+      let exported_name = match as_name {
+        Some(alias_name) => alias_name
+        None => "*"
+      }
+      self.register_module_type_only_export(
+        exported_name,
+        start.span.start,
+        true,
+      )
+    } else {
+      self.mark_module_value_export(start.span.start)
+    }
     let spec : ExportSpec = {
       is_type_only: false,
       name: "*",
       as_name,
       span: star_span.merge(end_span),
     }
-    let named = { is_type_only: false, specs: [spec], from: from_source }
+    let named = {
+      is_type_only: named_type_only,
+      specs: [spec],
+      from: from_source,
+    }
     let span = start.span.merge(end_span)
     return { kind: StmtKind::ExportDecl(ExportDecl::Named(named)), span }
   }
@@ -7641,7 +8627,11 @@ fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
     )
     let class_start = self.advance().span
     let (decl, decl_span) = self.parse_class_decl_value(
-      class_start, true, false, false,
+      class_start,
+      true,
+      false,
+      false,
+      [],
     )
     self.mark_module_value_export(start.span.start)
     let class_stmt : Stmt = { kind: StmtKind::ClassDecl(decl), span: decl_span }
@@ -7667,16 +8657,9 @@ fn Parser::parse_export_decl(self : Parser) -> Stmt raise ParseError {
   }
   let pushed_ambient = self.check_ident_name("declare")
   if pushed_ambient {
-    if self.ambient_context_depth > 0 {
-      self.record_ts_error(
-        self.current().span.start,
-        1038,
-        "A 'declare' modifier cannot be used in an already ambient context.",
-      )
-    }
     self.ambient_context_depth += 1
   }
-  let decl = self.parse_exported_declaration() catch {
+  let decl = self.parse_exported_declaration(leading_decorators) catch {
     err => {
       if pushed_ambient {
         self.ambient_context_depth -= 1
@@ -7832,7 +8815,10 @@ fn Parser::parse_export_spec(self : Parser) -> ExportSpec raise ParseError {
 }
 
 ///|
-fn Parser::parse_exported_declaration(self : Parser) -> Stmt raise ParseError {
+fn Parser::parse_exported_declaration(
+  self : Parser,
+  leading_decorators : Array[(Expr, Position)],
+) -> Stmt raise ParseError {
   if self.eat_declare_modifier() && self.eat_declare_modifier() {
     self.record_ts_error(
       self.previous().span.start,
@@ -7876,7 +8862,12 @@ fn Parser::parse_exported_declaration(self : Parser) -> Stmt raise ParseError {
     self.peek_kind(1) == Some(TokenKind::Keyword(Keyword::Class)) {
     ignore(self.advance())
     let start = self.expect_keyword(Keyword::Class).span
-    return self.parse_class_decl(start, true)
+    self.record_class_decorator_usage_errors(leading_decorators)
+    return self.parse_class_decl(
+      start,
+      true,
+      decorator_exprs(leading_decorators),
+    )
   }
   match self.current().kind {
     TokenKind::Keyword(Keyword::Let) => {
@@ -7902,7 +8893,8 @@ fn Parser::parse_exported_declaration(self : Parser) -> Stmt raise ParseError {
     }
     TokenKind::Keyword(Keyword::Class) => {
       let start = self.advance().span
-      self.parse_class_decl(start, false)
+      self.record_class_decorator_usage_errors(leading_decorators)
+      self.parse_class_decl(start, false, decorator_exprs(leading_decorators))
     }
     TokenKind::Keyword(Keyword::Enum) => {
       let start = self.advance().span
@@ -8037,9 +9029,10 @@ fn Parser::parse_class_decl(
   self : Parser,
   start_span : Span,
   is_abstract_class : Bool,
+  decorators : Array[Expr],
 ) -> Stmt raise ParseError {
   let (decl, span) = self.parse_class_decl_value(
-    start_span, false, is_abstract_class, false,
+    start_span, false, is_abstract_class, false, decorators,
   )
   { kind: StmtKind::ClassDecl(decl), span }
 }
@@ -8051,6 +9044,7 @@ fn Parser::parse_class_decl_value(
   allow_anonymous : Bool,
   is_abstract_class : Bool,
   is_class_expression : Bool,
+  decorators : Array[Expr],
 ) -> (ClassDecl, Span) raise ParseError {
   let mut name : String? = None
   let mut type_params : Array[TypeParam] = []
@@ -8232,11 +9226,16 @@ fn Parser::parse_class_decl_value(
     }
     if self.check_keyword(Keyword::Static) &&
       self.peek_kind(1) == Some(TokenKind::LBrace) {
-      ignore(self.advance())
-      self.record_ambient_implementation_error_if_needed(
-        self.current().span.start,
-      )
-      ignore(self.parse_block())
+      let start = self.advance().span
+      let block = self.parse_block()
+      members.push({
+        kind: ClassMemberKind::StaticBlock(block),
+        decorators: [],
+        is_static: true,
+        access: None,
+        is_readonly: false,
+        span: start.merge(block.span),
+      })
       continue
     }
     members.push(
@@ -8391,7 +9390,7 @@ fn Parser::parse_class_decl_value(
   }
   self.class_header_context_depth -= 1
   let span = start_span.merge(end_span)
-  ({ name, type_params, extends, implements, members, span }, span)
+  ({ name, decorators, type_params, extends, implements, members, span }, span)
 }
 
 ///|
@@ -8400,11 +9399,8 @@ fn Parser::consume_class_member_terminator(
   fallback_span : Span,
   allow_missing_body : Bool,
 ) -> Span {
-  let require_body = !allow_missing_body
+  ignore(allow_missing_body)
   if self.check(TokenKind::RBrace) {
-    if require_body {
-      self.record_ts_error(fallback_span.start, 1005, "'{' expected.")
-    }
     return self.current().span
   }
   if self.check(TokenKind::Semicolon) {
@@ -8416,50 +9412,44 @@ fn Parser::consume_class_member_terminator(
     self.record_ts_error(comma.start, 1144, "'{' or ';' expected.")
     return comma
   }
-  let next_is_member_start = self.check(TokenKind::LBracket) ||
-    self.current().kind is TokenKind::Ident(_) ||
-    self.current().kind is TokenKind::Keyword(_) ||
-    self.current().kind is TokenKind::String(_) ||
-    self.current().kind is TokenKind::Number(_)
-  let next_is_index_signature_member_start = if self.check(TokenKind::LBracket) {
-    let index_name_like = self.peek_kind(1) is Some(TokenKind::Ident(_)) ||
-      self.peek_kind(1) is Some(TokenKind::Keyword(_))
-    let optional_index_param = index_name_like &&
-      self.peek_kind(2) == Some(TokenKind::Question) &&
-      self.peek_kind(3) == Some(TokenKind::Colon)
-    let required_index_param = index_name_like &&
-      self.peek_kind(2) == Some(TokenKind::Colon)
-    optional_index_param || required_index_param
-  } else {
-    false
-  }
-  if require_body &&
-    next_is_member_start &&
-    self.current().span.start.line > fallback_span.end.line &&
-    !next_is_index_signature_member_start {
-    self.record_ts_error(fallback_span.start, 1005, "'{' expected.")
-  }
   fallback_span
 }
 
 ///|
 fn token_kind_matches_class_member_name(
   kind : TokenKind?,
-  expected : String,
+  expected : MemberName,
 ) -> Bool {
-  match kind {
-    Some(TokenKind::Ident(name)) => name == expected
-    Some(TokenKind::Keyword(kw)) => keyword_to_string(kw) == expected
-    Some(TokenKind::String(name)) => name == expected
-    Some(TokenKind::Number(name)) => name == expected
-    _ => false
+  match expected {
+    MemberName::Ident(expected_name) =>
+      match kind {
+        Some(TokenKind::Ident(name)) => name == expected_name
+        Some(TokenKind::Keyword(kw)) => keyword_to_string(kw) == expected_name
+        _ => false
+      }
+    MemberName::String(expected_name) =>
+      match kind {
+        Some(TokenKind::String(name)) => name == expected_name
+        _ => false
+      }
+    MemberName::Number(expected_name) =>
+      match kind {
+        Some(TokenKind::Number(name)) => name == expected_name
+        _ => false
+      }
+    MemberName::Private(expected_name) =>
+      match kind {
+        Some(TokenKind::PrivateIdent(name)) => name == expected_name
+        _ => false
+      }
+    MemberName::Computed(_) => false
   }
 }
 
 ///|
 fn Parser::next_class_member_likely_method_overload(
   self : Parser,
-  member_name : String,
+  member_name : MemberName,
 ) -> Bool {
   let mut offset = 0
   while true {
@@ -8511,6 +9501,7 @@ fn Parser::parse_class_member(
   is_abstract_class : Bool,
   disallow_member_decorators : Bool,
 ) -> ClassMember raise ParseError {
+  ignore(is_abstract_class)
   let start_span = self.current().span
   let member_decorators : Array[(Expr, Position)] = []
   while self.check(TokenKind::At) {
@@ -8522,6 +9513,7 @@ fn Parser::parse_class_member(
       self.record_ts_error(at_pos, 1206, "Decorators are not valid here.")
     }
   }
+  let member_decorator_exprs = decorator_exprs(member_decorators)
   if self.check_keyword(Keyword::Try) {
     self.record_ts_error(
       self.current().span.start,
@@ -8557,7 +9549,8 @@ fn Parser::parse_class_member(
       end_span = self.previous().span
     }
     return {
-      kind: ClassMemberKind::Field("_", None, None),
+      kind: ClassMemberKind::Field(MemberName::Ident("_"), None, None),
+      decorators: member_decorator_exprs,
       is_static: false,
       access: None,
       is_readonly: false,
@@ -8569,7 +9562,6 @@ fn Parser::parse_class_member(
   let mut is_abstract_member = false
   let mut is_declared_member = false
   let mut is_async_member = false
-  let mut abstract_modifier_pos : Position? = None
   let mut access : AccessModifier? = None
   let mut accessor : String? = None
   let mut last_modifier_end : Position? = None
@@ -8608,13 +9600,6 @@ fn Parser::parse_class_member(
         continue
       }
       TokenKind::Ident("declare") => {
-        if self.ambient_context_depth > 0 {
-          self.record_ts_error(
-            self.current().span.start,
-            1038,
-            "A 'declare' modifier cannot be used in an already ambient context.",
-          )
-        }
         ignore(self.advance())
         is_declared_member = true
         last_modifier_end = Some(self.previous().span.end)
@@ -8681,8 +9666,7 @@ fn Parser::parse_class_member(
           Some(TokenKind::Keyword(Keyword::Var)) ||
           self.peek_kind(1) == Some(TokenKind::Keyword(Keyword::Let)) ||
           self.peek_kind(1) == Some(TokenKind::Keyword(Keyword::Const))
-        let next_is_member_name = self.peek_kind(1) is Some(TokenKind::Ident(_)) ||
-          self.peek_kind(1) is Some(TokenKind::Keyword(_)) ||
+        let next_is_member_name = token_kind_is_member_name(self.peek_kind(1)) ||
           self.peek_kind(1) == Some(TokenKind::LBracket) ||
           self.peek_kind(1) == Some(TokenKind::LBrace)
         if next_is_variable_keyword {
@@ -8704,30 +9688,18 @@ fn Parser::parse_class_member(
         }
       }
       TokenKind::Ident("override") =>
-        match self.peek_kind(1) {
-          Some(TokenKind::Ident(_))
-          | Some(TokenKind::Keyword(_))
-          | Some(TokenKind::String(_))
-          | Some(TokenKind::Number(_))
-          | Some(TokenKind::LBracket) => {
-            ignore(self.advance())
-            last_modifier_end = Some(self.previous().span.end)
-            continue
-          }
-          _ => ()
+        if token_kind_is_member_name(self.peek_kind(1)) ||
+          self.peek_kind(1) == Some(TokenKind::LBracket) {
+          ignore(self.advance())
+          last_modifier_end = Some(self.previous().span.end)
+          continue
         }
       TokenKind::Ident("accessor") =>
-        match self.peek_kind(1) {
-          Some(TokenKind::Ident(_))
-          | Some(TokenKind::Keyword(_))
-          | Some(TokenKind::String(_))
-          | Some(TokenKind::Number(_))
-          | Some(TokenKind::LBracket) => {
-            ignore(self.advance())
-            last_modifier_end = Some(self.previous().span.end)
-            continue
-          }
-          _ => ()
+        if token_kind_is_member_name(self.peek_kind(1)) ||
+          self.peek_kind(1) == Some(TokenKind::LBracket) {
+          ignore(self.advance())
+          last_modifier_end = Some(self.previous().span.end)
+          continue
         }
       TokenKind::Keyword(Keyword::Abstract) => {
         let abstract_token = self.current()
@@ -8738,9 +9710,6 @@ fn Parser::parse_class_member(
         }
         if !same_line_with_next {
           break
-        }
-        if !is_abstract_member {
-          abstract_modifier_pos = Some(self.current().span.start)
         }
         ignore(self.advance())
         is_abstract_member = true
@@ -8787,32 +9756,20 @@ fn Parser::parse_class_member(
         continue
       }
       TokenKind::Keyword(Keyword::Get) =>
-        match self.peek_kind(1) {
-          Some(TokenKind::Ident(_))
-          | Some(TokenKind::Keyword(_))
-          | Some(TokenKind::String(_))
-          | Some(TokenKind::Number(_))
-          | Some(TokenKind::LBracket) => {
-            ignore(self.advance())
-            accessor = Some("get")
-            last_modifier_end = Some(self.previous().span.end)
-            continue
-          }
-          _ => ()
+        if token_kind_is_member_name(self.peek_kind(1)) ||
+          self.peek_kind(1) == Some(TokenKind::LBracket) {
+          ignore(self.advance())
+          accessor = Some("get")
+          last_modifier_end = Some(self.previous().span.end)
+          continue
         }
       TokenKind::Keyword(Keyword::Set) =>
-        match self.peek_kind(1) {
-          Some(TokenKind::Ident(_))
-          | Some(TokenKind::Keyword(_))
-          | Some(TokenKind::String(_))
-          | Some(TokenKind::Number(_))
-          | Some(TokenKind::LBracket) => {
-            ignore(self.advance())
-            accessor = Some("set")
-            last_modifier_end = Some(self.previous().span.end)
-            continue
-          }
-          _ => ()
+        if token_kind_is_member_name(self.peek_kind(1)) ||
+          self.peek_kind(1) == Some(TokenKind::LBracket) {
+          ignore(self.advance())
+          accessor = Some("set")
+          last_modifier_end = Some(self.previous().span.end)
+          continue
         }
       _ => ()
     }
@@ -8855,7 +9812,8 @@ fn Parser::parse_class_member(
       )
       ignore(self.advance())
       if self.current().kind is TokenKind::Ident(_) ||
-        self.current().kind is TokenKind::Keyword(_) {
+        self.current().kind is TokenKind::Keyword(_) ||
+        self.current().kind is TokenKind::PrivateIdent(_) {
         ignore(self.advance())
         if self.check(TokenKind::LParen) {
           self.record_ts_error(self.current().span.start, 1005, "',' expected.")
@@ -8884,13 +9842,7 @@ fn Parser::parse_class_member(
   let allow_missing_body = self.ambient_context_depth > 0 || is_abstract_member
   let is_generator_member = self.eat(TokenKind::Star)
   let is_name_start = self.check(TokenKind::LBracket) ||
-    (match self.current().kind {
-      TokenKind::Ident(_)
-      | TokenKind::Keyword(_)
-      | TokenKind::String(_)
-      | TokenKind::Number(_) => true
-      _ => false
-    })
+    token_kind_is_member_name(Some(self.current().kind))
   if !is_name_start {
     if self.check(TokenKind::LBrace) {
       match last_modifier_end {
@@ -8984,7 +9936,8 @@ fn Parser::parse_class_member(
       end_span = self.previous().span
     }
     return {
-      kind: ClassMemberKind::Field("_", None, None),
+      kind: ClassMemberKind::Field(MemberName::Ident("_"), None, None),
+      decorators: member_decorator_exprs,
       is_static,
       access,
       is_readonly,
@@ -8994,48 +9947,22 @@ fn Parser::parse_class_member(
   let mut is_plain_name = false
   let mut has_complex_computed_name = false
   let mut is_index_signature_member = false
-  let mut index_param_count_error = false
   let (name, name_span) = if self.check(TokenKind::LBracket) {
     let index_name_like = self.peek_kind(1) is Some(TokenKind::Ident(_)) ||
       self.peek_kind(1) is Some(TokenKind::Keyword(_))
     let is_mapped_type_member = index_name_like &&
       is_mapped_type_in_token_kind(self.peek_kind(2))
-    if !is_mapped_type_member {
-      self.record_index_signature_accessibility_modifier_error_if_needed()
-      self.record_index_signature_rest_param_error_if_needed()
-      index_param_count_error = self.record_index_signature_param_count_error_if_needed()
-    }
     let optional_index_param = index_name_like &&
       self.peek_kind(2) == Some(TokenKind::Question) &&
       self.peek_kind(3) == Some(TokenKind::Colon)
     let required_index_param = index_name_like &&
       self.peek_kind(2) == Some(TokenKind::Colon)
     is_index_signature_member = optional_index_param || required_index_param
-    if optional_index_param {
-      let question_pos = match self.peek(2) {
-        Some(token) => token.span.start
-        None => self.current().span.start
-      }
-      if self.should_report_optional_index_signature_param_error(question_pos) {
-        self.record_ts_error(
-          question_pos, 1019, "An index signature parameter cannot have a question mark.",
-        )
-      }
-    }
+    ignore(is_mapped_type_member)
     has_complex_computed_name = if is_index_signature_member {
       false
     } else {
       self.is_complex_computed_name()
-    }
-    if is_index_signature_member &&
-      !optional_index_param &&
-      !index_param_count_error &&
-      self.peek_kind_after_matching_bracket() != Some(TokenKind::Colon) {
-      self.record_ts_error(
-        self.current().span.start,
-        1021,
-        "An index signature must have a type annotation.",
-      )
     }
     let (computed_name_error_code, computed_name_error_message) = if is_index_signature_member {
       (1020, "An index signature parameter cannot have an initializer.")
@@ -9044,22 +9971,14 @@ fn Parser::parse_class_member(
         1166, "A computed property name in a class property declaration must have a simple literal type or a 'unique symbol' type.",
       )
     }
-    self.parse_bracket_member_name_with_computed_name_error(
+    let (_, span) = self.parse_bracket_member_name_with_computed_name_error(
       computed_name_error_code, computed_name_error_message,
     )
+    (MemberName::Computed(self.member_name_text_from_span(span)), span)
   } else {
-    let token = self.current()
-    let (found, raw_span) = self.expect_member_name()
-    let (resolved_name, span) = self.consume_split_bigint_property_suffix_if_needed(
-      found,
-      raw_span,
-      token.kind is TokenKind::Number(_),
-    )
-    match token.kind {
-      TokenKind::Ident(_) | TokenKind::Keyword(_) => is_plain_name = true
-      _ => ()
-    }
-    (resolved_name, span)
+    let (parsed_name, span, plain_name) = self.parse_member_name_atom()
+    is_plain_name = plain_name
+    (parsed_name, span)
   }
   let mut name_end_span = name_span
   let mut definite_assignment_bang_pos : Position? = None
@@ -9070,7 +9989,9 @@ fn Parser::parse_class_member(
     name_end_span = self.previous().span
     definite_assignment_bang_pos = Some(self.previous().span.start)
   }
-  if accessor is None && is_plain_name && name == "constructor" {
+  if accessor is None &&
+    is_plain_name &&
+    member_name_is_ident(name, "constructor") {
     if !is_static &&
       (self.check(TokenKind::LParen) || self.check(TokenKind::Lt)) {
       if self.check(TokenKind::Lt) {
@@ -9106,9 +10027,6 @@ fn Parser::parse_class_member(
         }
       }
       let body : Block = if self.check(TokenKind::LBrace) {
-        self.record_ambient_function_body_implementation_error_if_needed(
-          self.current().span.start,
-        )
         self.parse_block_in_function_context()
       } else {
         let end_span = self.consume_class_member_terminator(
@@ -9120,6 +10038,7 @@ fn Parser::parse_class_member(
       let span = start_span.merge(body.span)
       return {
         kind: ClassMemberKind::Constructor(params, body),
+        decorators: member_decorator_exprs,
         is_static,
         access,
         is_readonly,
@@ -9131,15 +10050,6 @@ fn Parser::parse_class_member(
     }
   }
   if accessor == Some("get") {
-    if is_abstract_member && !is_abstract_class {
-      match abstract_modifier_pos {
-        Some(pos) =>
-          self.record_ts_error(
-            pos, 1244, "Abstract methods can only appear within an abstract class.",
-          )
-        None => ()
-      }
-    }
     let params = self.parse_params(false)
     if params.length() > 0 {
       self.record_ts_error(
@@ -9155,14 +10065,8 @@ fn Parser::parse_class_member(
       )
     }
     let body : Block = if self.check(TokenKind::LBrace) {
-      self.record_ambient_function_body_implementation_error_if_needed(
-        self.current().span.start,
-      )
       self.parse_block_in_function_context()
     } else {
-      if !allow_missing_body && self.check(TokenKind::Semicolon) {
-        self.record_ts_error(self.current().span.start, 1005, "'{' expected.")
-      }
       let end_span = self.consume_class_member_terminator(
         self.previous().span,
         allow_missing_body,
@@ -9178,6 +10082,7 @@ fn Parser::parse_class_member(
     }
     return {
       kind: ClassMemberKind::Getter(name, return_type, body),
+      decorators: member_decorator_exprs,
       is_static,
       access,
       is_readonly,
@@ -9185,15 +10090,6 @@ fn Parser::parse_class_member(
     }
   }
   if accessor == Some("set") {
-    if is_abstract_member && !is_abstract_class {
-      match abstract_modifier_pos {
-        Some(pos) =>
-          self.record_ts_error(
-            pos, 1244, "Abstract methods can only appear within an abstract class.",
-          )
-        None => ()
-      }
-    }
     let params = self.parse_params(false)
     if params.length() > 0 {
       match params[0].default_value {
@@ -9229,14 +10125,8 @@ fn Parser::parse_class_member(
       )
     }
     let body : Block = if self.check(TokenKind::LBrace) {
-      self.record_ambient_function_body_implementation_error_if_needed(
-        self.current().span.start,
-      )
       self.parse_block_in_function_context()
     } else {
-      if !allow_missing_body && self.check(TokenKind::Semicolon) {
-        self.record_ts_error(self.current().span.start, 1005, "'{' expected.")
-      }
       let end_span = self.consume_class_member_terminator(
         self.previous().span,
         allow_missing_body,
@@ -9264,6 +10154,7 @@ fn Parser::parse_class_member(
     }
     return {
       kind: ClassMemberKind::Setter(name, param, body),
+      decorators: member_decorator_exprs,
       is_static,
       access,
       is_readonly,
@@ -9272,15 +10163,6 @@ fn Parser::parse_class_member(
   }
   ignore(self.parse_type_params(false))
   if self.check(TokenKind::LParen) {
-    if is_abstract_member && !is_abstract_class {
-      match abstract_modifier_pos {
-        Some(pos) =>
-          self.record_ts_error(
-            pos, 1244, "Abstract methods can only appear within an abstract class.",
-          )
-        None => ()
-      }
-    }
     let params = self.parse_params(false)
     let mut return_type : TypeNode? = None
     if self.eat(TokenKind::Colon) {
@@ -9301,9 +10183,6 @@ fn Parser::parse_class_member(
       return_type = Some(parsed_return_type)
     }
     let body : Block = if self.check(TokenKind::LBrace) {
-      self.record_ambient_function_body_implementation_error_if_needed(
-        self.current().span.start,
-      )
       if is_async_member {
         self.async_function_depth += 1
       }
@@ -9333,6 +10212,7 @@ fn Parser::parse_class_member(
         self.previous().span.end.line &&
         (
           self.current().kind is TokenKind::Ident(_) ||
+          self.current().kind is TokenKind::PrivateIdent(_) ||
           self.current().kind is TokenKind::Keyword(_) ||
           self.current().kind is TokenKind::String(_) ||
           self.current().kind is TokenKind::Number(_) ||
@@ -9358,6 +10238,7 @@ fn Parser::parse_class_member(
     }
     return {
       kind: ClassMemberKind::Method(name, params, return_type, body),
+      decorators: member_decorator_exprs,
       is_static,
       access,
       is_readonly,
@@ -9399,14 +10280,8 @@ fn Parser::parse_class_member(
     end_span = self.previous().span
   }
   let next_is_member_start = self.check(TokenKind::LBracket) ||
-    (match self.current().kind {
-      TokenKind::Ident(_)
-      | TokenKind::Keyword(_)
-      | TokenKind::String(_)
-      | TokenKind::Number(_) => true
-      _ => false
-    })
-  let looks_like_async_method_head = name == "async" &&
+    token_kind_is_member_name(Some(self.current().kind))
+  let looks_like_async_method_head = member_name_is_ident(name, "async") &&
     next_is_member_start &&
     (
       self.peek_kind(1) == Some(TokenKind::LParen) ||
@@ -9426,7 +10301,7 @@ fn Parser::parse_class_member(
   }
   let suppress_computed_name_type_error = disallow_member_decorators &&
     !member_decorators.is_empty()
-  if name == "[computed]" &&
+  if name is MemberName::Computed(_) &&
     has_complex_computed_name &&
     !is_index_signature_member &&
     !suppress_computed_name_type_error {
@@ -9442,17 +10317,9 @@ fn Parser::parse_class_member(
       self.record_decorator_usage_error_if_needed(expr, at_pos, 2, "property")
     }
   }
-  if is_abstract_member && !is_abstract_class {
-    match abstract_modifier_pos {
-      Some(pos) =>
-        self.record_ts_error(
-          pos, 1253, "Abstract properties can only appear within an abstract class.",
-        )
-      None => ()
-    }
-  }
   {
     kind: ClassMemberKind::Field(name, type_ann, init),
+    decorators: member_decorator_exprs,
     is_static,
     access,
     is_readonly,
@@ -10162,13 +11029,6 @@ fn Parser::parse_block_in_function_context(
 ) -> Block raise ParseError {
   let saved_class_header_context_depth = self.class_header_context_depth
   let saved_strict_mode = self.strict_mode
-  let suppress_ambient_statement_error = if self.pending_ambient_function_block_stmt_suppressions >
-    0 {
-    self.pending_ambient_function_block_stmt_suppressions -= 1
-    true
-  } else {
-    false
-  }
   if saved_class_header_context_depth > 0 {
     self.class_header_context_depth = 0
     self.class_strict_context_depth += 1
@@ -10195,15 +11055,6 @@ fn Parser::parse_block_in_function_context(
   }
   self.class_header_context_depth = saved_class_header_context_depth
   self.strict_mode = saved_strict_mode
-  if self.ambient_context_depth > 0 &&
-    !block.stmts.is_empty() &&
-    !suppress_ambient_statement_error {
-    self.record_ts_error(
-      block.stmts[0].span.start,
-      1036,
-      "Statements are not allowed in ambient contexts.",
-    )
-  }
   block
 }
 
@@ -10281,14 +11132,6 @@ fn Parser::parse_block(self : Parser) -> Block raise ParseError {
 ///|
 fn Parser::parse_return_stmt(self : Parser) -> Stmt raise ParseError {
   let start = self.expect_keyword(Keyword::Return)
-  if self.function_depth == 0 &&
-    self.suppress_return_outside_function_depth == 0 {
-    self.record_ts_error(
-      start.span.start,
-      1108,
-      "A 'return' statement can only be used within a function body.",
-    )
-  }
   let mut value : Expr? = None
   if !self.check(TokenKind::Semicolon) &&
     !self.check(TokenKind::RBrace) &&
@@ -10361,59 +11204,20 @@ fn Parser::parse_if_stmt(self : Parser) -> Stmt raise ParseError {
 ///|
 fn Parser::parse_while_stmt(self : Parser) -> Stmt raise ParseError {
   let start = self.expect_keyword(Keyword::While)
-  if self.ambient_context_depth > 0 {
-    self.record_ts_error(
-      start.span.start,
-      1036,
-      "Statements are not allowed in ambient contexts.",
-    )
-  }
   ignore(self.expect(TokenKind::LParen, "'('"))
   let condition = self.parse_expression()
   self.record_void_truthiness_error_if_needed(condition)
   ignore(self.expect_rparen_or_record_error())
-  self.loop_depth += 1
-  self.breakable_depth += 1
-  self.loop_function_depth_stack.push(self.function_depth)
-  self.breakable_function_depth_stack.push(self.function_depth)
-  let body = self.parse_stmt() catch {
-    err => {
-      self.breakable_depth -= 1
-      self.loop_depth -= 1
-      ignore(self.loop_function_depth_stack.pop())
-      ignore(self.breakable_function_depth_stack.pop())
-      raise err
-    }
-  }
+  let body = self.parse_stmt()
   self.record_const_decl_in_single_stmt_context_if_needed(body)
-  self.breakable_depth -= 1
-  self.loop_depth -= 1
-  ignore(self.loop_function_depth_stack.pop())
-  ignore(self.breakable_function_depth_stack.pop())
   { kind: StmtKind::While(condition, body), span: start.span.merge(body.span) }
 }
 
 ///|
 fn Parser::parse_do_while_stmt(self : Parser) -> Stmt raise ParseError {
   let start = self.expect_keyword(Keyword::Do)
-  self.loop_depth += 1
-  self.breakable_depth += 1
-  self.loop_function_depth_stack.push(self.function_depth)
-  self.breakable_function_depth_stack.push(self.function_depth)
-  let body = self.parse_stmt() catch {
-    err => {
-      self.breakable_depth -= 1
-      self.loop_depth -= 1
-      ignore(self.loop_function_depth_stack.pop())
-      ignore(self.breakable_function_depth_stack.pop())
-      raise err
-    }
-  }
+  let body = self.parse_stmt()
   self.record_const_decl_in_single_stmt_context_if_needed(body)
-  self.breakable_depth -= 1
-  self.loop_depth -= 1
-  ignore(self.loop_function_depth_stack.pop())
-  ignore(self.breakable_function_depth_stack.pop())
   ignore(self.expect_keyword(Keyword::While))
   ignore(self.expect(TokenKind::LParen, "'('"))
   let condition = self.parse_expression()
@@ -10425,6 +11229,23 @@ fn Parser::parse_do_while_stmt(self : Parser) -> Stmt raise ParseError {
   {
     kind: StmtKind::DoWhile({ body, condition }),
     span: start.span.merge(end_span),
+  }
+}
+
+///|
+fn empty_element_access_error_pos(expr : Expr) -> Position? {
+  match expr.kind {
+    ExprKind::Member({ property: MemberProp::Expr(prop), computed: true, .. }) =>
+      match prop.kind {
+        ExprKind::Ident(name) =>
+          if name == "" {
+            Some(prop.span.start)
+          } else {
+            None
+          }
+        _ => None
+      }
+    _ => None
   }
 }
 
@@ -10525,24 +11346,8 @@ fn Parser::parse_for_stmt(self : Parser) -> Stmt raise ParseError {
             )
             ignore(self.advance())
           }
-          self.loop_depth += 1
-          self.breakable_depth += 1
-          self.loop_function_depth_stack.push(self.function_depth)
-          self.breakable_function_depth_stack.push(self.function_depth)
-          let body = self.parse_stmt() catch {
-            err => {
-              self.breakable_depth -= 1
-              self.loop_depth -= 1
-              ignore(self.loop_function_depth_stack.pop())
-              ignore(self.breakable_function_depth_stack.pop())
-              raise err
-            }
-          }
+          let body = self.parse_stmt()
           self.record_const_decl_in_single_stmt_context_if_needed(body)
-          self.breakable_depth -= 1
-          self.loop_depth -= 1
-          ignore(self.loop_function_depth_stack.pop())
-          ignore(self.breakable_function_depth_stack.pop())
           return {
             kind: StmtKind::For({
               init: Some(ForInit::Var(decl)),
@@ -10616,24 +11421,8 @@ fn Parser::parse_for_stmt(self : Parser) -> Stmt raise ParseError {
               offset += 1
             }
           }
-          self.loop_depth += 1
-          self.breakable_depth += 1
-          self.loop_function_depth_stack.push(self.function_depth)
-          self.breakable_function_depth_stack.push(self.function_depth)
-          let body = self.parse_stmt() catch {
-            err => {
-              self.breakable_depth -= 1
-              self.loop_depth -= 1
-              ignore(self.loop_function_depth_stack.pop())
-              ignore(self.breakable_function_depth_stack.pop())
-              raise err
-            }
-          }
+          let body = self.parse_stmt()
           self.record_const_decl_in_single_stmt_context_if_needed(body)
-          self.breakable_depth -= 1
-          self.loop_depth -= 1
-          ignore(self.loop_function_depth_stack.pop())
-          ignore(self.breakable_function_depth_stack.pop())
           match second_comma_pos {
             Some(pos) => self.record_ts_error(pos, 1005, "',' expected.")
             None => ()
@@ -10732,25 +11521,18 @@ fn Parser::parse_for_stmt(self : Parser) -> Stmt raise ParseError {
         Some(expr) => expr
         None => self.parse_expression()
       }
-      ignore(self.expect_rparen_or_record_error())
-      self.loop_depth += 1
-      self.breakable_depth += 1
-      self.loop_function_depth_stack.push(self.function_depth)
-      self.breakable_function_depth_stack.push(self.function_depth)
-      let body = self.parse_stmt() catch {
-        err => {
-          self.breakable_depth -= 1
-          self.loop_depth -= 1
-          ignore(self.loop_function_depth_stack.pop())
-          ignore(self.breakable_function_depth_stack.pop())
-          raise err
-        }
+      match empty_element_access_error_pos(right) {
+        Some(pos) =>
+          if !self.has_ts_error(pos, 1011) {
+            self.record_ts_error(
+              pos, 1011, "An element access expression should take an argument.",
+            )
+          }
+        None => ()
       }
+      ignore(self.expect_rparen_or_record_error())
+      let body = self.parse_stmt()
       self.record_const_decl_in_single_stmt_context_if_needed(body)
-      self.breakable_depth -= 1
-      self.loop_depth -= 1
-      ignore(self.loop_function_depth_stack.pop())
-      ignore(self.breakable_function_depth_stack.pop())
       let span = start.span.merge(body.span)
       if is_for_of {
         return { kind: StmtKind::ForOf({ left, right, body }), span }
@@ -10771,24 +11553,8 @@ fn Parser::parse_for_stmt(self : Parser) -> Stmt raise ParseError {
     update = Some(self.parse_expression())
   }
   ignore(self.expect_rparen_or_record_error())
-  self.loop_depth += 1
-  self.breakable_depth += 1
-  self.loop_function_depth_stack.push(self.function_depth)
-  self.breakable_function_depth_stack.push(self.function_depth)
-  let body = self.parse_stmt() catch {
-    err => {
-      self.breakable_depth -= 1
-      self.loop_depth -= 1
-      ignore(self.loop_function_depth_stack.pop())
-      ignore(self.breakable_function_depth_stack.pop())
-      raise err
-    }
-  }
+  let body = self.parse_stmt()
   self.record_const_decl_in_single_stmt_context_if_needed(body)
-  self.breakable_depth -= 1
-  self.loop_depth -= 1
-  ignore(self.loop_function_depth_stack.pop())
-  ignore(self.breakable_function_depth_stack.pop())
   {
     kind: StmtKind::For({ init, condition, update, body }),
     span: start.span.merge(body.span),
@@ -10806,8 +11572,6 @@ fn Parser::parse_switch_stmt(self : Parser) -> Stmt raise ParseError {
   let cases : Array[SwitchCase] = []
   let mut saw_default_clause = false
   let mut reported_duplicate_default_clause = false
-  self.breakable_depth += 1
-  self.breakable_function_depth_stack.push(self.function_depth)
   while !self.check(TokenKind::RBrace) && !self.at_end() {
     if self.eat_keyword(Keyword::Case) {
       let case_clause_start = self.previous().span.start
@@ -10820,13 +11584,7 @@ fn Parser::parse_switch_stmt(self : Parser) -> Stmt raise ParseError {
             !self.check_keyword(Keyword::Default) &&
             !self.current_is_escaped_keyword("default") &&
             !self.at_end() {
-        let stmt = self.parse_stmt() catch {
-          err => {
-            self.breakable_depth -= 1
-            ignore(self.breakable_function_depth_stack.pop())
-            raise err
-          }
-        }
+        let stmt = self.parse_stmt()
         consequent.push(stmt)
       }
       if self.current_is_escaped_keyword("case") ||
@@ -10860,13 +11618,7 @@ fn Parser::parse_switch_stmt(self : Parser) -> Stmt raise ParseError {
             !self.check_keyword(Keyword::Default) &&
             !self.current_is_escaped_keyword("default") &&
             !self.at_end() {
-        let stmt = self.parse_stmt() catch {
-          err => {
-            self.breakable_depth -= 1
-            ignore(self.breakable_function_depth_stack.pop())
-            raise err
-          }
-        }
+        let stmt = self.parse_stmt()
         consequent.push(stmt)
       }
       if self.current_is_escaped_keyword("case") ||
@@ -10881,8 +11633,6 @@ fn Parser::parse_switch_stmt(self : Parser) -> Stmt raise ParseError {
       cases.push({ case_expr: None, consequent })
       continue
     }
-    self.breakable_depth -= 1
-    ignore(self.breakable_function_depth_stack.pop())
     raise self.expected_error(
       self.current().span.start,
       "case or default",
@@ -10890,8 +11640,6 @@ fn Parser::parse_switch_stmt(self : Parser) -> Stmt raise ParseError {
     )
   }
   let end = self.expect(TokenKind::RBrace, "'}'")
-  self.breakable_depth -= 1
-  ignore(self.breakable_function_depth_stack.pop())
   let span = start.span.merge(end.span)
   { kind: StmtKind::Switch({ discriminant, cases }), span }
 }
@@ -10899,50 +11647,12 @@ fn Parser::parse_switch_stmt(self : Parser) -> Stmt raise ParseError {
 ///|
 fn Parser::parse_break_stmt(self : Parser) -> Stmt raise ParseError {
   let start = self.expect_keyword(Keyword::Break)
-  let ambient_statement_error = self.ambient_context_depth > 0 &&
-    self.breakable_depth == 0
-  if ambient_statement_error {
-    self.record_ts_error(
-      start.span.start,
-      1036,
-      "Statements are not allowed in ambient contexts.",
-    )
-  }
   let mut label : String? = None
   let mut end_span = start.span
   if self.current().kind is TokenKind::Ident(_) {
     let (name, name_span) = self.expect_ident()
-    match self.find_active_label_function_depth(name) {
-      Some(label_function_depth) =>
-        if label_function_depth < self.function_depth {
-          self.record_ts_error(
-            start.span.start,
-            1107,
-            "Jump target cannot cross function boundary.",
-          )
-        }
-      None =>
-        self.record_ts_error(
-          start.span.start,
-          1116,
-          "A 'break' statement can only jump to a label of an enclosing statement.",
-        )
-    }
     label = Some(name)
     end_span = name_span
-  } else if self.breakable_depth == 0 && !ambient_statement_error {
-    self.record_ts_error(
-      start.span.start,
-      1105,
-      "A 'break' statement can only be used within an enclosing iteration or switch statement.",
-    )
-  } else if !self.has_breakable_in_current_function() &&
-    !ambient_statement_error {
-    self.record_ts_error(
-      start.span.start,
-      1107,
-      "Jump target cannot cross function boundary.",
-    )
   }
   if self.eat(TokenKind::Semicolon) {
     end_span = self.previous().span
@@ -10957,57 +11667,8 @@ fn Parser::parse_continue_stmt(self : Parser) -> Stmt raise ParseError {
   let mut end_span = start.span
   if self.current().kind is TokenKind::Ident(_) {
     let (name, name_span) = self.expect_ident()
-    match self.find_active_label_function_depth(name) {
-      Some(label_function_depth) =>
-        if label_function_depth < self.function_depth {
-          self.record_ts_error(
-            start.span.start,
-            1107,
-            "Jump target cannot cross function boundary.",
-          )
-        } else {
-          match self.find_active_label_targets_iteration(name) {
-            Some(true) => ()
-            _ =>
-              self.record_ts_error(
-                start.span.start,
-                1115,
-                "A 'continue' statement can only jump to a label of an enclosing iteration statement.",
-              )
-          }
-        }
-      None =>
-        self.record_ts_error(
-          start.span.start,
-          1115,
-          "A 'continue' statement can only jump to a label of an enclosing iteration statement.",
-        )
-    }
     label = Some(name)
     end_span = name_span
-  }
-  if label is None {
-    if self.loop_depth == 0 {
-      if self.async_function_depth > 0 {
-        self.record_ts_error(
-          start.span.start,
-          1107,
-          "Jump target cannot cross function boundary.",
-        )
-      } else {
-        self.record_ts_error(
-          start.span.start,
-          1104,
-          "A 'continue' statement can only be used within an enclosing iteration statement.",
-        )
-      }
-    } else if !self.has_iteration_in_current_function() {
-      self.record_ts_error(
-        start.span.start,
-        1107,
-        "Jump target cannot cross function boundary.",
-      )
-    }
   }
   if self.eat(TokenKind::Semicolon) {
     end_span = self.previous().span
@@ -11037,12 +11698,26 @@ fn Parser::parse_throw_stmt(self : Parser) -> Stmt raise ParseError {
 }
 
 ///|
+fn Parser::parse_debugger_stmt(self : Parser) -> Stmt raise ParseError {
+  let start = self.expect_ident_name("debugger")
+  let mut end_span = start.span
+  if self.eat(TokenKind::Semicolon) {
+    end_span = self.previous().span
+  } else if !self.check(TokenKind::RBrace) &&
+    !self.at_end() &&
+    self.current().span.start.line == start.span.end.line {
+    self.record_ts_error(self.current().span.start, 1005, "';' expected.")
+  }
+  { kind: StmtKind::Debugger, span: start.span.merge(end_span) }
+}
+
+///|
 fn Parser::parse_with_stmt(self : Parser) -> Stmt raise ParseError {
   let start = self.current().span
   let source_file = self.source_name_for_position(start.start)
   ignore(self.advance())
   ignore(self.expect(TokenKind::LParen, "'('"))
-  ignore(self.parse_expression())
+  let object = self.parse_expression()
   ignore(self.expect_rparen_or_record_error())
   if self.async_function_depth > 0 && self.with_statement_depth == 0 {
     self.record_ts_error(
@@ -11050,7 +11725,7 @@ fn Parser::parse_with_stmt(self : Parser) -> Stmt raise ParseError {
       1300,
       "'with' statements are not allowed in an async function block.",
     )
-  } else if self.strict_mode &&
+  } else if (self.strict_mode || self.is_module_file(source_file)) &&
     !is_js_source_file(source_file) &&
     self.with_statement_depth == 0 {
     self.record_ts_error(
@@ -11068,7 +11743,7 @@ fn Parser::parse_with_stmt(self : Parser) -> Stmt raise ParseError {
   }
   self.with_statement_depth -= 1
   let span = start.merge(body.span)
-  { kind: StmtKind::Block({ stmts: [body], span }), span }
+  { kind: StmtKind::With({ object, body }), span }
 }
 
 ///|
@@ -11225,9 +11900,6 @@ fn Parser::parse_type_alias(self : Parser) -> Stmt raise ParseError {
     self.record_ts_error(self.current().span.start, 1005, "';' expected.")
   }
   let any_node : TypeNode = { kind: TypeKind::Ident("any"), span: start.span }
-  let saved_type_alias_seen_import_attr_error = self.type_alias_seen_import_attr_error
-  self.type_alias_depth += 1
-  self.type_alias_seen_import_attr_error = false
   self.enter_type_param_scope(type_params)
   let value = try {
     if self.eat(TokenKind::Eq) {
@@ -11271,14 +11943,10 @@ fn Parser::parse_type_alias(self : Parser) -> Stmt raise ParseError {
   } catch {
     err => {
       self.leave_type_param_scope()
-      self.type_alias_depth -= 1
-      self.type_alias_seen_import_attr_error = saved_type_alias_seen_import_attr_error
       raise err
     }
   }
   self.leave_type_param_scope()
-  self.type_alias_depth -= 1
-  self.type_alias_seen_import_attr_error = saved_type_alias_seen_import_attr_error
   let mut end_span = value.span
   if self.check(TokenKind::Dot) ||
     self.check(TokenKind::LParen) ||
@@ -11374,7 +12042,7 @@ fn Parser::is_numeric_enum_member_initializer(
         }
       }
     ExprKind::NonNull(_) => false
-    ExprKind::TypeAssert(_) => false
+    ExprKind::TypeAssert(_) | ExprKind::As(_) | ExprKind::Satisfies(_) => false
     _ => false
   }
 }
@@ -11433,7 +12101,7 @@ fn Parser::is_ambient_enum_member_initializer(
         }
       }
     ExprKind::NonNull(_) => false
-    ExprKind::TypeAssert(_) => false
+    ExprKind::TypeAssert(_) | ExprKind::As(_) | ExprKind::Satisfies(_) => false
     _ => false
   }
 }
@@ -11480,6 +12148,230 @@ fn number_literal_head_before_fraction_or_exponent(value : String) -> String {
     idx += 1
   }
   value.view(end_offset~).to_string()
+}
+
+///|
+fn numeric_separator_is_decimal_digit(ch : UInt16) -> Bool {
+  ch >= '0' && ch <= '9'
+}
+
+///|
+fn numeric_separator_is_binary_digit(ch : UInt16) -> Bool {
+  ch == '0' || ch == '1'
+}
+
+///|
+fn numeric_separator_is_octal_digit(ch : UInt16) -> Bool {
+  ch >= '0' && ch <= '7'
+}
+
+///|
+fn is_digit_in_numeric_separator_fragment(ch : UInt16, base : Int) -> Bool {
+  match base {
+    2 => numeric_separator_is_binary_digit(ch)
+    8 => numeric_separator_is_octal_digit(ch)
+    10 => numeric_separator_is_decimal_digit(ch)
+    16 => hex_digit_value_from_code_unit(ch) is Some(_)
+    _ => false
+  }
+}
+
+///|
+fn position_offset_by_ascii_index(start : Position, index : Int) -> Position {
+  {
+    offset: start.offset + index,
+    line: start.line,
+    column: start.column + index,
+  }
+}
+
+///|
+fn Parser::record_numeric_separator_diagnostics_in_fragment(
+  self : Parser,
+  value : String,
+  start : Position,
+  start_index : Int,
+  end_index : Int,
+  base : Int,
+  leading_zero_decimal_fragment : Bool,
+) -> Unit {
+  if start_index >= end_index {
+    return
+  }
+  let mut allow_separator = false
+  let mut previous_token_separator = false
+  let mut last_char_was_underscore = false
+  let mut last_underscore_had_error = false
+  let mut index = start_index
+  while index < end_index {
+    let ch = value[index]
+    if ch == '_' {
+      let leading_zero_separator = leading_zero_decimal_fragment &&
+        index == start_index + 1 &&
+        value[start_index] == '0'
+      if allow_separator && !leading_zero_separator {
+        allow_separator = false
+        previous_token_separator = true
+        last_underscore_had_error = false
+      } else {
+        let error_code = if previous_token_separator { 6189 } else { 6188 }
+        let error_msg = if previous_token_separator {
+          "Multiple consecutive numeric separators are not permitted."
+        } else {
+          "Numeric separators are not allowed here."
+        }
+        self.record_ts_error(
+          position_offset_by_ascii_index(start, index),
+          error_code,
+          error_msg,
+        )
+        last_underscore_had_error = true
+      }
+      last_char_was_underscore = true
+      index += 1
+      continue
+    }
+    if !is_digit_in_numeric_separator_fragment(ch, base) {
+      break
+    }
+    allow_separator = true
+    previous_token_separator = false
+    last_char_was_underscore = false
+    last_underscore_had_error = false
+    index += 1
+  }
+  if last_char_was_underscore && !last_underscore_had_error {
+    self.record_ts_error(
+      position_offset_by_ascii_index(start, end_index - 1),
+      6188,
+      "Numeric separators are not allowed here.",
+    )
+  }
+}
+
+///|
+fn find_numeric_literal_dot_index(value : String) -> Int? {
+  let mut index = 0
+  while index < value.length() {
+    if value[index] == '.' {
+      return Some(index)
+    }
+    index += 1
+  }
+  None
+}
+
+///|
+fn find_numeric_literal_exponent_index(value : String) -> Int? {
+  let mut index = 0
+  while index < value.length() {
+    if value[index] == 'e' || value[index] == 'E' {
+      return Some(index)
+    }
+    index += 1
+  }
+  None
+}
+
+///|
+fn Parser::record_numeric_separator_diagnostics_if_needed(
+  self : Parser,
+  value : String,
+  span : Span,
+) -> Unit {
+  if !value.contains("_") {
+    return
+  }
+  let core = bigint_core_digits(value)
+  if core == "" {
+    return
+  }
+  if core.has_prefix("0x") || core.has_prefix("0X") {
+    self.record_numeric_separator_diagnostics_in_fragment(
+      core,
+      span.start,
+      2,
+      core.length(),
+      16,
+      false,
+    )
+    return
+  }
+  if core.has_prefix("0b") || core.has_prefix("0B") {
+    self.record_numeric_separator_diagnostics_in_fragment(
+      core,
+      span.start,
+      2,
+      core.length(),
+      2,
+      false,
+    )
+    return
+  }
+  if core.has_prefix("0o") || core.has_prefix("0O") {
+    self.record_numeric_separator_diagnostics_in_fragment(
+      core,
+      span.start,
+      2,
+      core.length(),
+      8,
+      false,
+    )
+    return
+  }
+  let dot_index = find_numeric_literal_dot_index(core)
+  let exponent_index = find_numeric_literal_exponent_index(core)
+  let integer_end = match (dot_index, exponent_index) {
+    (Some(dot), Some(exp)) => if dot < exp { dot } else { exp }
+    (Some(dot), None) => dot
+    (None, Some(exp)) => exp
+    (None, None) => core.length()
+  }
+  if !core.has_prefix(".") {
+    self.record_numeric_separator_diagnostics_in_fragment(
+      core,
+      span.start,
+      0,
+      integer_end,
+      10,
+      true,
+    )
+  }
+  match dot_index {
+    Some(dot) => {
+      let fraction_end = match exponent_index {
+        Some(exp) => if exp > dot { exp } else { core.length() }
+        None => core.length()
+      }
+      self.record_numeric_separator_diagnostics_in_fragment(
+        core,
+        span.start,
+        dot + 1,
+        fraction_end,
+        10,
+        false,
+      )
+    }
+    None => ()
+  }
+  match exponent_index {
+    Some(exp) => {
+      let mut exponent_start = exp + 1
+      if exponent_start < core.length() &&
+        (core[exponent_start] == '+' || core[exponent_start] == '-') {
+        exponent_start += 1
+      }
+      self.record_numeric_separator_diagnostics_in_fragment(
+        core,
+        span.start,
+        exponent_start,
+        core.length(),
+        10,
+        false,
+      )
+    }
+    None => ()
+  }
 }
 
 ///|
@@ -11597,6 +12489,7 @@ fn Parser::record_number_literal_error_if_needed(
   value : String,
   span : Span,
 ) -> Unit {
+  self.record_numeric_separator_diagnostics_if_needed(value, span)
   let source_file = self.source_name_for_position(span.start)
   if is_js_source_file(source_file) {
     return
@@ -11686,6 +12579,7 @@ fn Parser::record_bigint_literal_error_if_needed(
   value : String,
   span : Span,
 ) -> Unit {
+  self.record_numeric_separator_diagnostics_if_needed(value, span)
   if value.has_suffix("n") {
     let core = bigint_core_digits(value)
     let is_hex = core.has_prefix("0x") || core.has_prefix("0X")
@@ -11817,6 +12711,10 @@ fn Parser::record_enum_legacy_octal_error_in_expr(
       self.record_enum_legacy_octal_error_in_expr(inner_expr)
     ExprKind::TypeAssert(type_assert_expr) =>
       self.record_enum_legacy_octal_error_in_expr(type_assert_expr.expr)
+    ExprKind::As(as_expr) =>
+      self.record_enum_legacy_octal_error_in_expr(as_expr.expr)
+    ExprKind::Satisfies(satisfies_expr) =>
+      self.record_enum_legacy_octal_error_in_expr(satisfies_expr.expr)
     ExprKind::Binary(binary_expr) => {
       self.record_enum_legacy_octal_error_in_expr(binary_expr.left)
       self.record_enum_legacy_octal_error_in_expr(binary_expr.right)
@@ -12002,6 +12900,43 @@ fn Parser::parse_enum_decl(
 }
 
 ///|
+fn Parser::consume_misplaced_type_member_body(
+  self : Parser,
+) -> Span raise ParseError {
+  self.record_ts_error(self.current().span.start, 1005, "';' expected.")
+  let body = self.parse_block()
+  self.record_ts_error(
+    self.previous().span.start,
+    1128,
+    "Declaration or statement expected.",
+  )
+  body.span
+}
+
+///|
+fn Parser::consume_misplaced_type_member_initializer(
+  self : Parser,
+  name_span : Span,
+) -> Span {
+  self.record_ts_error(name_span.start, 1131, "Property or signature expected.")
+  let expr = self.parse_expression_no_comma()
+  let mut end_span = expr.span
+  if self.eat(TokenKind::Comma) {
+    let comma = self.previous().span
+    self.record_ts_error(comma.start, 1005, "';' expected.")
+    end_span = comma
+  } else if self.eat(TokenKind::Semicolon) {
+    end_span = self.previous().span
+  }
+  self.record_ts_error(
+    self.current().span.start,
+    1128,
+    "Declaration or statement expected.",
+  )
+  end_span
+}
+
+///|
 fn Parser::parse_interface_decl(self : Parser) -> Stmt raise ParseError {
   let start = self.expect_keyword(Keyword::Interface)
   let mut name = "_"
@@ -12164,7 +13099,7 @@ fn Parser::parse_interface_member(
         )
       }
       return {
-        name: "",
+        name: TypeMemberName::Named(MemberName::Ident("")),
         optional: false,
         type_ann: {
           kind: TypeKind::Ident("any"),
@@ -12193,7 +13128,7 @@ fn Parser::parse_interface_member(
       end_span = self.previous().span
     }
     return {
-      name: "",
+      name: TypeMemberName::Named(MemberName::Ident("")),
       optional: false,
       type_ann: {
         kind: TypeKind::Ident("any"),
@@ -12244,7 +13179,7 @@ fn Parser::parse_interface_member(
           span: start.span,
         }
         {
-          name: "new",
+          name: TypeMemberName::Construct,
           optional: false,
           type_ann,
           span: start.span.merge(end_span),
@@ -12264,11 +13199,14 @@ fn Parser::parse_interface_member(
           start.span.merge(ret_type.span),
         )
         let mut end_span = type_ann.span
+        if self.check(TokenKind::LBrace) {
+          end_span = self.consume_misplaced_type_member_body()
+        }
         if self.eat(TokenKind::Semicolon) || self.eat(TokenKind::Comma) {
           end_span = self.previous().span
         }
         {
-          name: "new",
+          name: TypeMemberName::Construct,
           optional: false,
           type_ann,
           span: start.span.merge(end_span),
@@ -12322,7 +13260,12 @@ fn Parser::parse_interface_member(
             kind: TypeKind::Ident("any"),
             span: question_span,
           }
-          { name: "[call]", optional: false, type_ann, span: end_span }
+          {
+            name: TypeMemberName::Call,
+            optional: false,
+            type_ann,
+            span: end_span,
+          }
         } else {
           let ret_type = match return_type {
             Some(ty) => ty
@@ -12338,10 +13281,18 @@ fn Parser::parse_interface_member(
             ret_type.span,
           )
           let mut end_span = type_ann.span
+          if self.check(TokenKind::LBrace) {
+            end_span = self.consume_misplaced_type_member_body()
+          }
           if self.eat(TokenKind::Semicolon) || self.eat(TokenKind::Comma) {
             end_span = self.previous().span
           }
-          { name: "[call]", optional: false, type_ann, span: end_span }
+          {
+            name: TypeMemberName::Call,
+            optional: false,
+            type_ann,
+            span: end_span,
+          }
         }
       } catch {
         err => {
@@ -12353,16 +13304,12 @@ fn Parser::parse_interface_member(
       return parsed_interface_member
     }
   }
+  let mut parsed_accessor = false
   if self.check_keyword(Keyword::Get) || self.check_keyword(Keyword::Set) {
-    let next_is_name = match self.peek_kind(1) {
-      Some(TokenKind::Ident(_))
-      | Some(TokenKind::Keyword(_))
-      | Some(TokenKind::String(_))
-      | Some(TokenKind::Number(_))
-      | Some(TokenKind::LBracket) => true
-      _ => false
-    }
+    let next_is_name = token_kind_is_member_name(self.peek_kind(1)) ||
+      self.peek_kind(1) == Some(TokenKind::LBracket)
     if next_is_name {
+      parsed_accessor = true
       ignore(self.advance())
     }
   }
@@ -12372,15 +13319,6 @@ fn Parser::parse_interface_member(
       self.peek_kind(1) is Some(TokenKind::Keyword(_))
     let is_mapped_type_member = index_name_like &&
       is_mapped_type_in_token_kind(self.peek_kind(2))
-    if !is_mapped_type_member {
-      self.record_index_signature_accessibility_modifier_error_if_needed()
-      self.record_index_signature_rest_param_error_if_needed()
-    }
-    let index_param_count_error = if is_mapped_type_member {
-      false
-    } else {
-      self.record_index_signature_param_count_error_if_needed()
-    }
     let optional_index_param = index_name_like &&
       self.peek_kind(2) == Some(TokenKind::Question) &&
       self.peek_kind(3) == Some(TokenKind::Colon)
@@ -12388,58 +13326,20 @@ fn Parser::parse_interface_member(
       self.peek_kind(2) == Some(TokenKind::Colon)
     let is_index_signature_member = optional_index_param || required_index_param
     parsed_index_signature_member = is_index_signature_member
-    match leading_index_signature_modifier {
-      Some((modifier_name, modifier_pos)) =>
-        if is_index_signature_member {
-          self.record_ts_error(
-            modifier_pos,
-            1071,
-            "'\{modifier_name}' modifier cannot appear on an index signature.",
-          )
-        }
-      None => ()
-    }
-    let member_type_after_bracket = self.peek_kind_after_matching_bracket()
-    if optional_index_param {
-      let question_pos = match self.peek(2) {
-        Some(token) => token.span.start
-        None => self.current().span.start
-      }
-      if self.should_report_optional_index_signature_param_error(question_pos) {
-        self.record_ts_error(
-          question_pos, 1019, "An index signature parameter cannot have a question mark.",
-        )
-      }
-    }
-    let invalid_index_param_type_error = if is_index_signature_member {
-      self.record_invalid_index_signature_param_type_if_needed()
-    } else {
-      false
-    }
-    if is_index_signature_member &&
-      !optional_index_param &&
-      !index_param_count_error &&
-      !invalid_index_param_type_error &&
-      member_type_after_bracket != Some(TokenKind::Colon) &&
-      member_type_after_bracket != Some(TokenKind::Question) {
-      self.record_ts_error(
-        self.current().span.start,
-        1021,
-        "An index signature must have a type annotation.",
-      )
-    }
-    self.parse_bracket_member_name_with_computed_name_error(
+    ignore(is_mapped_type_member)
+    ignore(leading_index_signature_modifier)
+    let (_, span) = self.parse_bracket_member_name_with_computed_name_error(
       1169, "A computed property name in an interface must refer to an expression whose type is a literal type or a 'unique symbol' type.",
     )
-  } else {
-    let token = self.current()
-    let (member_name, raw_span) = self.expect_member_name()
-    let (resolved_name, member_span) = self.consume_split_bigint_property_suffix_if_needed(
-      member_name,
-      raw_span,
-      token.kind is TokenKind::Number(_),
+    (
+      TypeMemberName::Named(
+        MemberName::Computed(self.member_name_text_from_span(span)),
+      ),
+      span,
     )
-    (resolved_name, member_span)
+  } else {
+    let (parsed_name, member_span, _) = self.parse_member_name_atom()
+    (TypeMemberName::Named(parsed_name), member_span)
   }
   if parsed_index_signature_member && self.eat(TokenKind::Question) {
     let question_span = self.previous().span
@@ -12465,7 +13365,7 @@ fn Parser::parse_interface_member(
       end_span = self.previous().span
     }
     return {
-      name: "",
+      name: TypeMemberName::Named(MemberName::Ident("")),
       optional: false,
       type_ann: {
         kind: TypeKind::Ident("any"),
@@ -12511,14 +13411,11 @@ fn Parser::parse_interface_member(
         name_span.merge(ret_type.span),
       )
       let mut end_span = type_ann.span
-      if self.check(TokenKind::LBrace) {
-        self.record_ts_error(
-          self.current().span.start,
-          1183,
-          "An implementation cannot be declared in ambient contexts.",
-        )
+      if parsed_accessor && self.check(TokenKind::LBrace) {
         let body = self.parse_block_in_function_context()
         end_span = body.span
+      } else if self.check(TokenKind::LBrace) {
+        end_span = self.consume_misplaced_type_member_body()
       }
       if self.eat(TokenKind::Semicolon) || self.eat(TokenKind::Comma) {
         end_span = self.previous().span
@@ -12533,7 +13430,9 @@ fn Parser::parse_interface_member(
     self.leave_type_param_scope()
     return parsed_interface_member
   }
+  let mut has_explicit_type_ann = false
   let type_ann = if self.eat(TokenKind::Colon) {
+    has_explicit_type_ann = true
     self.parse_member_type_with_restricted_multiline_index_postfix()
   } else {
     let span = if optional { self.previous().span } else { name_span }
@@ -12541,15 +13440,16 @@ fn Parser::parse_interface_member(
   }
   let mut end_span = type_ann.span
   if self.eat(TokenKind::Eq) {
-    let expr = self.parse_expression_no_comma()
-    self.record_ts_error(
-      expr.span.start,
-      1246,
-      "An interface property cannot have an initializer.",
-    )
-    end_span = expr.span
-  }
-  if self.eat(TokenKind::Semicolon) || self.eat(TokenKind::Comma) {
+    if has_explicit_type_ann || optional {
+      let expr = self.parse_expression_no_comma()
+      end_span = expr.span
+      if self.eat(TokenKind::Semicolon) || self.eat(TokenKind::Comma) {
+        end_span = self.previous().span
+      }
+    } else {
+      end_span = self.consume_misplaced_type_member_initializer(name_span)
+    }
+  } else if self.eat(TokenKind::Semicolon) || self.eat(TokenKind::Comma) {
     end_span = self.previous().span
   }
   { name, optional, type_ann, span: name_span.merge(end_span) }
@@ -12611,11 +13511,14 @@ fn Parser::parse_type_member(self : Parser) -> TypeMember raise ParseError {
           start.span.merge(ret_type.span),
         )
         let mut end_span = type_ann.span
+        if self.check(TokenKind::LBrace) {
+          end_span = self.consume_misplaced_type_member_body()
+        }
         if self.eat(TokenKind::Semicolon) || self.eat(TokenKind::Comma) {
           end_span = self.previous().span
         }
         {
-          name: "[call]",
+          name: TypeMemberName::Call,
           optional: false,
           type_ann,
           span: start.span.merge(end_span),
@@ -12661,11 +13564,14 @@ fn Parser::parse_type_member(self : Parser) -> TypeMember raise ParseError {
       start.span.merge(ret_type.span),
     )
     let mut end_span = type_ann.span
+    if self.check(TokenKind::LBrace) {
+      end_span = self.consume_misplaced_type_member_body()
+    }
     if self.eat(TokenKind::Semicolon) || self.eat(TokenKind::Comma) {
       end_span = self.previous().span
     }
     return {
-      name: "[call]",
+      name: TypeMemberName::Call,
       optional: false,
       type_ann,
       span: start.span.merge(end_span),
@@ -12707,10 +13613,18 @@ fn Parser::parse_type_member(self : Parser) -> TypeMember raise ParseError {
         start.span.merge(ret_type.span),
       )
       let mut end_span = type_ann.span
+      if self.check(TokenKind::LBrace) {
+        end_span = self.consume_misplaced_type_member_body()
+      }
       if self.eat(TokenKind::Semicolon) || self.eat(TokenKind::Comma) {
         end_span = self.previous().span
       }
-      { name: "new", optional, type_ann, span: start.span.merge(end_span) }
+      {
+        name: TypeMemberName::Construct,
+        optional,
+        type_ann,
+        span: start.span.merge(end_span),
+      }
     } catch {
       err => {
         self.leave_type_param_scope()
@@ -12720,16 +13634,12 @@ fn Parser::parse_type_member(self : Parser) -> TypeMember raise ParseError {
     self.leave_type_param_scope()
     return parsed_type_member
   }
+  let mut parsed_accessor = false
   if self.check_keyword(Keyword::Get) || self.check_keyword(Keyword::Set) {
-    let next_is_name = match self.peek_kind(1) {
-      Some(TokenKind::Ident(_))
-      | Some(TokenKind::Keyword(_))
-      | Some(TokenKind::String(_))
-      | Some(TokenKind::Number(_))
-      | Some(TokenKind::LBracket) => true
-      _ => false
-    }
+    let next_is_name = token_kind_is_member_name(self.peek_kind(1)) ||
+      self.peek_kind(1) == Some(TokenKind::LBracket)
     if next_is_name {
+      parsed_accessor = true
       ignore(self.advance())
     }
   }
@@ -12755,69 +13665,25 @@ fn Parser::parse_type_member(self : Parser) -> TypeMember raise ParseError {
       self.peek_kind(1) is Some(TokenKind::Keyword(_))
     let is_mapped_type_member = index_name_like &&
       is_mapped_type_in_token_kind(self.peek_kind(2))
-    if !is_mapped_type_member {
-      self.record_index_signature_accessibility_modifier_error_if_needed()
-      self.record_index_signature_rest_param_error_if_needed()
-    }
-    let index_param_count_error = if is_mapped_type_member {
-      false
-    } else {
-      self.record_index_signature_param_count_error_if_needed()
-    }
     let optional_index_param = index_name_like &&
       self.peek_kind(2) == Some(TokenKind::Question) &&
       self.peek_kind(3) == Some(TokenKind::Colon)
     let required_index_param = index_name_like &&
       self.peek_kind(2) == Some(TokenKind::Colon)
     let is_index_signature_member = optional_index_param || required_index_param
-    if optional_index_param {
-      let question_pos = match self.peek(2) {
-        Some(token) => token.span.start
-        None => self.current().span.start
-      }
-      if self.should_report_optional_index_signature_param_error(question_pos) {
-        self.record_ts_error(
-          question_pos, 1019, "An index signature parameter cannot have a question mark.",
-        )
-      }
-    }
-    match leading_index_signature_modifier {
-      Some((modifier_name, modifier_pos)) =>
-        if is_index_signature_member {
-          self.record_ts_error(
-            modifier_pos,
-            1071,
-            "'\{modifier_name}' modifier cannot appear on an index signature.",
-          )
-        }
-      None => ()
-    }
-    let invalid_index_param_type_error = if is_index_signature_member {
-      self.record_invalid_index_signature_param_type_if_needed()
-    } else {
-      false
-    }
-    if is_index_signature_member &&
-      !optional_index_param &&
-      !index_param_count_error &&
-      !invalid_index_param_type_error &&
-      self.peek_kind_after_matching_bracket() != Some(TokenKind::Colon) {
-      self.record_ts_error(
-        self.current().span.start,
-        1021,
-        "An index signature must have a type annotation.",
-      )
-    }
-    self.parse_bracket_member_name()
-  } else {
-    let token = self.current()
-    let (member_name, raw_span) = self.expect_member_name()
-    let (resolved_name, member_span) = self.consume_split_bigint_property_suffix_if_needed(
-      member_name,
-      raw_span,
-      token.kind is TokenKind::Number(_),
+    ignore(is_index_signature_member)
+    ignore(is_mapped_type_member)
+    ignore(leading_index_signature_modifier)
+    let (_, span) = self.parse_bracket_member_name()
+    (
+      TypeMemberName::Named(
+        MemberName::Computed(self.member_name_text_from_span(span)),
+      ),
+      span,
     )
-    (resolved_name, member_span)
+  } else {
+    let (parsed_name, member_span, _) = self.parse_member_name_atom()
+    (TypeMemberName::Named(parsed_name), member_span)
   }
   let mut optional = false
   if self.eat(TokenKind::Question) {
@@ -12856,14 +13722,11 @@ fn Parser::parse_type_member(self : Parser) -> TypeMember raise ParseError {
         name_span.merge(ret_type.span),
       )
       let mut end_span = type_ann.span
-      if self.check(TokenKind::LBrace) {
-        self.record_ts_error(
-          self.current().span.start,
-          1183,
-          "An implementation cannot be declared in ambient contexts.",
-        )
+      if parsed_accessor && self.check(TokenKind::LBrace) {
         let body = self.parse_block_in_function_context()
         end_span = body.span
+      } else if self.check(TokenKind::LBrace) {
+        end_span = self.consume_misplaced_type_member_body()
       }
       if self.eat(TokenKind::Semicolon) || self.eat(TokenKind::Comma) {
         end_span = self.previous().span
@@ -12878,7 +13741,9 @@ fn Parser::parse_type_member(self : Parser) -> TypeMember raise ParseError {
     self.leave_type_param_scope()
     return parsed_type_member
   }
+  let mut has_explicit_type_ann = false
   let type_ann = if self.eat(TokenKind::Colon) {
+    has_explicit_type_ann = true
     self.parse_member_type_with_restricted_multiline_index_postfix()
   } else {
     let span = if optional { self.previous().span } else { name_span }
@@ -12886,15 +13751,16 @@ fn Parser::parse_type_member(self : Parser) -> TypeMember raise ParseError {
   }
   let mut end_span = type_ann.span
   if self.eat(TokenKind::Eq) {
-    let expr = self.parse_expression_no_comma()
-    self.record_ts_error(
-      expr.span.start,
-      1247,
-      "A type literal property cannot have an initializer.",
-    )
-    end_span = expr.span
-  }
-  if self.eat(TokenKind::Semicolon) || self.eat(TokenKind::Comma) {
+    if has_explicit_type_ann || optional {
+      let expr = self.parse_expression_no_comma()
+      end_span = expr.span
+      if self.eat(TokenKind::Semicolon) || self.eat(TokenKind::Comma) {
+        end_span = self.previous().span
+      }
+    } else {
+      end_span = self.consume_misplaced_type_member_initializer(name_span)
+    }
+  } else if self.eat(TokenKind::Semicolon) || self.eat(TokenKind::Comma) {
     end_span = self.previous().span
   }
   { name, optional, type_ann, span: name_span.merge(end_span) }
@@ -13185,14 +14051,7 @@ fn Parser::parse_assignment(self : Parser) -> Expr raise ParseError {
 
 ///|
 fn Parser::is_current_followed_by_adjacent_eq(self : Parser) -> Bool {
-  if self.peek_kind(1) != Some(TokenKind::Eq) {
-    return false
-  }
-  match self.peek(1) {
-    Some(next_token) =>
-      self.current().span.end.offset == next_token.span.start.offset
-    None => false
-  }
+  self.has_adjacent_next_kind(TokenKind::Eq)
 }
 
 ///|
@@ -13200,22 +14059,23 @@ fn Parser::eat_assignment_op(self : Parser) -> AssignOp? {
   if self.check(TokenKind::OrOr) && self.is_current_followed_by_adjacent_eq() {
     ignore(self.advance())
     ignore(self.advance())
-    return Some(AssignOp::Assign)
+    return Some(AssignOp::LogicalOrAssign)
   }
   if self.check(TokenKind::AndAnd) && self.is_current_followed_by_adjacent_eq() {
     ignore(self.advance())
     ignore(self.advance())
-    return Some(AssignOp::Assign)
+    return Some(AssignOp::LogicalAndAssign)
   }
-  if self.check(TokenKind::Nullish) && self.is_current_followed_by_adjacent_eq() {
-    ignore(self.advance())
-    ignore(self.advance())
-    return Some(AssignOp::Assign)
+  let question = self.current_question_rescan()
+  if question.kind == QuestionRescanKind::NullishAssign {
+    ignore(self.advance_width(question.width))
+    return Some(AssignOp::NullishAssign)
   }
-  if self.check(TokenKind::StarStar) && self.peek_kind(1) == Some(TokenKind::Eq) {
+  if self.check(TokenKind::StarStar) &&
+    self.is_current_followed_by_adjacent_eq() {
     ignore(self.advance())
     ignore(self.advance())
-    return Some(AssignOp::MulAssign)
+    return Some(AssignOp::PowAssign)
   }
   if self.eat(TokenKind::Eq) {
     return Some(AssignOp::Assign)
@@ -13235,61 +14095,39 @@ fn Parser::eat_assignment_op(self : Parser) -> AssignOp? {
   if self.eat(TokenKind::PercentEq) {
     return Some(AssignOp::ModAssign)
   }
-  if self.check(TokenKind::Pipe) && self.peek_kind(1) == Some(TokenKind::Eq) {
+  if self.check(TokenKind::Pipe) && self.is_current_followed_by_adjacent_eq() {
     ignore(self.advance())
     ignore(self.advance())
     return Some(AssignOp::BitOrAssign)
   }
   if self.check(TokenKind::Ampersand) &&
-    self.peek_kind(1) == Some(TokenKind::Eq) {
+    self.is_current_followed_by_adjacent_eq() {
     ignore(self.advance())
     ignore(self.advance())
     return Some(AssignOp::BitAndAssign)
   }
-  if self.check(TokenKind::Caret) && self.peek_kind(1) == Some(TokenKind::Eq) {
+  if self.check(TokenKind::Caret) && self.is_current_followed_by_adjacent_eq() {
     ignore(self.advance())
     ignore(self.advance())
     return Some(AssignOp::BitXorAssign)
   }
-  if self.check(TokenKind::Lt) &&
-    self.peek_kind(1) == Some(TokenKind::Lt) &&
-    self.peek_kind(2) == Some(TokenKind::Eq) {
-    ignore(self.advance())
-    ignore(self.advance())
-    ignore(self.advance())
-    return Some(AssignOp::ShlAssign)
-  }
-  if self.check(TokenKind::Lt) && self.peek_kind(1) == Some(TokenKind::Lte) {
-    ignore(self.advance())
-    ignore(self.advance())
-    return Some(AssignOp::ShlAssign)
-  }
-  if self.check(TokenKind::Gt) && self.peek_kind(1) == Some(TokenKind::Gt) {
-    if self.peek_kind(2) == Some(TokenKind::Gt) &&
-      self.peek_kind(3) == Some(TokenKind::Eq) {
-      ignore(self.advance())
-      ignore(self.advance())
-      ignore(self.advance())
-      ignore(self.advance())
-      return Some(AssignOp::UShrAssign)
+  if self.check(TokenKind::Lt) || self.check(TokenKind::Lte) {
+    let less = self.current_less_than_rescan()
+    if less.kind == LessThanRescanKind::ShlAssign {
+      ignore(self.advance_width(less.width))
+      return Some(AssignOp::ShlAssign)
     }
-    if self.peek_kind(2) == Some(TokenKind::Gte) {
-      ignore(self.advance())
-      ignore(self.advance())
-      ignore(self.advance())
-      return Some(AssignOp::UShrAssign)
-    }
-    if self.peek_kind(2) == Some(TokenKind::Eq) {
-      ignore(self.advance())
-      ignore(self.advance())
-      ignore(self.advance())
+  }
+  if self.check(TokenKind::Gt) || self.check(TokenKind::Gte) {
+    let greater = self.current_greater_than_rescan()
+    if greater.kind == GreaterThanRescanKind::ShrAssign {
+      ignore(self.advance_width(greater.width))
       return Some(AssignOp::ShrAssign)
     }
-  }
-  if self.check(TokenKind::Gt) && self.peek_kind(1) == Some(TokenKind::Gte) {
-    ignore(self.advance())
-    ignore(self.advance())
-    return Some(AssignOp::ShrAssign)
+    if greater.kind == GreaterThanRescanKind::UShrAssign {
+      ignore(self.advance_width(greater.width))
+      return Some(AssignOp::UShrAssign)
+    }
   }
   None
 }
@@ -13341,11 +14179,12 @@ fn Parser::parse_conditional(self : Parser) -> Expr raise ParseError {
 ///|
 fn Parser::parse_nullish(self : Parser) -> Expr raise ParseError {
   let mut expr = self.parse_logical_or()
-  while self.check(TokenKind::Nullish) {
-    if self.is_current_followed_by_adjacent_eq() {
+  while true {
+    let question = self.current_question_rescan()
+    if question.kind != QuestionRescanKind::Nullish {
       break
     }
-    ignore(self.advance())
+    ignore(self.advance_width(question.width))
     let right = self.parse_logical_or()
     let span = expr.span.merge(right.span)
     expr = {
@@ -13395,7 +14234,8 @@ fn Parser::parse_logical_and(self : Parser) -> Expr raise ParseError {
 ///|
 fn Parser::parse_bitwise_or(self : Parser) -> Expr raise ParseError {
   let mut expr = self.parse_bitwise_xor()
-  while self.check(TokenKind::Pipe) && self.peek_kind(1) != Some(TokenKind::Eq) {
+  while self.check(TokenKind::Pipe) &&
+        !self.is_current_followed_by_adjacent_eq() {
     ignore(self.advance())
     let right = self.parse_bitwise_xor()
     let span = expr.span.merge(right.span)
@@ -13410,7 +14250,8 @@ fn Parser::parse_bitwise_or(self : Parser) -> Expr raise ParseError {
 ///|
 fn Parser::parse_bitwise_xor(self : Parser) -> Expr raise ParseError {
   let mut expr = self.parse_bitwise_and()
-  while self.check(TokenKind::Caret) && self.peek_kind(1) != Some(TokenKind::Eq) {
+  while self.check(TokenKind::Caret) &&
+        !self.is_current_followed_by_adjacent_eq() {
     ignore(self.advance())
     let right = self.parse_bitwise_and()
     let span = expr.span.merge(right.span)
@@ -13426,7 +14267,7 @@ fn Parser::parse_bitwise_xor(self : Parser) -> Expr raise ParseError {
 fn Parser::parse_bitwise_and(self : Parser) -> Expr raise ParseError {
   let mut expr = self.parse_equality()
   while self.check(TokenKind::Ampersand) &&
-        self.peek_kind(1) != Some(TokenKind::Eq) {
+        !self.is_current_followed_by_adjacent_eq() {
     ignore(self.advance())
     let right = self.parse_equality()
     let span = expr.span.merge(right.span)
@@ -13487,55 +14328,61 @@ fn Parser::parse_equality(self : Parser) -> Expr raise ParseError {
 fn Parser::parse_comparison(self : Parser) -> Expr raise ParseError {
   let mut expr = self.parse_shift()
   while true {
-    if self.check(TokenKind::Lt) &&
-      (
-        self.peek_kind(1) == Some(TokenKind::Lt) ||
-        self.peek_kind(1) == Some(TokenKind::Lte)
-      ) {
-      break
-    }
-    if self.eat(TokenKind::Lt) {
-      let right = self.parse_shift()
-      let span = expr.span.merge(right.span)
-      expr = {
-        kind: ExprKind::Binary({ op: BinaryOp::Lt, left: expr, right }),
-        span,
+    if self.check(TokenKind::Lt) || self.check(TokenKind::Lte) {
+      let less = self.current_less_than_rescan()
+      if less.kind == LessThanRescanKind::Shl ||
+        less.kind == LessThanRescanKind::ShlAssign {
+        break
       }
-      continue
-    }
-    if self.eat(TokenKind::Lte) {
-      let right = self.parse_shift()
-      let span = expr.span.merge(right.span)
-      expr = {
-        kind: ExprKind::Binary({ op: BinaryOp::Lte, left: expr, right }),
-        span,
+      if less.kind == LessThanRescanKind::Lt {
+        ignore(self.advance_width(less.width))
+        let right = self.parse_shift()
+        let span = expr.span.merge(right.span)
+        expr = {
+          kind: ExprKind::Binary({ op: BinaryOp::Lt, left: expr, right }),
+          span,
+        }
+        continue
       }
-      continue
-    }
-    if self.check(TokenKind::Gt) &&
-      (
-        self.peek_kind(1) == Some(TokenKind::Gt) ||
-        self.peek_kind(1) == Some(TokenKind::Gte)
-      ) {
-      break
-    }
-    if self.eat(TokenKind::Gt) {
-      let right = self.parse_shift()
-      let span = expr.span.merge(right.span)
-      expr = {
-        kind: ExprKind::Binary({ op: BinaryOp::Gt, left: expr, right }),
-        span,
+      if less.kind == LessThanRescanKind::Lte {
+        ignore(self.advance_width(less.width))
+        let right = self.parse_shift()
+        let span = expr.span.merge(right.span)
+        expr = {
+          kind: ExprKind::Binary({ op: BinaryOp::Lte, left: expr, right }),
+          span,
+        }
+        continue
       }
-      continue
     }
-    if self.eat(TokenKind::Gte) {
-      let right = self.parse_shift()
-      let span = expr.span.merge(right.span)
-      expr = {
-        kind: ExprKind::Binary({ op: BinaryOp::Gte, left: expr, right }),
-        span,
+    if self.check(TokenKind::Gt) || self.check(TokenKind::Gte) {
+      let greater = self.current_greater_than_rescan()
+      if greater.kind == GreaterThanRescanKind::Shr ||
+        greater.kind == GreaterThanRescanKind::ShrAssign ||
+        greater.kind == GreaterThanRescanKind::UShr ||
+        greater.kind == GreaterThanRescanKind::UShrAssign {
+        break
       }
-      continue
+      if greater.kind == GreaterThanRescanKind::Gt {
+        ignore(self.advance_width(greater.width))
+        let right = self.parse_shift()
+        let span = expr.span.merge(right.span)
+        expr = {
+          kind: ExprKind::Binary({ op: BinaryOp::Gt, left: expr, right }),
+          span,
+        }
+        continue
+      }
+      if greater.kind == GreaterThanRescanKind::Gte {
+        ignore(self.advance_width(greater.width))
+        let right = self.parse_shift()
+        let span = expr.span.merge(right.span)
+        expr = {
+          kind: ExprKind::Binary({ op: BinaryOp::Gte, left: expr, right }),
+          span,
+        }
+        continue
+      }
     }
     if self.eat_ident_name("instanceof") {
       let right = self.parse_shift()
@@ -13564,41 +14411,48 @@ fn Parser::parse_comparison(self : Parser) -> Expr raise ParseError {
 fn Parser::parse_shift(self : Parser) -> Expr raise ParseError {
   let mut expr = self.parse_term()
   while true {
-    if self.check(TokenKind::Lt) &&
-      self.peek_kind(1) == Some(TokenKind::Lt) &&
-      self.peek_kind(2) != Some(TokenKind::Eq) {
-      ignore(self.advance())
-      ignore(self.advance())
-      let right = self.parse_term()
-      let span = expr.span.merge(right.span)
-      expr = {
-        kind: ExprKind::Binary({ op: BinaryOp::Shl, left: expr, right }),
-        span,
+    if self.check(TokenKind::Lt) || self.check(TokenKind::Lte) {
+      let less = self.current_less_than_rescan()
+      if less.kind == LessThanRescanKind::Shl {
+        ignore(self.advance_width(less.width))
+        let right = self.parse_term()
+        let span = expr.span.merge(right.span)
+        expr = {
+          kind: ExprKind::Binary({ op: BinaryOp::Shl, left: expr, right }),
+          span,
+        }
+        continue
       }
-      continue
+      if less.kind == LessThanRescanKind::ShlAssign {
+        break
+      }
     }
-    if self.check(TokenKind::Gt) && self.peek_kind(1) == Some(TokenKind::Gt) {
-      if self.peek_kind(2) == Some(TokenKind::Eq) {
+    if self.check(TokenKind::Gt) || self.check(TokenKind::Gte) {
+      let greater = self.current_greater_than_rescan()
+      if greater.kind == GreaterThanRescanKind::Shr {
+        ignore(self.advance_width(greater.width))
+        let right = self.parse_term()
+        let span = expr.span.merge(right.span)
+        expr = {
+          kind: ExprKind::Binary({ op: BinaryOp::Shr, left: expr, right }),
+          span,
+        }
+        continue
+      }
+      if greater.kind == GreaterThanRescanKind::UShr {
+        ignore(self.advance_width(greater.width))
+        let right = self.parse_term()
+        let span = expr.span.merge(right.span)
+        expr = {
+          kind: ExprKind::Binary({ op: BinaryOp::UShr, left: expr, right }),
+          span,
+        }
+        continue
+      }
+      if greater.kind == GreaterThanRescanKind::ShrAssign ||
+        greater.kind == GreaterThanRescanKind::UShrAssign {
         break
       }
-      if self.peek_kind(2) == Some(TokenKind::Gt) &&
-        self.peek_kind(3) == Some(TokenKind::Eq) {
-        break
-      }
-      if self.peek_kind(2) == Some(TokenKind::Gte) {
-        break
-      }
-      ignore(self.advance())
-      ignore(self.advance())
-      let mut op = BinaryOp::Shr
-      if self.check(TokenKind::Gt) {
-        ignore(self.advance())
-        op = BinaryOp::UShr
-      }
-      let right = self.parse_term()
-      let span = expr.span.merge(right.span)
-      expr = { kind: ExprKind::Binary({ op, left: expr, right }), span }
-      continue
     }
     break
   }
@@ -13637,7 +14491,7 @@ fn Parser::parse_factor(self : Parser) -> Expr raise ParseError {
   let mut expr = self.parse_unary()
   while true {
     if self.check(TokenKind::StarStar) {
-      if self.peek_kind(1) == Some(TokenKind::Eq) {
+      if self.is_current_followed_by_adjacent_eq() {
         break
       }
       ignore(self.advance())
@@ -14232,6 +15086,14 @@ fn Parser::parse_jsx_tag_name(
             "Identifier expected.",
           )
         }
+      TokenKind::PrivateIdent(_) => {
+        self.record_ts_error(
+          self.current().span.end,
+          1003,
+          "Identifier expected.",
+        )
+        ignore(self.advance())
+      }
       _ =>
         if !is_closing {
           self.record_ts_error(
@@ -14263,6 +15125,14 @@ fn Parser::parse_jsx_tag_name(
               )
               ignore(self.advance())
             }
+          TokenKind::PrivateIdent(_) => {
+            self.record_ts_error(
+              self.current().span.end,
+              1003,
+              "Identifier expected.",
+            )
+            ignore(self.advance())
+          }
           _ => ()
         }
         break
@@ -14502,7 +15372,477 @@ fn Parser::parse_jsx_opening_tag_rest(
 }
 
 ///|
-fn Parser::parse_jsx(self : Parser) -> Expr raise ParseError {
+fn jsx_name_piece(kind : TokenKind) -> String? {
+  match kind {
+    TokenKind::Ident(name) => Some(name)
+    TokenKind::Keyword(kw) => Some(keyword_to_string(kw))
+    TokenKind::Number(name) => Some(name)
+    _ => None
+  }
+}
+
+///|
+fn jsx_name_separator(kind : TokenKind) -> String? {
+  match kind {
+    TokenKind::Dot => Some(".")
+    TokenKind::Colon => Some(":")
+    TokenKind::Minus => Some("-")
+    _ => None
+  }
+}
+
+///|
+fn Parser::parse_jsx_name_text(
+  self : Parser,
+) -> (String, Span) raise ParseError {
+  let token = self.current()
+  let mut name = match jsx_name_piece(token.kind) {
+    Some(part) => part
+    None => raise self.expected_error(token.span.start, "identifier", false)
+  }
+  let mut span = self.advance().span
+  let mut colon_count = 0
+  while true {
+    let sep = match jsx_name_separator(self.current().kind) {
+      Some(found) => found
+      None => break
+    }
+    let sep_span = self.current().span
+    if span.end.offset < sep_span.start.offset {
+      break
+    }
+    if sep == ":" {
+      colon_count += 1
+      if colon_count > 1 {
+        raise self.expected_error(sep_span.start, "identifier", false)
+      }
+    }
+    ignore(self.advance())
+    let piece_token = self.current()
+    let piece = match jsx_name_piece(piece_token.kind) {
+      Some(found) => found
+      None =>
+        raise self.expected_error(piece_token.span.start, "identifier", false)
+    }
+    if sep_span.end.offset < piece_token.span.start.offset {
+      raise self.expected_error(piece_token.span.start, "identifier", false)
+    }
+    ignore(self.advance())
+    name = "\{name}\{sep}\{piece}"
+    span = span.merge(piece_token.span)
+  }
+  (name, span)
+}
+
+///|
+fn Parser::parse_jsx_type_args_tree(
+  self : Parser,
+) -> (Array[TypeNode], Span) raise ParseError {
+  let lt_span = self.expect(TokenKind::Lt, "'<'").span
+  let args : Array[TypeNode] = []
+  if self.check(TokenKind::Gt) {
+    raise self.expected_error(lt_span.start, "type argument", false)
+  }
+  while true {
+    args.push(self.parse_type_argument())
+    if self.eat(TokenKind::Comma) {
+      let comma_span = self.previous().span
+      if self.check(TokenKind::Gt) {
+        self.record_ts_error(
+          comma_span.start,
+          1009,
+          "Trailing comma not allowed.",
+        )
+        break
+      }
+      continue
+    }
+    break
+  }
+  let gt_span = self.expect(TokenKind::Gt, "'>'").span
+  (args, lt_span.merge(gt_span))
+}
+
+///|
+fn Parser::parse_jsx_expr_container(
+  self : Parser,
+) -> JSXExprContainer raise ParseError {
+  let start = self.expect(TokenKind::LBrace, "'{'")
+  let expr : Expr = if self.check(TokenKind::RBrace) {
+    { kind: ExprKind::Ident(""), span: self.current().span }
+  } else {
+    self.parse_expression()
+  }
+  let end = self.expect(TokenKind::RBrace, "'}'")
+  { expr, span: start.span.merge(end.span) }
+}
+
+///|
+fn Parser::parse_jsx_attr_value_tree(
+  self : Parser,
+) -> (JSXAttrValue, Span) raise ParseError {
+  if self.check(TokenKind::LBrace) {
+    let container = self.parse_jsx_expr_container()
+    return (JSXAttrValue::Expr(container), container.span)
+  }
+  if self.check(TokenKind::Lt) {
+    let element = self.parse_jsx_tree()
+    return (JSXAttrValue::Element(element), element.span)
+  }
+  let token = self.current()
+  match token.kind {
+    TokenKind::String(value) => {
+      ignore(self.advance())
+      (JSXAttrValue::String(value), token.span)
+    }
+    _ =>
+      raise self.expected_error(token.span.start, "JSX attribute value", false)
+  }
+}
+
+///|
+fn Parser::parse_jsx_opening_element_tree(
+  self : Parser,
+  lt_span : Span,
+) -> JSXElement raise ParseError {
+  if self.current().kind is TokenKind::Number(_) {
+    raise self.expected_error(self.current().span.start, "identifier", false)
+  }
+  let (name, name_span) = self.parse_jsx_name_text()
+  let mut end_span = name_span
+  let mut type_args : Array[TypeNode] = []
+  if self.check(TokenKind::Lt) {
+    let (parsed_type_args, type_args_span) = self.parse_jsx_type_args_tree()
+    type_args = parsed_type_args
+    end_span = type_args_span
+  }
+  let attrs : Array[JSXAttr] = []
+  while !self.check(TokenKind::Gt) &&
+        !self.check(TokenKind::Slash) &&
+        !self.at_end() {
+    if self.check(TokenKind::LBrace) {
+      let spread_start = self.expect(TokenKind::LBrace, "'{'")
+      ignore(self.expect(TokenKind::Ellipsis, "'...'"))
+      let expr : Expr = if self.check(TokenKind::RBrace) {
+        { kind: ExprKind::Ident(""), span: self.current().span }
+      } else {
+        self.parse_expression()
+      }
+      let end = self.expect(TokenKind::RBrace, "'}'")
+      let span = spread_start.span.merge(end.span)
+      attrs.push(JSXAttr::Spread({ expr, span }))
+      end_span = span
+      continue
+    }
+    let (attr_name, attr_name_span) = self.parse_jsx_name_text()
+    let mut attr_end_span = attr_name_span
+    let mut value : JSXAttrValue? = None
+    if self.eat(TokenKind::Eq) {
+      let (attr_value, value_span) = self.parse_jsx_attr_value_tree()
+      value = Some(attr_value)
+      attr_end_span = value_span
+    }
+    attrs.push(
+      JSXAttr::Attribute({
+        name: attr_name,
+        value,
+        span: attr_name_span.merge(attr_end_span),
+      }),
+    )
+    end_span = attr_end_span
+  }
+  let mut self_closing = false
+  if self.eat(TokenKind::Slash) {
+    self_closing = true
+    end_span = self.previous().span
+  }
+  let gt_span = self.expect(TokenKind::Gt, "'>'").span
+  if gt_span.end.offset > end_span.end.offset {
+    end_span = gt_span
+  }
+  {
+    name,
+    type_args,
+    attrs,
+    children: [],
+    self_closing,
+    closing_name: None,
+    opening_span: lt_span.merge(gt_span),
+    closing_span: None,
+  }
+}
+
+///|
+fn Parser::record_jsx_text_diagnostics(
+  self : Parser,
+  start_offset : Int,
+  start_pos : Position,
+  end_offset : Int,
+) -> Unit {
+  if end_offset <= start_offset {
+    return
+  }
+  let text = self.source_text.view(start_offset~, end_offset~)
+  let mut pos = start_pos
+  let mut i = 0
+  while i < text.length() {
+    let ch = text[i]
+    if ch == '>' {
+      self.record_ts_error(
+        pos, 1382, "Unexpected token. Did you mean `{'>'}` or `&gt;`?",
+      )
+    } else if ch == '}' {
+      self.record_ts_error(
+        pos, 1381, "Unexpected token. Did you mean `{'}'}` or `&rbrace;`?",
+      )
+    }
+    pos = advance_position_by_code_unit(pos, ch)
+    i += 1
+  }
+}
+
+///|
+fn Parser::push_jsx_text_child_if_present(
+  self : Parser,
+  children : Array[JSXChild],
+  start_offset : Int,
+  start_pos : Position,
+  end_offset : Int,
+) -> Unit {
+  if end_offset <= start_offset {
+    return
+  }
+  self.record_jsx_text_diagnostics(start_offset, start_pos, end_offset)
+  let text = self.source_text.view(start_offset~, end_offset~).to_string()
+  if text != "" {
+    children.push(JSXChild::Text(text))
+  }
+}
+
+///|
+fn Parser::parse_jsx_children_until_close(
+  self : Parser,
+  open_name : String?,
+  content_start_offset : Int,
+) -> (Array[JSXChild], String?, Span?, Bool) raise ParseError {
+  let children : Array[JSXChild] = []
+  let mut cursor = content_start_offset
+  let mut cursor_pos = self.previous().span.end
+  while !self.at_end() {
+    let current_start = self.current().span.start
+    let current_offset = current_start.offset
+    if current_offset > cursor {
+      self.push_jsx_text_child_if_present(
+        children, cursor, cursor_pos, current_offset,
+      )
+      cursor = current_offset
+      cursor_pos = current_start
+    }
+    if self.check(TokenKind::Lt) {
+      if self.peek_kind(1) == Some(TokenKind::Slash) {
+        let lt_span = self.expect(TokenKind::Lt, "'<'").span
+        ignore(self.expect(TokenKind::Slash, "'/'"))
+        match open_name {
+          Some(_) => {
+            let closing_name : String = if self.check(TokenKind::Gt) {
+              ""
+            } else {
+              let (parsed_name, _) = self.parse_jsx_name_text()
+              parsed_name
+            }
+            let gt_span = self.expect(TokenKind::Gt, "'>'").span
+            return (
+              children,
+              Some(closing_name),
+              Some(lt_span.merge(gt_span)),
+              false,
+            )
+          }
+          None => {
+            let gt_span = self.expect(TokenKind::Gt, "'>'").span
+            return (children, Some(""), Some(lt_span.merge(gt_span)), false)
+          }
+        }
+      }
+      let element = self.parse_jsx_tree_with_parent(open_name)
+      match open_name {
+        Some(parent_name) =>
+          match element.kind {
+            ExprKind::JSXElement(child_element) =>
+              if !child_element.self_closing {
+                match child_element.closing_name {
+                  Some(child_closing_name) =>
+                    match child_element.closing_span {
+                      Some(child_closing_span) =>
+                        if child_closing_name != child_element.name &&
+                          child_closing_name == parent_name {
+                          children.push(
+                            JSXChild::Element({
+                              kind: ExprKind::JSXElement({
+                                name: child_element.name,
+                                type_args: child_element.type_args,
+                                attrs: child_element.attrs,
+                                children: child_element.children,
+                                self_closing: false,
+                                closing_name: Some(""),
+                                opening_span: child_element.opening_span,
+                                closing_span: child_element.closing_span,
+                              }),
+                              span: element.span,
+                            }),
+                          )
+                          return (
+                            children,
+                            Some(parent_name),
+                            Some(child_closing_span),
+                            false,
+                          )
+                        }
+                      None => ()
+                    }
+                  None => ()
+                }
+              }
+            _ => ()
+          }
+        None => ()
+      }
+      children.push(JSXChild::Element(element))
+      cursor = element.span.end.offset
+      cursor_pos = element.span.end
+      continue
+    }
+    if self.check(TokenKind::LBrace) {
+      let expr_container = self.parse_jsx_expr_container()
+      children.push(JSXChild::Expr(expr_container))
+      cursor = expr_container.span.end.offset
+      cursor_pos = expr_container.span.end
+      continue
+    }
+    while !self.at_end() &&
+          !self.check(TokenKind::Lt) &&
+          !self.check(TokenKind::LBrace) {
+      ignore(self.advance())
+    }
+    let next_start = self.current().span.start
+    let next_offset = next_start.offset
+    self.push_jsx_text_child_if_present(
+      children, cursor, cursor_pos, next_offset,
+    )
+    cursor = next_offset
+    cursor_pos = next_start
+  }
+  (children, None, None, true)
+}
+
+///|
+fn Parser::parse_jsx_tree(self : Parser) -> Expr raise ParseError {
+  self.parse_jsx_tree_with_parent(None)
+}
+
+///|
+fn Parser::parse_jsx_tree_with_parent(
+  self : Parser,
+  parent_open_name : String?,
+) -> Expr raise ParseError {
+  let start = self.expect(TokenKind::Lt, "'<'")
+  if self.check(TokenKind::Gt) {
+    let gt_span = self.expect(TokenKind::Gt, "'>'").span
+    let (children, _, closing_span, missing_close) = self.parse_jsx_children_until_close(
+      None,
+      gt_span.end.offset,
+    )
+    if missing_close {
+      raise self.expected_error(
+        self.current().span.start,
+        "JSX closing tag",
+        false,
+      )
+    }
+    let resolved_closing_span = match closing_span {
+      Some(span) => span
+      None => span_from(self.current().span.start, self.current().span.start)
+    }
+    let span = start.span.merge(resolved_closing_span)
+    return {
+      kind: ExprKind::JSXFragment({
+        children,
+        opening_span: start.span.merge(gt_span),
+        closing_span: resolved_closing_span,
+      }),
+      span,
+    }
+  }
+  let opening = self.parse_jsx_opening_element_tree(start.span)
+  let opening_name_pos = advance_position_by_code_unit(start.span.start, '<')
+  if opening.self_closing {
+    return { kind: ExprKind::JSXElement(opening), span: opening.opening_span }
+  }
+  let (children, closing_name, closing_span, missing_close) = self.parse_jsx_children_until_close(
+    Some(opening.name),
+    opening.opening_span.end.offset,
+  )
+  if missing_close {
+    raise self.expected_error(
+      self.current().span.start,
+      "JSX closing tag",
+      false,
+    )
+  } else {
+    match closing_name {
+      Some(found_closing_name) =>
+        match closing_span {
+          Some(found_closing_span) =>
+            if found_closing_name != opening.name {
+              match parent_open_name {
+                Some(parent_name) =>
+                  if found_closing_name == parent_name {
+                    self.record_ts_error(
+                      opening_name_pos,
+                      17008,
+                      "JSX element '\{opening.name}' has no corresponding closing tag.",
+                    )
+                  } else {
+                    self.record_ts_error(
+                      found_closing_span.start,
+                      17002,
+                      "Expected corresponding JSX closing tag for '\{opening.name}'.",
+                    )
+                  }
+                None =>
+                  self.record_ts_error(
+                    found_closing_span.start,
+                    17002,
+                    "Expected corresponding JSX closing tag for '\{opening.name}'.",
+                  )
+              }
+            }
+          None => ()
+        }
+      None => ()
+    }
+  }
+  let span = match closing_span {
+    Some(closing_span) => start.span.merge(closing_span)
+    None => start.span.merge(self.current().span)
+  }
+  {
+    kind: ExprKind::JSXElement({
+      name: opening.name,
+      type_args: opening.type_args,
+      attrs: opening.attrs,
+      children,
+      self_closing: false,
+      closing_name,
+      opening_span: opening.opening_span,
+      closing_span,
+    }),
+    span,
+  }
+}
+
+///|
+fn Parser::parse_jsx_fallback(self : Parser) -> Expr raise ParseError {
   let start = self.expect(TokenKind::Lt, "'<'")
   let mut end_span = start.span
   let mut depth = 0
@@ -14619,6 +15959,21 @@ fn Parser::parse_jsx(self : Parser) -> Expr raise ParseError {
     }
   }
   { kind: ExprKind::String("<jsx>"), span: start.span.merge(end_span) }
+}
+
+///|
+fn Parser::parse_jsx(self : Parser) -> Expr raise ParseError {
+  let saved = self.index
+  let saved_error_count = self.errors.length()
+  self.parse_jsx_tree() catch {
+    _ => {
+      self.index = saved
+      while self.errors.length() > saved_error_count {
+        ignore(self.errors.pop())
+      }
+      self.parse_jsx_fallback()
+    }
+  }
 }
 
 ///|
@@ -14901,8 +16256,9 @@ fn Parser::parse_postfix_with_base(
       }
       continue
     }
-    if self.eat(TokenKind::QuestionDot) {
-      let qdot_span = self.previous().span
+    let question = self.current_question_rescan()
+    if question.kind == QuestionRescanKind::QuestionDot {
+      let qdot_span = self.advance_width(question.width)
       match expr.kind {
         ExprKind::New(new_expr) =>
           if new_expr.callee.span.end.offset == expr.span.end.offset {
@@ -15006,15 +16362,25 @@ fn Parser::parse_postfix_with_base(
       let same_line_member_name = self.current().span.start.line ==
         qdot_span.end.line
       let has_member_name = self.current().kind is TokenKind::Ident(_) ||
+        self.current().kind is TokenKind::PrivateIdent(_) ||
         (same_line_member_name && self.current().kind is TokenKind::Keyword(_))
 
       if has_member_name {
-        let (name, name_span) = self.parse_ident_name()
+        let (property, name_span) = self.parse_member_prop_after_dot()
+        match property {
+          MemberProp::Private(_) =>
+            self.record_ts_error(
+              name_span.start,
+              18030,
+              "An optional chain cannot contain private identifiers.",
+            )
+          _ => ()
+        }
         let span = expr.span.merge(name_span)
         expr = {
           kind: ExprKind::Member({
             object: expr,
-            property: MemberProp::Ident(name),
+            property,
             computed: false,
             optional: true,
           }),
@@ -15099,7 +16465,11 @@ fn Parser::parse_postfix_with_base(
         }
       }
       let span = expr.span.merge(ty.span)
-      expr = { kind: expr.kind, span }
+      expr = if parsed_as_assertion {
+        { kind: ExprKind::As({ expr, type_ann: ty }), span }
+      } else {
+        { kind: ExprKind::Satisfies({ expr, type_ann: ty }), span }
+      }
       continue
     }
     if self.allow_type_colon && self.eat(TokenKind::Colon) {
@@ -15151,15 +16521,16 @@ fn Parser::parse_postfix_with_base(
       let same_line_member_name = self.current().span.start.line ==
         dot_span.end.line
       let has_member_name = self.current().kind is TokenKind::Ident(_) ||
+        self.current().kind is TokenKind::PrivateIdent(_) ||
         (same_line_member_name && self.current().kind is TokenKind::Keyword(_))
 
       if has_member_name {
-        let (name, name_span) = self.parse_ident_name()
+        let (property, name_span) = self.parse_member_prop_after_dot()
         let span = expr.span.merge(name_span)
         expr = {
           kind: ExprKind::Member({
             object: expr,
-            property: MemberProp::Ident(name),
+            property,
             computed: false,
             optional: false,
           }),
@@ -15264,12 +16635,6 @@ fn Parser::parse_postfix_with_base(
       }
       continue
     }
-    if self.eat_keyword(Keyword::As) {
-      let type_ann = self.parse_type()
-      let span = expr.span.merge(type_ann.span)
-      expr = { kind: ExprKind::TypeAssert({ expr, type_ann }), span }
-      continue
-    }
     if self.check(TokenKind::PlusPlus) &&
       self.current().span.start.line == expr.span.end.line {
       let op_span = self.advance().span
@@ -15347,14 +16712,15 @@ fn Parser::parse_member_base(self : Parser) -> Expr raise ParseError {
       let same_line_member_name = self.current().span.start.line ==
         dot_span.end.line
       let has_member_name = self.current().kind is TokenKind::Ident(_) ||
+        self.current().kind is TokenKind::PrivateIdent(_) ||
         (same_line_member_name && self.current().kind is TokenKind::Keyword(_))
       if has_member_name {
-        let (name, name_span) = self.parse_ident_name()
+        let (property, name_span) = self.parse_member_prop_after_dot()
         let span = expr.span.merge(name_span)
         expr = {
           kind: ExprKind::Member({
             object: expr,
-            property: MemberProp::Ident(name),
+            property,
             computed: false,
             optional: false,
           }),
@@ -16641,6 +18007,7 @@ fn Parser::parse_object_literal(self : Parser) -> Expr raise ParseError {
 fn Parser::is_expression_start(self : Parser) -> Bool {
   match self.current().kind {
     TokenKind::Ident(_)
+    | TokenKind::PrivateIdent(_)
     | TokenKind::Keyword(_)
     | TokenKind::Number(_)
     | TokenKind::String(_)
@@ -16652,7 +18019,8 @@ fn Parser::is_expression_start(self : Parser) -> Bool {
     | TokenKind::Minus
     | TokenKind::Bang
     | TokenKind::Tilde
-    | TokenKind::Slash => true
+    | TokenKind::Slash
+    | TokenKind::SlashEq => true
     TokenKind::Lt => !self.jsx_mode
     _ => false
   }
@@ -18052,17 +19420,63 @@ fn Parser::record_regex_annex_b_diagnostics_if_needed(
 }
 
 ///|
-fn Parser::expect_template_chunk(
+fn template_rescan_has_expression(fragment : TemplateRescan) -> Bool {
+  fragment.kind == TemplateRescanKind::Head ||
+  fragment.kind == TemplateRescanKind::Middle
+}
+
+///|
+fn Parser::consume_template_fragment(
   self : Parser,
-) -> (String, Span) raise ParseError {
+  is_head : Bool,
+) -> TemplateRescan raise ParseError {
   let token = self.current()
   match token.kind {
-    TokenKind::TemplateChunk(value) => {
-      ignore(self.advance())
-      (value, token.span)
+    TokenKind::TemplateChunk(_) => {
+      let fragment = self.current_template_rescan(is_head)
+      ignore(self.advance_width(fragment.width))
+      fragment
     }
     _ => raise self.expected_error(token.span.start, "template chunk", false)
   }
+}
+
+///|
+fn Parser::record_unterminated_template_literal_error(self : Parser) -> Unit {
+  self.record_ts_error(
+    self.current().span.start,
+    1160,
+    "Unterminated template literal.",
+  )
+}
+
+///|
+fn Parser::consume_template_fragment_after_substitution(
+  self : Parser,
+  substitution_start_end : Position,
+) -> TemplateRescan? raise ParseError {
+  if self.eat(TokenKind::RBrace) {
+    return Some(self.consume_template_fragment(false))
+  }
+  while !self.check(TokenKind::RBrace) &&
+        !self.check(TokenKind::TemplateEnd) &&
+        !self.at_end() &&
+        !(self.current().kind is TokenKind::TemplateChunk(_)) {
+    ignore(self.advance())
+  }
+  let should_report_missing_rbrace = if self.at_end() {
+    self.current().span.start.offset > substitution_start_end.offset
+  } else {
+    !self.check(TokenKind::TemplateEnd) &&
+    !(self.current().kind is TokenKind::TemplateChunk(_))
+  }
+  if self.eat(TokenKind::RBrace) {
+    return Some(self.consume_template_fragment(false))
+  }
+  if should_report_missing_rbrace {
+    self.record_ts_error(self.current().span.start, 1005, "'}' expected.")
+  }
+  None
 }
 
 ///|
@@ -18073,16 +19487,17 @@ fn Parser::parse_template_literal(
   let start = self.expect(TokenKind::TemplateStart, "`")
   let quasis : Array[String] = []
   let exprs : Array[Expr] = []
-  let (first_chunk, first_chunk_span) = self.expect_template_chunk()
+  let mut fragment = self.consume_template_fragment(true)
   if diagnose_invalid_escapes {
     self.record_template_chunk_escape_diagnostics_if_needed(
-      first_chunk, first_chunk_span,
+      fragment.chunk,
+      fragment.chunk_span,
     )
   }
-  quasis.push(first_chunk)
-  while self.check(TokenKind::TemplateExprStart) {
-    ignore(self.advance())
-    let template_expr_start_end = self.previous().span.end
+  quasis.push(fragment.chunk)
+  let mut end_span = fragment.end_span
+  while template_rescan_has_expression(fragment) {
+    let template_expr_start_end = fragment.end_span.end
     let expr : Expr = if self.check(TokenKind::RBrace) ||
       self.check(TokenKind::TemplateEnd) ||
       self.at_end() ||
@@ -18097,40 +19512,30 @@ fn Parser::parse_template_literal(
     } else {
       self.parse_expression()
     }
-    if !self.eat(TokenKind::RBrace) {
-      while !self.check(TokenKind::RBrace) &&
-            !self.check(TokenKind::TemplateEnd) &&
-            !self.at_end() &&
-            !(self.current().kind is TokenKind::TemplateChunk(_)) {
-        ignore(self.advance())
-      }
-      let should_report_missing_rbrace = if self.at_end() {
-        self.current().span.start.offset > template_expr_start_end.offset
-      } else {
-        !self.check(TokenKind::TemplateEnd) &&
-        !(self.current().kind is TokenKind::TemplateChunk(_))
-      }
-      if !self.eat(TokenKind::RBrace) && should_report_missing_rbrace {
-        self.record_ts_error(self.current().span.start, 1005, "'}' expected.")
-      }
-    }
     exprs.push(expr)
-    if self.current().kind is TokenKind::TemplateChunk(_) {
-      let (chunk, chunk_span) = self.expect_template_chunk()
-      if diagnose_invalid_escapes {
-        self.record_template_chunk_escape_diagnostics_if_needed(
-          chunk, chunk_span,
-        )
+    match
+      self.consume_template_fragment_after_substitution(template_expr_start_end) {
+      Some(next_fragment) => {
+        fragment = next_fragment
+        if diagnose_invalid_escapes {
+          self.record_template_chunk_escape_diagnostics_if_needed(
+            fragment.chunk,
+            fragment.chunk_span,
+          )
+        }
+        quasis.push(fragment.chunk)
+        end_span = fragment.end_span
       }
-      quasis.push(chunk)
-    } else if self.check(TokenKind::TemplateEnd) || self.at_end() {
-      break
+      None => {
+        quasis.push("")
+        end_span = self.current().span
+        let span = start.span.merge(end_span)
+        return { kind: ExprKind::Template({ quasis, exprs }), span }
+      }
     }
   }
-  let end_span = if self.check(TokenKind::TemplateEnd) {
-    self.expect(TokenKind::TemplateEnd, "`").span
-  } else {
-    self.current().span
+  if !fragment.terminated {
+    self.record_unterminated_template_literal_error()
   }
   let span = start.span.merge(end_span)
   { kind: ExprKind::Template({ quasis, exprs }), span }
@@ -18139,20 +19544,42 @@ fn Parser::parse_template_literal(
 ///|
 fn Parser::parse_template_type(self : Parser) -> TypeNode raise ParseError {
   let start = self.expect(TokenKind::TemplateStart, "`")
-  let (first_chunk, first_chunk_span) = self.expect_template_chunk()
+  let quasis : Array[String] = []
+  let types : Array[TypeNode] = []
+  let mut fragment = self.consume_template_fragment(true)
   self.record_template_chunk_escape_diagnostics_if_needed(
-    first_chunk, first_chunk_span,
+    fragment.chunk,
+    fragment.chunk_span,
   )
-  while self.check(TokenKind::TemplateExprStart) {
-    ignore(self.advance())
-    ignore(self.parse_type())
-    ignore(self.expect(TokenKind::RBrace, "'}'"))
-    let (chunk, chunk_span) = self.expect_template_chunk()
-    self.record_template_chunk_escape_diagnostics_if_needed(chunk, chunk_span)
+  quasis.push(fragment.chunk)
+  let mut end_span = fragment.end_span
+  while template_rescan_has_expression(fragment) {
+    let template_type_start_end = fragment.end_span.end
+    types.push(self.parse_type())
+    match
+      self.consume_template_fragment_after_substitution(template_type_start_end) {
+      Some(next_fragment) => {
+        fragment = next_fragment
+        self.record_template_chunk_escape_diagnostics_if_needed(
+          fragment.chunk,
+          fragment.chunk_span,
+        )
+        quasis.push(fragment.chunk)
+        end_span = fragment.end_span
+      }
+      None => {
+        quasis.push("")
+        end_span = self.current().span
+        let span = start.span.merge(end_span)
+        return { kind: TypeKind::TemplateLiteral({ quasis, types }), span }
+      }
+    }
   }
-  let end = self.expect(TokenKind::TemplateEnd, "`")
-  let span = start.span.merge(end.span)
-  { kind: TypeKind::Literal(TypeLiteral::String("template")), span }
+  if !fragment.terminated {
+    self.record_unterminated_template_literal_error()
+  }
+  let span = start.span.merge(end_span)
+  { kind: TypeKind::TemplateLiteral({ quasis, types }), span }
 }
 
 ///|
@@ -18229,6 +19656,10 @@ fn Parser::parse_primary(self : Parser) -> Expr raise ParseError {
     TokenKind::Keyword(Keyword::Type) if self.is_arrow_after_ident() =>
       self.parse_arrow_from_ident()
     TokenKind::Lt => self.parse_unary()
+    TokenKind::PrivateIdent(name) => {
+      ignore(self.advance())
+      { kind: ExprKind::PrivateIdent(name), span: token.span }
+    }
     TokenKind::Ident(name) => {
       ignore(
         self.record_invalid_identifier_character_errors_if_needed(
@@ -18251,7 +19682,9 @@ fn Parser::parse_primary(self : Parser) -> Expr raise ParseError {
           )
         }
         { kind: ExprKind::Ident(name), span: token.span }
-      } else if name == "async" && self.peek_kind(1) == Some(TokenKind::Lt) {
+      } else if name == "async" &&
+        self.peek_kind(1) == Some(TokenKind::Lt) &&
+        !self.next_token_has_preceding_line_break() {
         let saved = self.index
         let saved_error_count = self.errors.length()
         let async_start = self.advance().span
@@ -18293,7 +19726,8 @@ fn Parser::parse_primary(self : Parser) -> Expr raise ParseError {
           self.peek_kind(1) is Some(TokenKind::Ident(_)) ||
           self.peek_kind(1) is Some(TokenKind::Keyword(_))
         ) &&
-        self.peek_kind(2) == Some(TokenKind::Arrow) {
+        self.peek_kind(2) == Some(TokenKind::Arrow) &&
+        !self.next_token_has_preceding_line_break() {
         ignore(self.advance())
         self.async_function_depth += 1
         let arrow = self.parse_arrow_from_ident() catch {
@@ -18312,7 +19746,9 @@ fn Parser::parse_primary(self : Parser) -> Expr raise ParseError {
           async_start, true, true,
         )
         { kind: ExprKind::Function(decl), span }
-      } else if name == "async" && self.peek_kind(1) == Some(TokenKind::LParen) {
+      } else if name == "async" &&
+        self.peek_kind(1) == Some(TokenKind::LParen) &&
+        !self.next_token_has_preceding_line_break() {
         ignore(self.advance())
         if self.is_arrow_after_paren() {
           self.async_function_depth += 1
@@ -18365,65 +19801,33 @@ fn Parser::parse_primary(self : Parser) -> Expr raise ParseError {
       ignore(self.advance())
       { kind: ExprKind::String(value), span: token.span }
     }
-    TokenKind::Slash => {
+    TokenKind::Slash | TokenKind::SlashEq => {
+      let slash = self.current_slash_rescan()
       let start = self.advance().span
-      let pattern_start_offset = start.end.offset
-      let mut pattern_end_offset = pattern_start_offset
-      let mut in_class = false
-      let mut saw_terminating_slash = false
-      while !self.at_end() {
-        match self.current().kind {
-          TokenKind::LBracket => {
-            in_class = true
-            pattern_end_offset = self.advance().span.end.offset
-          }
-          TokenKind::RBracket => {
-            in_class = false
-            pattern_end_offset = self.advance().span.end.offset
-          }
-          TokenKind::Slash =>
-            if in_class {
-              pattern_end_offset = self.advance().span.end.offset
-            } else {
-              saw_terminating_slash = true
-              break
-            }
-          _ => pattern_end_offset = self.advance().span.end.offset
-        }
-      }
       let mut end_span = start
-      let mut flags_start_offset = pattern_end_offset
-      if self.check(TokenKind::Slash) {
-        let slash_end = self.advance().span
-        end_span = slash_end
-        flags_start_offset = slash_end.end.offset
+      while !self.at_end() &&
+            self.current().span.start.offset < slash.scan_end_offset {
+        end_span = self.advance().span
       }
-      if !saw_terminating_slash {
+      if !slash.terminated {
         self.record_ts_error(
           start.start,
           1161,
           "Unterminated regular expression literal.",
         )
       }
-      let mut flags_end_offset = flags_start_offset
-      while self.current().kind is TokenKind::Ident(_) {
-        let token_start_offset = self.current().span.start.offset
-        if token_start_offset != flags_end_offset {
-          break
-        }
-        let flag_span = self.advance().span
-        flags_end_offset = flag_span.end.offset
-        end_span = flag_span
-      }
-      if saw_terminating_slash {
+      if slash.terminated {
         let pattern = self.source_text
           .view(
-            start_offset=pattern_start_offset,
-            end_offset=pattern_end_offset,
+            start_offset=slash.pattern_start_offset,
+            end_offset=slash.pattern_end_offset,
           )
           .to_string()
         let flags = self.source_text
-          .view(start_offset=flags_start_offset, end_offset=flags_end_offset)
+          .view(
+            start_offset=slash.flags_start_offset,
+            end_offset=slash.flags_end_offset,
+          )
           .to_string()
         if !self.has_multi_target_directive {
           self.record_regex_annex_b_diagnostics_if_needed(
@@ -18499,7 +19903,7 @@ fn Parser::parse_primary(self : Parser) -> Expr raise ParseError {
     }
     TokenKind::Keyword(Keyword::Class) => {
       let start = self.advance().span
-      let (decl, span) = self.parse_class_decl_value(start, true, false, true)
+      let (decl, span) = self.parse_class_decl_value(start, true, false, true, [])
       { kind: ExprKind::Class(decl), span }
     }
     TokenKind::Keyword(kw) => {
@@ -19225,207 +20629,6 @@ fn Parser::parse_function_type_param(self : Parser) -> Param raise ParseError {
 }
 
 ///|
-fn Parser::record_invalid_index_signature_param_type_if_needed(
-  self : Parser,
-) -> Bool {
-  if !self.check(TokenKind::LBracket) {
-    return false
-  }
-  if self.peek_kind(2) != Some(TokenKind::Colon) {
-    return false
-  }
-  let param_pos = match self.peek(1) {
-    Some(token) => token.span.start
-    None => self.current().span.start
-  }
-  let source = self.source_name_for_position(param_pos)
-  let mut use_literal_or_generic_diag = false
-  let mut report_error = true
-  match self.peek_kind(3) {
-    Some(TokenKind::Ident(name)) =>
-      if name == "string" || name == "number" || name == "symbol" {
-        report_error = false
-      } else if self.is_active_type_param_name(name) {
-        use_literal_or_generic_diag = true
-      } else {
-        match self.find_index_signature_param_alias_kind(source, name) {
-          Some(kind) =>
-            if kind == index_signature_param_type_kind_allowed() {
-              report_error = false
-            } else if kind ==
-              index_signature_param_type_kind_literal_or_generic() {
-              use_literal_or_generic_diag = true
-            }
-          None => ()
-        }
-      }
-    Some(TokenKind::TemplateStart) => report_error = false
-    Some(TokenKind::String(_)) | Some(TokenKind::Number(_)) =>
-      use_literal_or_generic_diag = true
-    Some(TokenKind::Keyword(Keyword::True))
-    | Some(TokenKind::Keyword(Keyword::False)) =>
-      use_literal_or_generic_diag = true
-    Some(TokenKind::Minus) =>
-      match self.peek_kind(4) {
-        Some(TokenKind::Number(_)) => use_literal_or_generic_diag = true
-        _ => ()
-      }
-    _ => ()
-  }
-  if !report_error {
-    return false
-  }
-  if use_literal_or_generic_diag {
-    self.record_ts_error(
-      param_pos, 1337, "An index signature parameter type cannot be a literal type or generic type. Consider using a mapped object type instead.",
-    )
-  } else {
-    self.record_ts_error(
-      param_pos, 1268, "An index signature parameter type must be 'string', 'number', 'symbol', or a template literal type.",
-    )
-  }
-  true
-}
-
-///|
-fn Parser::record_index_signature_param_count_error_if_needed(
-  self : Parser,
-) -> Bool {
-  if !self.check(TokenKind::LBracket) {
-    return false
-  }
-  if self.peek_kind(1) == Some(TokenKind::RBracket) {
-    let diag_pos = self.current().span.start
-    self.record_ts_error(
-      diag_pos, 1096, "An index signature must have exactly one parameter.",
-    )
-    return true
-  }
-  let mut depth = 0
-  let mut offset = 0
-  let mut saw_colon = false
-  let mut saw_comma = false
-  let mut top_level_trailing_comma_pos : Position? = None
-  let mut top_level_last_token_was_comma = false
-  while self.peek_kind(offset) is Some(kind) {
-    if kind == TokenKind::LBracket {
-      depth += 1
-    } else if kind == TokenKind::RBracket {
-      depth -= 1
-      if depth == 0 {
-        if top_level_last_token_was_comma {
-          let diag_pos = match top_level_trailing_comma_pos {
-            Some(pos) => pos
-            None =>
-              match self.peek(offset) {
-                Some(token) => token.span.start
-                None => self.current().span.start
-              }
-          }
-          self.record_ts_error(
-            diag_pos, 1025, "An index signature cannot have a trailing comma.",
-          )
-          return true
-        }
-        break
-      }
-    } else if depth == 1 {
-      if kind == TokenKind::Colon {
-        saw_colon = true
-        top_level_last_token_was_comma = false
-      } else if kind == TokenKind::Comma {
-        saw_comma = true
-        top_level_last_token_was_comma = true
-        top_level_trailing_comma_pos = match self.peek(offset) {
-          Some(token) => Some(token.span.start)
-          None => top_level_trailing_comma_pos
-        }
-      } else {
-        top_level_last_token_was_comma = false
-      }
-    }
-    offset += 1
-  }
-  if saw_colon && saw_comma {
-    let diag_pos = match self.peek(1) {
-      Some(token) => token.span.start
-      None => self.current().span.start
-    }
-    self.record_ts_error(
-      diag_pos, 1096, "An index signature must have exactly one parameter.",
-    )
-    return true
-  }
-  false
-}
-
-///|
-fn Parser::record_index_signature_rest_param_error_if_needed(
-  self : Parser,
-) -> Unit {
-  if !self.check(TokenKind::LBracket) {
-    return
-  }
-  if self.peek_kind(1) != Some(TokenKind::Ellipsis) {
-    return
-  }
-  let diag_pos = match self.peek(1) {
-    Some(token) => token.span.start
-    None => self.current().span.start
-  }
-  self.record_ts_error(
-    diag_pos, 1017, "An index signature cannot have a rest parameter.",
-  )
-}
-
-///|
-fn Parser::record_index_signature_accessibility_modifier_error_if_needed(
-  self : Parser,
-) -> Unit {
-  if !self.check(TokenKind::LBracket) {
-    return
-  }
-  let has_modifier = match self.peek_kind(1) {
-    Some(TokenKind::Keyword(Keyword::Public))
-    | Some(TokenKind::Keyword(Keyword::Private))
-    | Some(TokenKind::Keyword(Keyword::Protected)) => true
-    _ => false
-  }
-  if !has_modifier {
-    return
-  }
-  let name_like = self.peek_kind(2) is Some(TokenKind::Ident(_)) ||
-    self.peek_kind(2) is Some(TokenKind::Keyword(_))
-  let has_param_type = self.peek_kind(3) == Some(TokenKind::Colon) ||
-    (
-      self.peek_kind(3) == Some(TokenKind::Question) &&
-      self.peek_kind(4) == Some(TokenKind::Colon)
-    )
-  if !(name_like && has_param_type) {
-    return
-  }
-  let diag_pos = match self.peek(2) {
-    Some(token) => token.span.start
-    None =>
-      match self.peek(1) {
-        Some(token) => token.span.start
-        None => self.current().span.start
-      }
-  }
-  self.record_ts_error(
-    diag_pos, 1018, "An index signature parameter cannot have an accessibility modifier.",
-  )
-}
-
-///|
-fn Parser::peek_kind_after_matching_bracket(self : Parser) -> TokenKind? {
-  self.peek_kind_after_matching_token_pair(
-    TokenKind::LBracket,
-    TokenKind::RBracket,
-  )
-}
-
-///|
 fn Parser::peek_kind_after_matching_token_pair(
   self : Parser,
   open_kind : TokenKind,
@@ -20046,6 +21249,7 @@ fn Parser::parse_bracket_member_name_with_computed_name_error(
 fn Parser::parse_constructor_type_signature(
   self : Parser,
   start_span : Span,
+  is_abstract : Bool,
 ) -> TypeNode raise ParseError {
   let type_params = if self.check(TokenKind::Lt) {
     self.parse_type_params(false)
@@ -20071,11 +21275,12 @@ fn Parser::parse_constructor_type_signature(
     ignore(self.expect(TokenKind::RParen, "')'"))
     ignore(self.expect(TokenKind::Arrow, "'=>'"))
     let ret = self.parse_type()
-    make_function_type_node(
+    make_constructor_type_node(
       type_params,
       params,
       ret,
       start_span.merge(ret.span),
+      is_abstract,
     )
   } catch {
     err => {
@@ -20085,6 +21290,313 @@ fn Parser::parse_constructor_type_signature(
   }
   self.leave_type_param_scope()
   node
+}
+
+///|
+fn Parser::parse_import_attribute_name(
+  self : Parser,
+) -> (String, Span) raise ParseError {
+  let token = self.current()
+  match token.kind {
+    TokenKind::Ident(name) => {
+      ignore(self.advance())
+      (name, token.span)
+    }
+    TokenKind::Keyword(kw) => {
+      ignore(self.advance())
+      (keyword_to_string(kw), token.span)
+    }
+    TokenKind::String(name) => {
+      ignore(self.advance())
+      (name, token.span)
+    }
+    _ =>
+      raise self.make_ts_error(
+        token.span.start,
+        1478,
+        "Identifier or string literal expected.",
+      )
+  }
+}
+
+///|
+fn Parser::parse_import_attribute_value(
+  self : Parser,
+) -> (ImportAttributeValue, Span, Bool) raise ParseError {
+  let token = self.current()
+  match token.kind {
+    TokenKind::String(value) => {
+      ignore(self.advance())
+      (ImportAttributeValue::String(value), token.span, false)
+    }
+    TokenKind::LBrace => {
+      let (attrs, had_error) = self.parse_import_attributes()
+      (ImportAttributeValue::Object(attrs.fields), attrs.span, had_error)
+    }
+    _ =>
+      raise self.expected_error(
+        token.span.start,
+        "import attribute value",
+        false,
+      )
+  }
+}
+
+///|
+fn Parser::parse_import_attributes(
+  self : Parser,
+) -> (ImportAttributes, Bool) raise ParseError {
+  let start = self.expect(TokenKind::LBrace, "'{'")
+  let fields : Array[ImportAttribute] = []
+  let mut had_error = false
+  while !self.check(TokenKind::RBrace) && !self.at_end() {
+    try {
+      let (name, name_span) = self.parse_import_attribute_name()
+      ignore(self.expect(TokenKind::Colon, "':'"))
+      let (value, value_span, value_had_error) = self.parse_import_attribute_value()
+      if value_had_error {
+        had_error = true
+      }
+      fields.push({ name, value, span: name_span.merge(value_span) })
+      if self.eat(TokenKind::Comma) {
+        if self.check(TokenKind::RBrace) {
+          break
+        }
+        continue
+      }
+      break
+    } catch {
+      err => {
+        had_error = true
+        self.record_error(err)
+        while !self.check(TokenKind::Comma) &&
+              !self.check(TokenKind::RBrace) &&
+              !self.at_end() {
+          ignore(self.advance())
+        }
+        if self.eat(TokenKind::Comma) {
+          break
+        }
+        break
+      }
+    }
+  }
+  let end = if self.eat(TokenKind::RBrace) {
+    self.previous().span
+  } else if had_error {
+    if self.index > 0 {
+      self.previous().span
+    } else {
+      start.span
+    }
+  } else {
+    self.expect(TokenKind::RBrace, "'}'").span
+  }
+  ({ fields, span: start.span.merge(end) }, had_error)
+}
+
+///|
+fn Parser::parse_import_type_node(
+  self : Parser,
+  start_span : Span,
+  is_typeof : Bool,
+) -> TypeNode raise ParseError {
+  ignore(self.expect(TokenKind::LParen, "'('"))
+  let (source, _) = self.expect_string()
+  let from_file = self.source_name_for_position(start_span.start)
+  let resolved_module_file = self.resolve_module_specifier_path(
+    from_file, source,
+  )
+  let mut attributes : ImportAttributes? = None
+  let mut import_attributes_had_error = false
+  let mut recorded_module_not_type_error = false
+  if self.eat(TokenKind::Comma) {
+    if !is_typeof && !self.module_has_export_assignment(resolved_module_file) {
+      self.record_ts_error(
+        start_span.start,
+        1340,
+        "Module '\{source}' does not refer to a type, but is used as a type here. Did you mean 'typeof import('\{source}')'?",
+      )
+      recorded_module_not_type_error = true
+    }
+    ignore(self.expect(TokenKind::LBrace, "'{'"))
+    if !(self.eat_ident_name("assert") || self.eat_ident_name("with")) {
+      self.record_ts_error(self.current().span.start, 1005, "'with' expected.")
+    }
+    ignore(self.expect(TokenKind::Colon, "':'"))
+    let (parsed_attributes, had_error) = self.parse_import_attributes()
+    attributes = Some(parsed_attributes)
+    import_attributes_had_error = had_error
+    if import_attributes_had_error {
+      let end_span = if self.index > 0 {
+        self.previous().span
+      } else {
+        start_span
+      }
+      return self.parse_type_postfix({
+        kind: TypeKind::ImportType({
+          argument: source,
+          attributes,
+          qualifier: None,
+          type_args: [],
+          is_typeof,
+        }),
+        span: start_span.merge(end_span),
+      })
+    }
+    ignore(self.eat(TokenKind::Comma))
+    ignore(self.expect(TokenKind::RBrace, "'}'"))
+  }
+  let end = self.expect(TokenKind::RParen, "')'")
+  let mut qualifier : String? = None
+  let mut span = start_span.merge(end.span)
+  if !import_attributes_had_error && self.eat(TokenKind::Dot) {
+    let (first_part, first_span) = self.parse_ident_name()
+    let mut qualifier_name = first_part
+    span = span.merge(first_span)
+    while self.eat(TokenKind::Dot) {
+      let (part, part_span) = self.parse_ident_name()
+      qualifier_name = "\{qualifier_name}.\{part}"
+      span = span.merge(part_span)
+    }
+    qualifier = Some(qualifier_name)
+  }
+  let type_args : Array[TypeNode] = []
+  if qualifier is Some(_) &&
+    self.check(TokenKind::Lt) &&
+    self.current().span.start.line == span.end.line {
+    let lt_span = self.advance().span
+    if self.check(TokenKind::Gt) {
+      self.record_ts_error(
+        lt_span.start,
+        1099,
+        "Type argument list cannot be empty.",
+      )
+    } else {
+      while true {
+        type_args.push(self.parse_type_argument())
+        if self.eat(TokenKind::Comma) {
+          continue
+        }
+        break
+      }
+    }
+    let gt = self.expect(TokenKind::Gt, "'>'")
+    span = span.merge(gt.span)
+  }
+  if !is_typeof &&
+    !recorded_module_not_type_error &&
+    qualifier is None &&
+    !self.module_has_export_assignment(resolved_module_file) {
+    self.record_ts_error(
+      start_span.start,
+      1340,
+      "Module '\{source}' does not refer to a type, but is used as a type here. Did you mean 'typeof import('\{source}')'?",
+    )
+  }
+  self.parse_type_postfix({
+    kind: TypeKind::ImportType({
+      argument: source,
+      attributes,
+      qualifier,
+      type_args,
+      is_typeof,
+    }),
+    span,
+  })
+}
+
+///|
+fn mapped_modifier_from_sign(sign : String) -> MappedTypeModifier? {
+  match sign {
+    "+" => Some(MappedTypeModifier::Add)
+    "-" => Some(MappedTypeModifier::Remove)
+    _ => None
+  }
+}
+
+///|
+fn Parser::looks_like_mapped_type_start(self : Parser) -> Bool {
+  let mut offset = 0
+  if self.peek_kind(offset) == Some(TokenKind::Plus) ||
+    self.peek_kind(offset) == Some(TokenKind::Minus) {
+    match self.peek_kind(offset + 1) {
+      Some(TokenKind::Keyword(Keyword::Readonly))
+      | Some(TokenKind::Ident("readonly")) => offset += 2
+      _ => ()
+    }
+  } else if self.peek_kind(offset) ==
+    Some(TokenKind::Keyword(Keyword::Readonly)) ||
+    self.peek_kind(offset) == Some(TokenKind::Ident("readonly")) {
+    offset += 1
+  }
+  if self.peek_kind(offset) != Some(TokenKind::LBracket) {
+    return false
+  }
+  let index_name_like = self.peek_kind(offset + 1) is Some(TokenKind::Ident(_)) ||
+    self.peek_kind(offset + 1) is Some(TokenKind::Keyword(_))
+  index_name_like && is_mapped_type_in_token_kind(self.peek_kind(offset + 2))
+}
+
+///|
+fn Parser::parse_mapped_type(
+  self : Parser,
+  start_span : Span,
+) -> TypeNode raise ParseError {
+  let mut readonly_modifier : MappedTypeModifier? = None
+  if self.check(TokenKind::Plus) || self.check(TokenKind::Minus) {
+    let sign = if self.eat(TokenKind::Plus) {
+      "+"
+    } else {
+      ignore(self.advance())
+      "-"
+    }
+    if self.check_keyword(Keyword::Readonly) ||
+      self.check_ident_name("readonly") {
+      ignore(self.advance())
+      readonly_modifier = mapped_modifier_from_sign(sign)
+    }
+  } else if self.check_keyword(Keyword::Readonly) ||
+    self.check_ident_name("readonly") {
+    ignore(self.advance())
+    readonly_modifier = Some(MappedTypeModifier::Add)
+  }
+  ignore(self.expect(TokenKind::LBracket, "'['"))
+  let (type_param_name, _) = self.parse_ident_name()
+  ignore(self.expect_ident_name("in"))
+  let source_type = self.parse_type()
+  let mut name_type : TypeNode? = None
+  if self.eat_keyword(Keyword::As) {
+    name_type = Some(self.parse_type())
+  }
+  ignore(self.expect(TokenKind::RBracket, "']'"))
+  let mut optional_modifier : MappedTypeModifier? = None
+  if self.eat(TokenKind::Question) {
+    optional_modifier = Some(MappedTypeModifier::Add)
+  } else if self.eat(TokenKind::Plus) {
+    if self.eat(TokenKind::Question) {
+      optional_modifier = Some(MappedTypeModifier::Add)
+    }
+  } else if self.eat(TokenKind::Minus) && self.eat(TokenKind::Question) {
+    optional_modifier = Some(MappedTypeModifier::Remove)
+  }
+  let mut value_type : TypeNode? = None
+  if self.eat(TokenKind::Colon) {
+    value_type = Some(self.parse_type())
+  }
+  ignore(self.eat(TokenKind::Semicolon) || self.eat(TokenKind::Comma))
+  let end = self.expect(TokenKind::RBrace, "'}'")
+  {
+    kind: TypeKind::MappedType({
+      readonly_modifier,
+      type_param_name,
+      source_type,
+      name_type,
+      optional_modifier,
+      value_type,
+    }),
+    span: start_span.merge(end.span),
+  }
 }
 
 ///|
@@ -20145,15 +21657,39 @@ fn Parser::parse_type_primary(self : Parser) -> TypeNode raise ParseError {
     self.peek_kind(1) == Some(TokenKind::Keyword(Keyword::New)) {
     let abstract_span = self.advance().span
     ignore(self.expect_keyword(Keyword::New))
-    let node = self.parse_constructor_type_signature(abstract_span)
+    let node = self.parse_constructor_type_signature(abstract_span, true)
     return self.parse_type_postfix(node)
   }
   if self.check_keyword(Keyword::New) {
     let start = self.expect_keyword(Keyword::New)
-    let node = self.parse_constructor_type_signature(start.span)
+    let node = self.parse_constructor_type_signature(start.span, false)
     return self.parse_type_postfix(node)
   }
   if self.check(TokenKind::LParen) {
+    let saved = self.index
+    let saved_error_count = self.errors.length()
+    try {
+      let start = self.expect(TokenKind::LParen, "'('")
+      let inner = self.parse_type()
+      let end = self.expect(TokenKind::RParen, "')'")
+      if !self.check(TokenKind::Arrow) {
+        return self.parse_type_postfix({
+          kind: TypeKind::Parenthesized({ inner, }),
+          span: start.span.merge(end.span),
+        })
+      }
+      self.index = saved
+      while self.errors.length() > saved_error_count {
+        ignore(self.errors.pop())
+      }
+    } catch {
+      _ => {
+        self.index = saved
+        while self.errors.length() > saved_error_count {
+          ignore(self.errors.pop())
+        }
+      }
+    }
     let start = self.expect(TokenKind::LParen, "'('")
     let params : Array[Param] = []
     let mut saw_named_param = false
@@ -20271,6 +21807,9 @@ fn Parser::parse_type_primary(self : Parser) -> TypeNode raise ParseError {
   }
   if self.check(TokenKind::LBrace) {
     let start = self.expect(TokenKind::LBrace, "'{'")
+    if self.looks_like_mapped_type_start() {
+      return self.parse_type_postfix(self.parse_mapped_type(start.span))
+    }
     let members : Array[TypeMember] = []
     while !self.check(TokenKind::RBrace) && !self.at_end() {
       if self.check(TokenKind::Lt) &&
@@ -20316,6 +21855,11 @@ fn Parser::parse_type_primary(self : Parser) -> TypeNode raise ParseError {
     } else {
       self.advance()
     }
+    if self.check_keyword(Keyword::Import) &&
+      self.peek_kind(1) == Some(TokenKind::LParen) {
+      ignore(self.expect_keyword(Keyword::Import))
+      return self.parse_import_type_node(start.span, true)
+    }
     let (name, name_span) = self.parse_type_query_target()
     let span = start.span.merge(name_span)
     return self.parse_type_postfix({ kind: TypeKind::TypeQuery(name), span })
@@ -20342,14 +21886,23 @@ fn Parser::parse_type_primary(self : Parser) -> TypeNode raise ParseError {
     let start = self.advance().span
     let (name, name_span) = self.parse_ident_name()
     let mut end_span = name_span
+    let mut constraint : TypeNode? = None
     if self.eat_keyword(Keyword::Extends) {
-      let constraint = self.parse_type()
-      end_span = constraint.span
+      let parsed_constraint = self.parse_type()
+      end_span = parsed_constraint.span
+      constraint = Some(parsed_constraint)
     }
-    let operand : TypeNode = { kind: TypeKind::Ident(name), span: name_span }
     let span = start.merge(end_span)
     return self.parse_type_postfix({
-      kind: TypeKind::TypeOperator("infer", operand),
+      kind: TypeKind::InferType({
+        type_param: {
+          name,
+          variance: None,
+          constraint,
+          default_type: None,
+          span: name_span.merge(end_span),
+        },
+      }),
       span,
     })
   }
@@ -20364,184 +21917,7 @@ fn Parser::parse_type_primary(self : Parser) -> TypeNode raise ParseError {
   }
   if self.check_keyword(Keyword::Import) {
     let start = self.expect_keyword(Keyword::Import)
-    ignore(self.expect(TokenKind::LParen, "'('"))
-    let (source, _) = self.expect_string()
-    if self.eat(TokenKind::Comma) {
-      let suppress_followup_in_same_alias = self.type_alias_depth > 0 &&
-        self.type_alias_seen_import_attr_error
-      if self.type_alias_depth > 0 && !self.type_alias_seen_import_attr_error {
-        self.type_alias_seen_import_attr_error = true
-      }
-      if suppress_followup_in_same_alias {
-        let mut end_span = start.span
-        if self.eat(TokenKind::LBrace) {
-          end_span = self.previous().span
-          if self.current().kind is TokenKind::Ident(_) ||
-            self.current().kind is TokenKind::Keyword(_) ||
-            self.current().kind is TokenKind::String(_) {
-            end_span = self.advance().span
-          }
-          if self.eat(TokenKind::Colon) {
-            end_span = self.previous().span
-          }
-          if self.eat(TokenKind::LBrace) {
-            end_span = self.previous().span
-            while !self.at_end() &&
-                  !self.check(TokenKind::Comma) &&
-                  !self.check(TokenKind::RBrace) {
-              end_span = self.advance().span
-            }
-            if self.eat(TokenKind::Comma) {
-              self.record_ts_error(
-                self.previous().span.start,
-                1005,
-                "':' expected.",
-              )
-              end_span = self.previous().span
-            }
-          }
-        }
-        while !self.at_end() &&
-              !self.check(TokenKind::Semicolon) &&
-              self.current().span.start.line == start.span.start.line {
-          end_span = self.advance().span
-        }
-        let node : TypeNode = {
-          kind: TypeKind::Ident("import(\"\{source}\")"),
-          span: start.span.merge(end_span),
-        }
-        return node
-      }
-      self.record_ts_error(
-        start.span.start,
-        1340,
-        "Module '\{source}' does not refer to a type, but is used as a type here. Did you mean 'typeof import('\{source}')'?",
-      )
-      if self.eat(TokenKind::LBrace) {
-        if self.current().kind is TokenKind::Ident(_) ||
-          self.current().kind is TokenKind::Keyword(_) ||
-          self.current().kind is TokenKind::String(_) {
-          ignore(self.advance())
-        }
-        if self.eat(TokenKind::Colon) && self.eat(TokenKind::LBrace) {
-          let key_is_ident_or_string = self.current().kind
-            is TokenKind::Ident(_) ||
-            self.current().kind is TokenKind::Keyword(_) ||
-            self.current().kind is TokenKind::String(_)
-          if !key_is_ident_or_string {
-            self.record_ts_error(
-              self.current().span.start,
-              1478,
-              "Identifier or string literal expected.",
-            )
-          }
-          while !self.at_end() &&
-                !self.check(TokenKind::Colon) &&
-                !self.check(TokenKind::RBrace) {
-            ignore(self.advance())
-          }
-          if self.eat(TokenKind::Colon) {
-            self.record_ts_error(
-              self.previous().span.start,
-              1005,
-              "';' expected.",
-            )
-          }
-        }
-      }
-      let mut end_span = start.span
-      while !self.at_end() {
-        if self.check(TokenKind::RBrace) ||
-          self.check(TokenKind::RParen) ||
-          self.check(TokenKind::Dot) {
-          self.record_ts_error(
-            self.current().span.start,
-            1128,
-            "Declaration or statement expected.",
-          )
-          end_span = self.advance().span
-          if self.previous().kind == TokenKind::Dot {
-            break
-          }
-          continue
-        }
-        end_span = self.advance().span
-      }
-      if (
-          self.current().kind is TokenKind::Ident(_) ||
-          self.current().kind is TokenKind::Keyword(_)
-        ) &&
-        self.peek_kind(1) == Some(TokenKind::RParen) {
-        self.record_ts_error(
-          self.current().span.start,
-          1434,
-          "Unexpected keyword or identifier.",
-        )
-        end_span = self.advance().span
-        if self.check(TokenKind::RParen) {
-          self.record_ts_error(
-            self.current().span.start,
-            1128,
-            "Declaration or statement expected.",
-          )
-        }
-      }
-      let node : TypeNode = {
-        kind: TypeKind::Ident("import(\"\{source}\")"),
-        span: start.span.merge(end_span),
-      }
-      return node
-    }
-    let end = self.expect(TokenKind::RParen, "')'")
-    let mut name = "import(\"\{source}\")"
-    let mut span = start.span.merge(end.span)
-    let mut has_member_access = false
-    while self.eat(TokenKind::Dot) {
-      has_member_access = true
-      let (part, part_span) = self.parse_ident_name()
-      name = "\{name}.\{part}"
-      span = span.merge(part_span)
-    }
-    let from_file = self.source_name_for_position(start.span.start)
-    let resolved_module_file = self.resolve_module_specifier_path(
-      from_file, source,
-    )
-    let suppress_bare_import_type_error = self.module_has_export_assignment(
-      resolved_module_file,
-    )
-    if !has_member_access && !suppress_bare_import_type_error {
-      self.record_ts_error(
-        start.span.start,
-        1340,
-        "Module '\{source}' does not refer to a type, but is used as a type here. Did you mean 'typeof import('\{source}')'?",
-      )
-    }
-    let mut node : TypeNode = { kind: TypeKind::Ident(name), span }
-    if self.check(TokenKind::Lt) &&
-      self.current().span.start.line == node.span.end.line {
-      let lt_span = self.advance().span
-      let args : Array[TypeNode] = []
-      if self.check(TokenKind::Gt) {
-        self.record_ts_error(
-          lt_span.start,
-          1099,
-          "Type argument list cannot be empty.",
-        )
-      } else {
-        while true {
-          args.push(self.parse_type_argument())
-          if self.eat(TokenKind::Comma) {
-            continue
-          }
-          break
-        }
-      }
-      let gt = self.expect(TokenKind::Gt, "'>'")
-      let base = node
-      let span = base.span.merge(gt.span)
-      node = { kind: TypeKind::Generic(base, args), span }
-    }
-    return self.parse_type_postfix(node)
+    return self.parse_import_type_node(start.span, false)
   }
   let token = self.current()
   match token.kind {
@@ -21322,6 +22698,63 @@ fn detect_module_files(
 }
 
 ///|
+fn detect_module_files_from_tokens(
+  tokens : Array[Token],
+  default_source_name : String,
+  virtual_file_markers : Array[(Int, String)],
+) -> Array[String] {
+  let module_files : Array[String] = []
+  let mut current_file = default_source_name
+  let mut marker_index = 0
+  let mut brace_depth = 0
+  for i in 0..<tokens.length() {
+    let token = tokens[i]
+    if token.kind == TokenKind::Eof {
+      break
+    }
+    while marker_index < virtual_file_markers.length() {
+      let marker = virtual_file_markers[marker_index]
+      let (marker_line, marker_name) = marker
+      if marker_line <= token.span.start.line {
+        current_file = marker_name
+        brace_depth = 0
+        marker_index += 1
+      } else {
+        break
+      }
+    }
+    if brace_depth == 0 {
+      match token.kind {
+        TokenKind::Keyword(Keyword::Import) => {
+          let next_kind = if i + 1 < tokens.length() {
+            Some(tokens[i + 1].kind)
+          } else {
+            None
+          }
+          if next_kind != Some(TokenKind::LParen) &&
+            next_kind != Some(TokenKind::Dot) {
+            if !array_contains_string(module_files, current_file) {
+              module_files.push(current_file)
+            }
+          }
+        }
+        TokenKind::Keyword(Keyword::Export) =>
+          if !array_contains_string(module_files, current_file) {
+            module_files.push(current_file)
+          }
+        _ => ()
+      }
+    }
+    match token.kind {
+      TokenKind::LBrace => brace_depth += 1
+      TokenKind::RBrace => if brace_depth > 0 { brace_depth -= 1 }
+      _ => ()
+    }
+  }
+  module_files
+}
+
+///|
 fn detect_allow_js(source : StringView) -> Bool {
   for line in source.to_string().split("\n") {
     let trimmed = line.trim()
@@ -21333,31 +22766,6 @@ fn detect_allow_js(source : StringView) -> Bool {
     }
     if trimmed.has_prefix("//") {
       continue
-    }
-    break
-  }
-  false
-}
-
-///|
-fn detect_strict_mode(source : StringView) -> Bool {
-  for line in source.to_string().split("\n") {
-    let trimmed = line.trim()
-    if trimmed == "" {
-      continue
-    }
-    if trimmed.has_prefix("// @alwaysStrict:") ||
-      trimmed.has_prefix("//@alwaysStrict:") {
-      return parse_first_boolean_directive_value(trimmed)
-    }
-    if trimmed.has_prefix("//") {
-      continue
-    }
-    if trimmed == "\"use strict\"" ||
-      trimmed == "\"use strict\";" ||
-      trimmed == "'use strict'" ||
-      trimmed == "'use strict';" {
-      return true
     }
     break
   }
@@ -21516,157 +22924,6 @@ fn detect_isolated_modules(source : StringView) -> Bool {
 }
 
 ///|
-fn is_es2015_or_later_directive_value(trimmed : StringView) -> Bool {
-  trimmed.contains("es6") ||
-  trimmed.contains("ES6") ||
-  trimmed.contains("es2015") ||
-  trimmed.contains("ES2015") ||
-  trimmed.contains("esnext") ||
-  trimmed.contains("ESNext") ||
-  trimmed.contains("es20") ||
-  trimmed.contains("ES20")
-}
-
-///|
-fn is_es2018_or_later_directive_value(trimmed : StringView) -> Bool {
-  trimmed.contains("es2018") ||
-  trimmed.contains("ES2018") ||
-  trimmed.contains("es2019") ||
-  trimmed.contains("ES2019") ||
-  trimmed.contains("es2020") ||
-  trimmed.contains("ES2020") ||
-  trimmed.contains("es2021") ||
-  trimmed.contains("ES2021") ||
-  trimmed.contains("es2022") ||
-  trimmed.contains("ES2022") ||
-  trimmed.contains("es2023") ||
-  trimmed.contains("ES2023") ||
-  trimmed.contains("es2024") ||
-  trimmed.contains("ES2024") ||
-  trimmed.contains("esnext") ||
-  trimmed.contains("ESNext")
-}
-
-///|
-fn detect_es_module_target(source : StringView) -> Bool {
-  let mut module_setting : Bool? = None
-  let mut target_setting : Bool? = None
-  for line in source.to_string().split("\n") {
-    let trimmed = line.trim()
-    if trimmed == "" {
-      continue
-    }
-    if trimmed.has_prefix("// @module:") || trimmed.has_prefix("//@module:") {
-      module_setting = Some(is_es2015_or_later_directive_value(trimmed))
-      continue
-    }
-    if trimmed.has_prefix("// @target:") || trimmed.has_prefix("//@target:") {
-      target_setting = Some(is_es2015_or_later_directive_value(trimmed))
-      continue
-    }
-    if trimmed.has_prefix("// @") || trimmed.has_prefix("//@") {
-      continue
-    }
-    break
-  }
-  match module_setting {
-    Some(value) => value
-    None =>
-      match target_setting {
-        Some(value) => value
-        None => false
-      }
-  }
-}
-
-///|
-fn detect_es_syntax_target(source : StringView) -> Bool {
-  for line in source.to_string().split("\n") {
-    let trimmed = line.trim()
-    if trimmed == "" {
-      continue
-    }
-    if trimmed.has_prefix("// @module:") ||
-      trimmed.has_prefix("//@module:") ||
-      trimmed.has_prefix("// @target:") ||
-      trimmed.has_prefix("//@target:") {
-      return is_es2015_or_later_directive_value(trimmed)
-    }
-    if trimmed.has_prefix("// @") || trimmed.has_prefix("//@") {
-      continue
-    }
-    break
-  }
-  false
-}
-
-///|
-fn detect_es2018_syntax_target(source : StringView) -> Bool {
-  for line in source.to_string().split("\n") {
-    let trimmed = line.trim()
-    if trimmed == "" {
-      continue
-    }
-    if trimmed.has_prefix("// @module:") ||
-      trimmed.has_prefix("//@module:") ||
-      trimmed.has_prefix("// @target:") ||
-      trimmed.has_prefix("//@target:") {
-      return is_es2018_or_later_directive_value(trimmed)
-    }
-    if trimmed.has_prefix("// @") || trimmed.has_prefix("//@") {
-      continue
-    }
-    break
-  }
-  false
-}
-
-///|
-fn target_directive_has_multiple_values(trimmed : StringView) -> Bool {
-  let start = if trimmed.has_prefix("// @target:") { 11 } else { 10 }
-  let value = trimmed.view(start_offset=start).to_string()
-  value.contains(",")
-}
-
-///|
-fn detect_target_has_multiple_values(source : StringView) -> Bool {
-  for line in source.to_string().split("\n") {
-    let trimmed = line.trim()
-    if trimmed == "" {
-      continue
-    }
-    if trimmed.has_prefix("// @target:") || trimmed.has_prefix("//@target:") {
-      return target_directive_has_multiple_values(trimmed)
-    }
-    if trimmed.has_prefix("// @") || trimmed.has_prefix("//@") {
-      continue
-    }
-    break
-  }
-  false
-}
-
-///|
-fn detect_module_none_target(source : StringView) -> Bool {
-  for line in source.to_string().split("\n") {
-    let trimmed = line.trim()
-    if trimmed == "" {
-      continue
-    }
-    if trimmed.has_prefix("// @module:") || trimmed.has_prefix("//@module:") {
-      return trimmed.contains("none") ||
-        trimmed.contains("None") ||
-        trimmed.contains("NONE")
-    }
-    if trimmed.has_prefix("// @") || trimmed.has_prefix("//@") {
-      continue
-    }
-    break
-  }
-  false
-}
-
-///|
 fn first_module_directive_value(trimmed : StringView) -> String {
   let start = if trimmed.has_prefix("// @module:") { 11 } else { 10 }
   let value = trimmed.view(start_offset=start).to_string()
@@ -21737,6 +22994,31 @@ fn parse_first_directive_value(trimmed : StringView) -> String {
     return candidate
   }
   ""
+}
+
+///|
+fn parse_raw_directive_value(trimmed : StringView) -> String {
+  let mut colon_index = -1
+  let mut i = 0
+  while i < trimmed.length() {
+    if trimmed[i] == ':' {
+      colon_index = i
+      break
+    }
+    i += 1
+  }
+  if colon_index < 0 {
+    return ""
+  }
+  let mut candidate = trimmed
+    .view(start_offset=colon_index + 1)
+    .to_string()
+    .trim()
+    .to_string()
+  while candidate.has_suffix("\r") && candidate.length() > 0 {
+    candidate = candidate.view(end_offset=candidate.length() - 1).to_string()
+  }
+  candidate
 }
 
 ///|
@@ -21881,15 +23163,8 @@ fn detect_experimental_decorators(source : StringView) -> Bool {
 }
 
 ///|
-fn detect_jsx_mode(source : String) -> Bool {
-  for line in source.split("\n") {
-    match parse_filename_directive(line) {
-      Some(file_name) =>
-        if file_name.has_suffix(".tsx") || file_name.has_suffix(".jsx") {
-          return true
-        }
-      None => ()
-    }
+fn detect_jsx_pragma(source : StringView) -> Bool {
+  for line in source.to_string().split("\n") {
     if line.contains("@jsx") {
       return true
     }
@@ -22540,114 +23815,93 @@ fn detect_string_literal_lex_errors(
 }
 
 ///|
-pub fn parse_program(
-  source : String,
-  name? : String,
-) -> (ArrayView[ParseError], Program) {
-  let normalized = normalize_source(source)
-  let line_directive_prefix = compute_line_directive_prefix(normalized)
-  let virtual_file_markers = parse_virtual_file_markers(normalized)
-  let default_source_name = diagnostic_source_name_or_default(name)
-  let allow_js = detect_allow_js(normalized)
-  let masked_source = mask_non_source_virtual_file_content(
-    normalized, default_source_name, virtual_file_markers, allow_js,
-  )
-  if source_looks_binary(masked_source) {
-    return (
-      binary_file_parse_errors(name, masked_source),
-      Program::{ stmts: [] },
-    )
-  }
-  let invalid_reference_directive_errors = detect_invalid_reference_directive_errors(
-    masked_source, name, line_directive_prefix, virtual_file_markers,
-  )
-  if !invalid_reference_directive_errors.is_empty() {
-    return (invalid_reference_directive_errors, Program::{ stmts: [] })
-  }
-  let conflict_marker_errors = detect_merge_conflict_marker_errors(
-    masked_source, name, line_directive_prefix, virtual_file_markers,
-  )
-  let shebang_errors = detect_invalid_shebang_errors(
-    masked_source, name, line_directive_prefix, virtual_file_markers,
-  )
-  if !shebang_errors.is_empty() {
-    return (shebang_errors, Program::{ stmts: [] })
-  }
-  let jsx_mode = detect_jsx_mode(masked_source.to_string())
-  let strict_mode = detect_strict_mode(masked_source)
-  let report_unreachable_code = detect_report_unreachable_code(masked_source)
-  let isolated_modules = detect_isolated_modules(masked_source)
-  let es_module_target = detect_es_module_target(masked_source)
-  let module_none_target = detect_module_none_target(masked_source)
-  let module_kind = detect_primary_module_kind(masked_source)
-  let has_multi_target_directive = detect_target_has_multiple_values(
-    masked_source,
-  )
-  let es_syntax_target = detect_es_syntax_target(masked_source)
-  let es2018_syntax_target = detect_es2018_syntax_target(masked_source)
-  let allow_synthetic_default_imports = detect_allow_synthetic_default_imports(
-    masked_source,
-  )
-  let verbatim_module_syntax = detect_verbatim_module_syntax(masked_source)
-  let erasable_syntax_only = detect_erasable_syntax_only(masked_source)
-  let experimental_decorators = detect_experimental_decorators(masked_source)
-  let module_files = detect_module_files(
-    masked_source, default_source_name, virtual_file_markers,
-  )
-  let string_literal_errors : Array[ParseError] = if jsx_mode {
-    []
-  } else {
-    detect_string_literal_lex_errors(
-      masked_source, name, line_directive_prefix, virtual_file_markers,
-    )
-  }
-  let tokenize_source = if jsx_mode {
-    mask_multiline_jsx_attribute_backslashes(masked_source)
-  } else {
-    masked_source
-  }
-  let tokens = tokenize(tokenize_source) catch {
-    err => {
-      if !string_literal_errors.is_empty() {
-        return (
-          order_errors_by_source_name(string_literal_errors),
-          Program::{ stmts: [] },
-        )
-      }
-      return (
-        [
-          lex_error_to_parse_error(
-            err, tokenize_source, name, line_directive_prefix, virtual_file_markers,
-          ),
-        ],
-        Program::{ stmts: [] },
-      )
+fn detect_language_target(source : StringView) -> String? {
+  for line in source.to_string().split("\n") {
+    let trimmed = line.trim()
+    if trimmed == "" {
+      continue
     }
+    if trimmed.has_prefix("// @target:") || trimmed.has_prefix("//@target:") {
+      return Some(parse_raw_directive_value(trimmed))
+    }
+    if trimmed.has_prefix("// @") || trimmed.has_prefix("//@") {
+      continue
+    }
+    break
   }
-  let parser = Parser::new(
-    tokenize_source,
-    tokens,
-    jsx_mode,
-    strict_mode,
-    report_unreachable_code,
-    isolated_modules,
-    es_module_target,
-    module_none_target,
-    module_kind,
-    es_syntax_target,
-    es2018_syntax_target,
-    allow_synthetic_default_imports,
-    verbatim_module_syntax,
-    erasable_syntax_only,
-    experimental_decorators,
-    has_multi_target_directive,
-    !string_literal_errors.is_empty(),
-    name,
-    line_directive_prefix,
-    virtual_file_markers,
-    module_files,
-  )
-  let (parse_errors, program) = parser.parse_program()
+  None
+}
+
+///|
+fn detect_wrapper_strict_mode(source : StringView) -> Bool {
+  for line in source.to_string().split("\n") {
+    let trimmed = line.trim()
+    if trimmed == "" {
+      continue
+    }
+    if trimmed.has_prefix("// @alwaysStrict:") ||
+      trimmed.has_prefix("//@alwaysStrict:") {
+      return parse_first_boolean_directive_value(trimmed)
+    }
+    if trimmed.has_prefix("//") {
+      continue
+    }
+    if trimmed == "\"use strict\"" ||
+      trimmed == "\"use strict\";" ||
+      trimmed == "'use strict'" ||
+      trimmed == "'use strict';" {
+      return true
+    }
+    break
+  }
+  false
+}
+
+///|
+fn target_directive_has_multiple_values(trimmed : StringView) -> Bool {
+  let start = if trimmed.has_prefix("// @target:") { 11 } else { 10 }
+  let value = trimmed.view(start_offset=start).to_string()
+  value.contains(",")
+}
+
+///|
+fn detect_target_has_multiple_values(source : StringView) -> Bool {
+  for line in source.to_string().split("\n") {
+    let trimmed = line.trim()
+    if trimmed == "" {
+      continue
+    }
+    if trimmed.has_prefix("// @target:") || trimmed.has_prefix("//@target:") {
+      return target_directive_has_multiple_values(trimmed)
+    }
+    if trimmed.has_prefix("// @") || trimmed.has_prefix("//@") {
+      continue
+    }
+    break
+  }
+  false
+}
+
+///|
+fn copy_parse_errors(errors : ArrayView[ParseError]) -> Array[ParseError] {
+  let copied : Array[ParseError] = []
+  for err in errors {
+    copied.push(err)
+  }
+  copied
+}
+
+///|
+fn finalized_parse_errors(
+  parse_errors : ArrayView[ParseError],
+  conflict_marker_errors : Array[ParseError],
+  string_literal_errors : Array[ParseError],
+  source : StringView,
+  default_source_name : String,
+  line_directive_prefix : Array[Int],
+  virtual_file_markers : Array[(Int, String)],
+  erasable_syntax_only : Bool,
+) -> Array[ParseError] {
   let merged_errors = merge_parse_and_conflict_marker_errors(
     parse_errors, conflict_marker_errors,
   )
@@ -22666,6 +23920,9 @@ pub fn parse_program(
   let normalized_errors = normalize_unterminated_string_followup_errors(
     normalized_errors, string_literal_errors,
   )
+  let normalized_errors = normalize_import_type_attribute_entry_errors(
+    normalized_errors, source, default_source_name, line_directive_prefix, virtual_file_markers,
+  )
   let all_errors : Array[ParseError] = []
   for err in normalized_errors {
     all_errors.push(err)
@@ -22673,13 +23930,968 @@ pub fn parse_program(
   for err in string_literal_errors {
     all_errors.push(err)
   }
-  let ordered_errors = if erasable_syntax_only ||
-    !string_literal_errors.is_empty() {
+  if erasable_syntax_only || !string_literal_errors.is_empty() {
     order_errors_by_source_line_column(all_errors)
   } else {
     order_errors_by_source_name(all_errors)
   }
-  (ordered_errors, program)
+}
+
+///|
+fn normalize_comment_directive_line(line : StringView) -> String {
+  let mut candidate = line.trim().to_string()
+  while candidate.has_prefix("*") && candidate.length() > 0 {
+    candidate = candidate.view(start_offset=1).to_string().trim().to_string()
+  }
+  candidate
+}
+
+///|
+fn detect_comment_directive_kind(text : String) -> CommentDirectiveKind? {
+  for raw_line in text.split("\n") {
+    let candidate = normalize_comment_directive_line(raw_line)
+    if candidate == "" {
+      continue
+    }
+    if candidate.has_prefix("@ts-ignore") {
+      return Some(CommentDirectiveKind::TsIgnore)
+    }
+    if candidate.has_prefix("@ts-expect-error") {
+      return Some(CommentDirectiveKind::TsExpectError)
+    }
+    if candidate.has_prefix("@ts-nocheck") {
+      return Some(CommentDirectiveKind::TsNoCheck)
+    }
+    if candidate.has_prefix("@ts-check") {
+      return Some(CommentDirectiveKind::TsCheck)
+    }
+  }
+  None
+}
+
+///|
+fn advance_position_over_range(
+  source : StringView,
+  start_offset : Int,
+  end_offset : Int,
+  line : Int,
+  column : Int,
+) -> (Int, Int) {
+  let mut i = start_offset
+  let mut line = line
+  let mut column = column
+  while i < end_offset {
+    let ch = source[i]
+    if ch == '\r' {
+      i += 1
+      if i < end_offset && source[i] == '\n' {
+        i += 1
+      }
+      line += 1
+      column = 1
+      continue
+    }
+    if ch == '\n' {
+      i += 1
+      line += 1
+      column = 1
+      continue
+    }
+    i += 1
+    column += 1
+  }
+  (line, column)
+}
+
+///|
+fn scan_comment_trivia_range(
+  source : StringView,
+  start_offset : Int,
+  end_offset : Int,
+  line : Int,
+  column : Int,
+  comments : Array[CommentRange],
+  directives : Array[CommentDirective],
+) -> (Int, Int) {
+  let mut i = start_offset
+  let mut line = line
+  let mut column = column
+  while i < end_offset {
+    let ch = source[i]
+    if ch == '/' && i + 1 < end_offset {
+      let next = source[i + 1]
+      if next == '/' {
+        let start : Position = { offset: i, line, column }
+        i += 2
+        column += 2
+        let text_start = i
+        while i < end_offset && source[i] != '\n' && source[i] != '\r' {
+          i += 1
+          column += 1
+        }
+        let end : Position = { offset: i, line, column }
+        let text = source
+          .view(start_offset=text_start, end_offset=i)
+          .to_string()
+        let span = span_from(start, end)
+        comments.push({ kind: CommentKind::Line, span, text })
+        match detect_comment_directive_kind(text) {
+          Some(kind) => directives.push({ kind, span, text })
+          None => ()
+        }
+        continue
+      }
+      if next == '*' {
+        let start : Position = { offset: i, line, column }
+        let is_jsdoc = i + 2 < end_offset &&
+          source[i + 2] == '*' &&
+          !(i + 3 < end_offset && source[i + 3] == '/')
+        i += 2
+        column += 2
+        let text_start = i
+        let mut text_end = i
+        let mut terminated = false
+        while i < end_offset {
+          let current = source[i]
+          if current == '*' && i + 1 < end_offset && source[i + 1] == '/' {
+            text_end = i
+            i += 2
+            column += 2
+            terminated = true
+            break
+          }
+          if current == '\r' {
+            i += 1
+            if i < end_offset && source[i] == '\n' {
+              i += 1
+            }
+            line += 1
+            column = 1
+            continue
+          }
+          if current == '\n' {
+            i += 1
+            line += 1
+            column = 1
+            continue
+          }
+          i += 1
+          column += 1
+        }
+        if !terminated {
+          text_end = i
+        }
+        let end : Position = { offset: i, line, column }
+        let text = source
+          .view(start_offset=text_start, end_offset=text_end)
+          .to_string()
+        let span = span_from(start, end)
+        let kind = if is_jsdoc {
+          CommentKind::JsDoc
+        } else {
+          CommentKind::Block
+        }
+        comments.push({ kind, span, text })
+        match detect_comment_directive_kind(text) {
+          Some(kind) => directives.push({ kind, span, text })
+          None => ()
+        }
+        continue
+      }
+    }
+    if ch == '\r' {
+      i += 1
+      if i < end_offset && source[i] == '\n' {
+        i += 1
+      }
+      line += 1
+      column = 1
+      continue
+    }
+    if ch == '\n' {
+      i += 1
+      line += 1
+      column = 1
+      continue
+    }
+    i += 1
+    column += 1
+  }
+  (line, column)
+}
+
+///|
+fn collect_comments_and_directives_from_tokens(
+  source : StringView,
+  tokens : Array[Token],
+) -> (Array[CommentRange], Array[CommentDirective]) {
+  let comments : Array[CommentRange] = []
+  let directives : Array[CommentDirective] = []
+  let mut offset = 0
+  let mut line = 1
+  let mut column = 1
+  for token in tokens {
+    let token_start = token.span.start.offset
+    let token_end = token.span.end.offset
+    let (next_line, next_column) = scan_comment_trivia_range(
+      source, offset, token_start, line, column, comments, directives,
+    )
+    line = next_line
+    column = next_column
+    let (advanced_line, advanced_column) = advance_position_over_range(
+      source, token_start, token_end, line, column,
+    )
+    line = advanced_line
+    column = advanced_column
+    offset = token_end
+  }
+  ignore(
+    scan_comment_trivia_range(
+      source,
+      offset,
+      source.length(),
+      line,
+      column,
+      comments,
+      directives,
+    ),
+  )
+  (comments, directives)
+}
+
+///|
+fn collect_comments_and_directives(
+  source : StringView,
+) -> (Array[CommentRange], Array[CommentDirective]) {
+  let comments : Array[CommentRange] = []
+  let directives : Array[CommentDirective] = []
+  let len = source.length()
+  let mut i = 0
+  let mut line = 1
+  let mut column = 1
+  while i < len {
+    let ch = source[i]
+    if ch == '/' && i + 1 < len {
+      let next = source[i + 1]
+      if next == '/' {
+        let start : Position = { offset: i, line, column }
+        i += 2
+        column += 2
+        let text_start = i
+        while i < len && source[i] != '\n' && source[i] != '\r' {
+          i += 1
+          column += 1
+        }
+        let end : Position = { offset: i, line, column }
+        let text = source
+          .view(start_offset=text_start, end_offset=i)
+          .to_string()
+        let span = span_from(start, end)
+        comments.push({ kind: CommentKind::Line, span, text })
+        match detect_comment_directive_kind(text) {
+          Some(kind) => directives.push({ kind, span, text })
+          None => ()
+        }
+        continue
+      }
+      if next == '*' {
+        let start : Position = { offset: i, line, column }
+        let is_jsdoc = i + 2 < len &&
+          source[i + 2] == '*' &&
+          !(i + 3 < len && source[i + 3] == '/')
+        i += 2
+        column += 2
+        let text_start = i
+        let mut text_end = i
+        let mut terminated = false
+        while i < len {
+          let current = source[i]
+          if current == '*' && i + 1 < len && source[i + 1] == '/' {
+            text_end = i
+            i += 2
+            column += 2
+            terminated = true
+            break
+          }
+          if current == '\n' {
+            i += 1
+            line += 1
+            column = 1
+            continue
+          }
+          if current == '\r' {
+            i += 1
+            if i < len && source[i] == '\n' {
+              i += 1
+            }
+            line += 1
+            column = 1
+            continue
+          }
+          i += 1
+          column += 1
+        }
+        if !terminated {
+          text_end = i
+        }
+        let end : Position = { offset: i, line, column }
+        let text = source
+          .view(start_offset=text_start, end_offset=text_end)
+          .to_string()
+        let span = span_from(start, end)
+        let kind = if is_jsdoc {
+          CommentKind::JsDoc
+        } else {
+          CommentKind::Block
+        }
+        comments.push({ kind, span, text })
+        match detect_comment_directive_kind(text) {
+          Some(directive_kind) =>
+            directives.push({ kind: directive_kind, span, text })
+          None => ()
+        }
+        continue
+      }
+    }
+    if ch == '\'' || ch == '"' {
+      let quote = ch
+      i += 1
+      column += 1
+      while i < len {
+        let current = source[i]
+        if current == '\\' {
+          i += 1
+          if i < len {
+            if source[i] == '\n' {
+              i += 1
+              line += 1
+              column = 1
+            } else if source[i] == '\r' {
+              i += 1
+              if i < len && source[i] == '\n' {
+                i += 1
+              }
+              line += 1
+              column = 1
+            } else {
+              i += 1
+              column += 2
+            }
+          }
+          continue
+        }
+        if current == quote {
+          i += 1
+          column += 1
+          break
+        }
+        if current == '\n' {
+          i += 1
+          line += 1
+          column = 1
+          break
+        }
+        if current == '\r' {
+          i += 1
+          if i < len && source[i] == '\n' {
+            i += 1
+          }
+          line += 1
+          column = 1
+          break
+        }
+        i += 1
+        column += 1
+      }
+      continue
+    }
+    if ch == '`' {
+      i += 1
+      column += 1
+      while i < len {
+        let current = source[i]
+        if current == '\\' {
+          i += 1
+          if i < len {
+            if source[i] == '\n' {
+              i += 1
+              line += 1
+              column = 1
+            } else if source[i] == '\r' {
+              i += 1
+              if i < len && source[i] == '\n' {
+                i += 1
+              }
+              line += 1
+              column = 1
+            } else {
+              i += 1
+              column += 2
+            }
+          }
+          continue
+        }
+        if current == '`' {
+          i += 1
+          column += 1
+          break
+        }
+        if current == '\n' {
+          i += 1
+          line += 1
+          column = 1
+          continue
+        }
+        if current == '\r' {
+          i += 1
+          if i < len && source[i] == '\n' {
+            i += 1
+          }
+          line += 1
+          column = 1
+          continue
+        }
+        i += 1
+        column += 1
+      }
+      continue
+    }
+    if ch == '\n' {
+      i += 1
+      line += 1
+      column = 1
+      continue
+    }
+    if ch == '\r' {
+      i += 1
+      if i < len && source[i] == '\n' {
+        i += 1
+      }
+      line += 1
+      column = 1
+      continue
+    }
+    i += 1
+    column += 1
+  }
+  (comments, directives)
+}
+
+///|
+fn collect_identifier_table(tokens : Array[Token]) -> Array[String] {
+  let identifiers : Array[String] = []
+  for token in tokens {
+    let name : String? = match token.kind {
+      TokenKind::Ident(text) => Some(text)
+      TokenKind::PrivateIdent(text) => Some("#\{text}")
+      _ => None
+    }
+    match name {
+      Some(text) =>
+        if !array_contains_string(identifiers, text) {
+          identifiers.push(text)
+        }
+      None => ()
+    }
+  }
+  identifiers
+}
+
+///|
+fn make_source_file(
+  options : ParseOptions,
+  stmts : Array[Stmt],
+  parse_errors : Array[ParseError],
+  comment_directives : Array[CommentDirective],
+  comments : Array[CommentRange],
+  strict_mode : Bool,
+  external_module_indicator : Bool,
+  identifiers : Array[String],
+) -> SourceFile {
+  {
+    file_name: options.file_name,
+    script_kind: options.script_kind,
+    is_declaration_file: options.script_kind == ScriptKind::Dts ||
+    file_name_is_declaration_source(options.file_name),
+    stmts,
+    parse_errors,
+    comment_directives,
+    comments,
+    strict_mode,
+    module_kind: options.module_kind,
+    language_target: options.language_target,
+    jsx_mode: options.jsx_mode,
+    jsdoc_parsing_mode: options.jsdoc_parsing_mode,
+    set_parent_nodes: options.set_parent_nodes,
+    external_module_indicator,
+    identifiers,
+  }
+}
+
+///|
+priv struct IsolatedParseSetup {
+  string_literal_errors : Array[ParseError]
+  default_source_name : String
+}
+
+///|
+fn make_isolated_parse_setup(
+  source : String,
+  options : ParseOptions,
+) -> ((Parser, IsolatedParseSetup)?, Array[ParseError]) {
+  let normalized = normalize_source(source)
+  let line_directive_prefix = compute_line_directive_prefix(normalized)
+  let virtual_file_markers = parse_virtual_file_markers(normalized)
+  let default_source_name = options.file_name
+  let source_name = source_name_option(options.file_name)
+  let masked_source = mask_non_source_virtual_file_content(
+    normalized,
+    default_source_name,
+    virtual_file_markers,
+    options.allow_js,
+  )
+  if source_looks_binary(masked_source) {
+    return (None, binary_file_parse_errors(source_name, masked_source))
+  }
+  let string_literal_errors : Array[ParseError] = if options.jsx_mode {
+    []
+  } else {
+    detect_string_literal_lex_errors(
+      masked_source, source_name, line_directive_prefix, virtual_file_markers,
+    )
+  }
+  let tokenize_source = if options.jsx_mode {
+    mask_multiline_jsx_attribute_backslashes(masked_source)
+  } else {
+    masked_source
+  }
+  let tokens = tokenize(tokenize_source) catch {
+    err => {
+      let token_errors = if !string_literal_errors.is_empty() {
+        order_errors_by_source_name(string_literal_errors)
+      } else {
+        [
+          lex_error_to_parse_error(
+            err, tokenize_source, source_name, line_directive_prefix, virtual_file_markers,
+          ),
+        ]
+      }
+      return (None, token_errors)
+    }
+  }
+  let parser = Parser::new(
+    tokenize_source,
+    tokens,
+    options.jsx_mode,
+    options.strict_mode,
+    options.report_unreachable_code,
+    options.isolated_modules,
+    parse_setting_is_es_module_target(
+      options.language_target,
+      options.module_kind,
+    ),
+    module_kind_is_none(options.module_kind),
+    options.module_kind,
+    options.language_target,
+    parse_settings_enable_es_syntax(
+      options.language_target,
+      options.module_kind,
+    ),
+    parse_settings_enable_es2018_syntax(
+      options.language_target,
+      options.module_kind,
+    ),
+    options.allow_synthetic_default_imports,
+    options.verbatim_module_syntax,
+    options.erasable_syntax_only,
+    options.experimental_decorators,
+    options.has_multi_target_directive,
+    !string_literal_errors.is_empty(),
+    source_name,
+    line_directive_prefix,
+    virtual_file_markers,
+    [],
+  )
+  (Some((parser, { string_literal_errors, default_source_name })), [])
+}
+
+///|
+fn isolated_parse_errors(
+  parser : Parser,
+  setup : IsolatedParseSetup,
+) -> Array[ParseError] {
+  finalized_parse_errors(
+    parser.errors,
+    [],
+    setup.string_literal_errors,
+    parser.source_text,
+    setup.default_source_name,
+    parser.line_directive_prefix,
+    parser.virtual_file_markers,
+    parser.erasable_syntax_only,
+  )
+}
+
+///|
+fn Parser::record_trailing_fragment_error(self : Parser) -> Unit {
+  if self.at_end() {
+    return
+  }
+  self.record_error(
+    self.expected_error(self.current().span.start, "end of file", false),
+  )
+}
+
+///|
+fn source_position_at_offset(source : StringView, offset : Int) -> Position {
+  let mut line = 1
+  let mut column = 1
+  let mut i = 0
+  let limit = if offset < 0 {
+    0
+  } else if offset > source.length() {
+    source.length()
+  } else {
+    offset
+  }
+  while i < limit {
+    let ch = source[i]
+    if ch == '\r' {
+      i += 1
+      if i < limit && source[i] == '\n' {
+        i += 1
+      }
+      line += 1
+      column = 1
+      continue
+    }
+    if ch == '\n' {
+      i += 1
+      line += 1
+      column = 1
+      continue
+    }
+    i += 1
+    column += 1
+  }
+  { offset: limit, line, column }
+}
+
+///|
+fn skip_ascii_whitespace(source : StringView, start_offset : Int) -> Int {
+  let mut offset = start_offset
+  while offset < source.length() {
+    match source[offset] {
+      ' ' | '\t' | '\n' | '\r' => offset += 1
+      _ => break
+    }
+  }
+  offset
+}
+
+///|
+fn source_has_jsdoc_comment_at(source : StringView, offset : Int) -> Bool {
+  offset + 2 < source.length() &&
+  source[offset] == '/' &&
+  source[offset + 1] == '*' &&
+  source[offset + 2] == '*' &&
+  !(offset + 3 < source.length() && source[offset + 3] == '/')
+}
+
+///|
+fn Parser::parse_qualified_name_text(self : Parser) -> String raise ParseError {
+  let (name, _) = self.parse_qualified_name()
+  name
+}
+
+///|
+fn compatibility_parse_options(
+  source : String,
+  file_name : String,
+  jsx_override : Bool?,
+) -> ParseOptions {
+  let normalized = normalize_source(source)
+  let virtual_file_markers = parse_virtual_file_markers(normalized)
+  let allow_js_by_directive = detect_allow_js(normalized)
+  let base_script_kind = if file_name == "" {
+    infer_virtual_script_kind(ScriptKind::Ts, virtual_file_markers)
+  } else {
+    infer_script_kind(file_name)
+  }
+  let resolved_script_kind = match jsx_override {
+    Some(value) =>
+      if value {
+        with_jsx_script_kind(base_script_kind)
+      } else {
+        without_jsx_script_kind(base_script_kind)
+      }
+    None => base_script_kind
+  }
+  let tentative_allow_js = allow_js_by_directive ||
+    script_kind_is_js_like(resolved_script_kind)
+  let masked_source = mask_non_source_virtual_file_content(
+    normalized, file_name, virtual_file_markers, tentative_allow_js,
+  )
+  let jsx_enabled_by_virtual_files = virtual_file_markers_support_jsx(
+    virtual_file_markers,
+  )
+  let jsx_enabled_by_js_pragma = detect_jsx_pragma(masked_source) &&
+    (
+      script_kind_is_js_like(resolved_script_kind) ||
+      virtual_file_markers_are_js_like(virtual_file_markers)
+    )
+  let jsx_mode = match jsx_override {
+    Some(value) => value
+    None =>
+      script_kind_supports_jsx(resolved_script_kind) ||
+      script_kind_is_js_like(resolved_script_kind) ||
+      jsx_enabled_by_virtual_files ||
+      jsx_enabled_by_js_pragma
+  }
+  {
+    file_name,
+    script_kind: resolved_script_kind,
+    language_target: detect_language_target(masked_source),
+    jsx_mode,
+    strict_mode: detect_wrapper_strict_mode(masked_source),
+    module_kind: detect_primary_module_kind(masked_source),
+    jsdoc_parsing_mode: JsDocParsingMode::ParseAll,
+    set_parent_nodes: false,
+    allow_js: tentative_allow_js || script_kind_is_js_like(resolved_script_kind),
+    has_multi_target_directive: detect_target_has_multiple_values(masked_source),
+    report_unreachable_code: detect_report_unreachable_code(masked_source),
+    isolated_modules: detect_isolated_modules(masked_source),
+    allow_synthetic_default_imports: detect_allow_synthetic_default_imports(
+      masked_source,
+    ),
+    verbatim_module_syntax: detect_verbatim_module_syntax(masked_source),
+    erasable_syntax_only: detect_erasable_syntax_only(masked_source),
+    experimental_decorators: detect_experimental_decorators(masked_source),
+  }
+}
+
+///|
+pub fn default_parse_options(
+  file_name : String,
+  script_kind? : ScriptKind,
+) -> ParseOptions {
+  let resolved_script_kind = match script_kind {
+    Some(kind) => kind
+    None => infer_script_kind(file_name)
+  }
+  let jsdoc_parsing_mode = match resolved_script_kind {
+    ScriptKind::Json => JsDocParsingMode::ParseNone
+    _ => JsDocParsingMode::ParseAll
+  }
+  {
+    file_name,
+    script_kind: resolved_script_kind,
+    language_target: None,
+    jsx_mode: script_kind_supports_jsx(resolved_script_kind) ||
+    script_kind_is_js_like(resolved_script_kind),
+    strict_mode: false,
+    module_kind: None,
+    jsdoc_parsing_mode,
+    set_parent_nodes: false,
+    allow_js: script_kind_is_js_like(resolved_script_kind),
+    has_multi_target_directive: false,
+    report_unreachable_code: false,
+    isolated_modules: false,
+    allow_synthetic_default_imports: false,
+    verbatim_module_syntax: false,
+    erasable_syntax_only: false,
+    experimental_decorators: false,
+  }
+}
+
+///|
+pub fn create_source_file(
+  source : String,
+  options : ParseOptions,
+) -> SourceFile {
+  let normalized = normalize_source(source)
+  let line_directive_prefix = compute_line_directive_prefix(normalized)
+  let virtual_file_markers = parse_virtual_file_markers(normalized)
+  let default_source_name = options.file_name
+  let source_name = source_name_option(options.file_name)
+  let masked_source = mask_non_source_virtual_file_content(
+    normalized,
+    default_source_name,
+    virtual_file_markers,
+    options.allow_js,
+  )
+  let module_files = detect_module_files(
+    masked_source, default_source_name, virtual_file_markers,
+  )
+  let external_module_indicator = source_file_is_external_module(
+    module_files,
+    options.file_name,
+  )
+  let (comments, comment_directives) = collect_comments_and_directives(
+    masked_source,
+  )
+  if source_looks_binary(masked_source) {
+    return make_source_file(
+      options,
+      [],
+      binary_file_parse_errors(source_name, masked_source),
+      comment_directives,
+      comments,
+      options.strict_mode,
+      external_module_indicator,
+      [],
+    )
+  }
+  let invalid_reference_directive_errors = detect_invalid_reference_directive_errors(
+    masked_source, source_name, line_directive_prefix, virtual_file_markers,
+  )
+  if !invalid_reference_directive_errors.is_empty() {
+    return make_source_file(
+      options,
+      [],
+      copy_parse_errors(invalid_reference_directive_errors),
+      comment_directives,
+      comments,
+      options.strict_mode,
+      external_module_indicator,
+      [],
+    )
+  }
+  let conflict_marker_errors = detect_merge_conflict_marker_errors(
+    masked_source, source_name, line_directive_prefix, virtual_file_markers,
+  )
+  let shebang_errors = detect_invalid_shebang_errors(
+    masked_source, source_name, line_directive_prefix, virtual_file_markers,
+  )
+  if !shebang_errors.is_empty() {
+    return make_source_file(
+      options,
+      [],
+      copy_parse_errors(shebang_errors),
+      comment_directives,
+      comments,
+      options.strict_mode,
+      external_module_indicator,
+      [],
+    )
+  }
+  let string_literal_errors : Array[ParseError] = if options.jsx_mode {
+    []
+  } else {
+    detect_string_literal_lex_errors(
+      masked_source, source_name, line_directive_prefix, virtual_file_markers,
+    )
+  }
+  let tokenize_source = if options.jsx_mode {
+    mask_multiline_jsx_attribute_backslashes(masked_source)
+  } else {
+    masked_source
+  }
+  let tokens = tokenize(tokenize_source) catch {
+    err => {
+      let token_errors = if !string_literal_errors.is_empty() {
+        order_errors_by_source_name(string_literal_errors)
+      } else {
+        [
+          lex_error_to_parse_error(
+            err, tokenize_source, source_name, line_directive_prefix, virtual_file_markers,
+          ),
+        ]
+      }
+      return make_source_file(
+        options,
+        [],
+        token_errors,
+        comment_directives,
+        comments,
+        options.strict_mode,
+        external_module_indicator,
+        [],
+      )
+    }
+  }
+  let module_files = detect_module_files_from_tokens(
+    tokens, default_source_name, virtual_file_markers,
+  )
+  let external_module_indicator = source_file_is_external_module(
+    module_files,
+    options.file_name,
+  )
+  let (comments, comment_directives) = collect_comments_and_directives_from_tokens(
+    masked_source, tokens,
+  )
+  let parser = Parser::new(
+    tokenize_source,
+    tokens,
+    options.jsx_mode,
+    options.strict_mode,
+    options.report_unreachable_code,
+    options.isolated_modules,
+    parse_setting_is_es_module_target(
+      options.language_target,
+      options.module_kind,
+    ),
+    module_kind_is_none(options.module_kind),
+    options.module_kind,
+    options.language_target,
+    parse_settings_enable_es_syntax(
+      options.language_target,
+      options.module_kind,
+    ),
+    parse_settings_enable_es2018_syntax(
+      options.language_target,
+      options.module_kind,
+    ),
+    options.allow_synthetic_default_imports,
+    options.verbatim_module_syntax,
+    options.erasable_syntax_only,
+    options.experimental_decorators,
+    options.has_multi_target_directive,
+    !string_literal_errors.is_empty(),
+    source_name,
+    line_directive_prefix,
+    virtual_file_markers,
+    module_files,
+  )
+  let (parse_errors, program) = parser.parse_program()
+  let ordered_errors = finalized_parse_errors(
+    parse_errors,
+    conflict_marker_errors,
+    string_literal_errors,
+    parser.source_text,
+    default_source_name,
+    line_directive_prefix,
+    virtual_file_markers,
+    options.erasable_syntax_only,
+  )
+  make_source_file(
+    options,
+    program.stmts,
+    ordered_errors,
+    comment_directives,
+    comments,
+    parser.strict_mode || external_module_indicator,
+    external_module_indicator,
+    collect_identifier_table(tokens),
+  )
+}
+
+///|
+pub fn parse_source(
+  source : String,
+  options : ParseOptions,
+) -> (ArrayView[ParseError], Program) {
+  let source_file = create_source_file(source, options)
+  (source_file.parse_errors, Program::{ stmts: source_file.stmts })
+}
+
+///|
+pub fn parse_program(
+  source : String,
+  name? : String,
+) -> (ArrayView[ParseError], Program) {
+  let file_name = diagnostic_source_name_or_default(name)
+  parse_source(source, compatibility_parse_options(source, file_name, None))
 }
 
 ///|
@@ -22688,139 +24900,114 @@ pub fn parse_program_with_jsx(
   jsx_mode : Bool,
   name? : String,
 ) -> (ArrayView[ParseError], Program) {
-  let normalized = normalize_source(source)
-  let line_directive_prefix = compute_line_directive_prefix(normalized)
-  let virtual_file_markers = parse_virtual_file_markers(normalized)
-  let default_source_name = diagnostic_source_name_or_default(name)
-  let allow_js = detect_allow_js(normalized)
-  let masked_source = mask_non_source_virtual_file_content(
-    normalized, default_source_name, virtual_file_markers, allow_js,
+  let file_name = diagnostic_source_name_or_default(name)
+  parse_source(
+    source,
+    compatibility_parse_options(source, file_name, Some(jsx_mode)),
   )
-  if source_looks_binary(masked_source) {
-    return (
-      binary_file_parse_errors(name, masked_source),
-      Program::{ stmts: [] },
-    )
+}
+
+///|
+pub fn parse_json_text(source : String, name? : String) -> SourceFile {
+  let file_name = match name {
+    Some(value) => value
+    None => "input.json"
   }
-  let invalid_reference_directive_errors = detect_invalid_reference_directive_errors(
-    masked_source, name, line_directive_prefix, virtual_file_markers,
+  create_source_file(
+    source,
+    default_parse_options(file_name, script_kind=ScriptKind::Json),
   )
-  if !invalid_reference_directive_errors.is_empty() {
-    return (invalid_reference_directive_errors, Program::{ stmts: [] })
-  }
-  let conflict_marker_errors = detect_merge_conflict_marker_errors(
-    masked_source, name, line_directive_prefix, virtual_file_markers,
-  )
-  let shebang_errors = detect_invalid_shebang_errors(
-    masked_source, name, line_directive_prefix, virtual_file_markers,
-  )
-  if !shebang_errors.is_empty() {
-    return (shebang_errors, Program::{ stmts: [] })
-  }
-  let strict_mode = detect_strict_mode(masked_source)
-  let report_unreachable_code = detect_report_unreachable_code(masked_source)
-  let isolated_modules = detect_isolated_modules(masked_source)
-  let es_module_target = detect_es_module_target(masked_source)
-  let module_none_target = detect_module_none_target(masked_source)
-  let module_kind = detect_primary_module_kind(masked_source)
-  let has_multi_target_directive = detect_target_has_multiple_values(
-    masked_source,
-  )
-  let es_syntax_target = detect_es_syntax_target(masked_source)
-  let es2018_syntax_target = detect_es2018_syntax_target(masked_source)
-  let allow_synthetic_default_imports = detect_allow_synthetic_default_imports(
-    masked_source,
-  )
-  let verbatim_module_syntax = detect_verbatim_module_syntax(masked_source)
-  let erasable_syntax_only = detect_erasable_syntax_only(masked_source)
-  let experimental_decorators = detect_experimental_decorators(masked_source)
-  let module_files = detect_module_files(
-    masked_source, default_source_name, virtual_file_markers,
-  )
-  let string_literal_errors : Array[ParseError] = if jsx_mode {
-    []
-  } else {
-    detect_string_literal_lex_errors(
-      masked_source, name, line_directive_prefix, virtual_file_markers,
-    )
-  }
-  let tokenize_source = if jsx_mode {
-    mask_multiline_jsx_attribute_backslashes(masked_source)
-  } else {
-    masked_source
-  }
-  let tokens = tokenize(tokenize_source) catch {
-    err => {
-      if !string_literal_errors.is_empty() {
-        return (
-          order_errors_by_source_name(string_literal_errors),
-          Program::{ stmts: [] },
-        )
+}
+
+///|
+pub fn parse_isolated_entity_name(
+  source : String,
+  options : ParseOptions,
+) -> (Array[ParseError], String?) {
+  let (setup, setup_errors) = make_isolated_parse_setup(source, options)
+  match setup {
+    Some((parser, setup)) => {
+      let parsed_name : String? = Some(parser.parse_qualified_name_text()) catch {
+        err => {
+          parser.record_error(err)
+          None
+        }
       }
-      return (
-        [
-          lex_error_to_parse_error(
-            err, tokenize_source, name, line_directive_prefix, virtual_file_markers,
-          ),
-        ],
-        Program::{ stmts: [] },
-      )
+      match parsed_name {
+        Some(_) => parser.record_trailing_fragment_error()
+        None => ()
+      }
+      (isolated_parse_errors(parser, setup), parsed_name)
     }
+    None => (setup_errors, None)
   }
-  let parser = Parser::new(
-    tokenize_source,
-    tokens,
-    jsx_mode,
-    strict_mode,
-    report_unreachable_code,
-    isolated_modules,
-    es_module_target,
-    module_none_target,
-    module_kind,
-    es_syntax_target,
-    es2018_syntax_target,
-    allow_synthetic_default_imports,
-    verbatim_module_syntax,
-    erasable_syntax_only,
-    experimental_decorators,
-    has_multi_target_directive,
-    !string_literal_errors.is_empty(),
-    name,
-    line_directive_prefix,
-    virtual_file_markers,
-    module_files,
-  )
-  let (parse_errors, program) = parser.parse_program()
-  let merged_errors = merge_parse_and_conflict_marker_errors(
-    parse_errors, conflict_marker_errors,
-  )
-  let normalized_errors = normalize_int_type_check_index_signature_errors(
-    merged_errors, default_source_name,
-  )
-  let normalized_errors = normalize_switch_duplicate_default_clause_errors(
-    normalized_errors,
-  )
-  let normalized_errors = normalize_optional_param_initializer_errors(
-    normalized_errors,
-  )
-  let normalized_errors = normalize_optional_index_signature_question_errors(
-    normalized_errors,
-  )
-  let normalized_errors = normalize_unterminated_string_followup_errors(
-    normalized_errors, string_literal_errors,
-  )
-  let all_errors : Array[ParseError] = []
-  for err in normalized_errors {
-    all_errors.push(err)
+}
+
+///|
+pub fn parse_isolated_type_expression(
+  source : String,
+  options : ParseOptions,
+) -> (Array[ParseError], TypeNode?) {
+  let (setup, setup_errors) = make_isolated_parse_setup(source, options)
+  match setup {
+    Some((parser, setup)) => {
+      let parsed_type : TypeNode? = Some(parser.parse_type()) catch {
+        err => {
+          parser.record_error(err)
+          None
+        }
+      }
+      match parsed_type {
+        Some(_) => parser.record_trailing_fragment_error()
+        None => ()
+      }
+      (isolated_parse_errors(parser, setup), parsed_type)
+    }
+    None => (setup_errors, None)
   }
-  for err in string_literal_errors {
-    all_errors.push(err)
+}
+
+///|
+pub fn parse_isolated_jsdoc_comment(
+  source : String,
+  options : ParseOptions,
+) -> (Array[ParseError], CommentRange?) {
+  let (setup, setup_errors) = make_isolated_parse_setup(source, options)
+  match setup {
+    Some((parser, setup)) => {
+      let start_offset = skip_ascii_whitespace(parser.source_text, 0)
+      if !source_has_jsdoc_comment_at(parser.source_text, start_offset) {
+        return (isolated_parse_errors(parser, setup), None)
+      }
+      let (comments, _) = collect_comments_and_directives(parser.source_text)
+      let mut jsdoc_comment : CommentRange? = None
+      for comment in comments {
+        if comment.kind is CommentKind::JsDoc &&
+          comment.span.start.offset == start_offset {
+          jsdoc_comment = Some(comment)
+          break
+        }
+      }
+      match jsdoc_comment {
+        Some(comment) => {
+          let trailing_offset = skip_ascii_whitespace(
+            parser.source_text,
+            comment.span.end.offset,
+          )
+          if trailing_offset < parser.source_text.length() {
+            let pos = source_position_at_offset(
+              parser.source_text,
+              trailing_offset,
+            )
+            parser.record_error(
+              parser.expected_error(pos, "end of file", false),
+            )
+          }
+          (isolated_parse_errors(parser, setup), Some(comment))
+        }
+        None => (isolated_parse_errors(parser, setup), None)
+      }
+    }
+    None => (setup_errors, None)
   }
-  let ordered_errors = if erasable_syntax_only ||
-    !string_literal_errors.is_empty() {
-    order_errors_by_source_line_column(all_errors)
-  } else {
-    order_errors_by_source_name(all_errors)
-  }
-  (ordered_errors, program)
 }

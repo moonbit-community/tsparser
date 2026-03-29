@@ -6,9 +6,23 @@ import {
 }
 
 // Values
+pub fn create_source_file(String, ParseOptions) -> SourceFile
+
+pub fn default_parse_options(String, script_kind? : ScriptKind) -> ParseOptions
+
+pub fn parse_isolated_entity_name(String, ParseOptions) -> (Array[ParseError], String?)
+
+pub fn parse_isolated_jsdoc_comment(String, ParseOptions) -> (Array[ParseError], CommentRange?)
+
+pub fn parse_isolated_type_expression(String, ParseOptions) -> (Array[ParseError], TypeNode?)
+
+pub fn parse_json_text(String, name? : String) -> SourceFile
+
 pub fn parse_program(String, name? : String) -> (ArrayView[ParseError], Program)
 
 pub fn parse_program_with_jsx(String, Bool, name? : String) -> (ArrayView[ParseError], Program)
+
+pub fn parse_source(String, ParseOptions) -> (ArrayView[ParseError], Program)
 
 // Errors
 pub(all) suberror LexError {
@@ -64,6 +78,12 @@ pub struct ArrowFunction {
 }
 pub impl @debug.Debug for ArrowFunction
 
+pub struct AsExpr {
+  expr : Expr
+  type_ann : TypeNode
+}
+pub impl @debug.Debug for AsExpr
+
 pub struct AssignExpr {
   op : AssignOp
   target : Expr
@@ -78,6 +98,10 @@ pub enum AssignOp {
   MulAssign
   DivAssign
   ModAssign
+  PowAssign
+  LogicalAndAssign
+  LogicalOrAssign
+  NullishAssign
   BitAndAssign
   BitOrAssign
   BitXorAssign
@@ -172,6 +196,7 @@ pub impl @debug.Debug for CatchParam
 
 pub struct ClassDecl {
   name : String?
+  decorators : Array[Expr]
   type_params : Array[TypeParam]
   extends : Expr?
   implements : Array[TypeNode]
@@ -182,6 +207,7 @@ pub impl @debug.Debug for ClassDecl
 
 pub struct ClassMember {
   kind : ClassMemberKind
+  decorators : Array[Expr]
   is_static : Bool
   access : AccessModifier?
   is_readonly : Bool
@@ -190,13 +216,43 @@ pub struct ClassMember {
 pub impl @debug.Debug for ClassMember
 
 pub enum ClassMemberKind {
+  StaticBlock(Block)
   Constructor(Array[Param], Block)
-  Method(String, Array[Param], TypeNode?, Block)
-  Getter(String, TypeNode?, Block)
-  Setter(String, Param, Block)
-  Field(String, TypeNode?, Expr?)
+  Method(MemberName, Array[Param], TypeNode?, Block)
+  Getter(MemberName, TypeNode?, Block)
+  Setter(MemberName, Param, Block)
+  Field(MemberName, TypeNode?, Expr?)
 }
 pub impl @debug.Debug for ClassMemberKind
+
+pub struct CommentDirective {
+  kind : CommentDirectiveKind
+  span : Span
+  text : String
+}
+pub impl @debug.Debug for CommentDirective
+
+pub enum CommentDirectiveKind {
+  TsIgnore
+  TsExpectError
+  TsNoCheck
+  TsCheck
+}
+pub impl @debug.Debug for CommentDirectiveKind
+
+pub enum CommentKind {
+  Line
+  Block
+  JsDoc
+}
+pub impl @debug.Debug for CommentKind
+
+pub struct CommentRange {
+  kind : CommentKind
+  span : Span
+  text : String
+}
+pub impl @debug.Debug for CommentRange
 
 pub struct ConditionalExpr {
   condition : Expr
@@ -204,6 +260,14 @@ pub struct ConditionalExpr {
   alternate : Expr
 }
 pub impl @debug.Debug for ConditionalExpr
+
+pub struct ConstructorType {
+  type_params : Array[TypeParam]
+  params : Array[Param]
+  return_type : TypeNode
+  is_abstract : Bool
+}
+pub impl @debug.Debug for ConstructorType
 
 pub struct DoWhileStmt {
   body : Stmt
@@ -264,6 +328,7 @@ pub impl @debug.Debug for Expr
 
 pub enum ExprKind {
   Ident(String)
+  PrivateIdent(String)
   Number(String)
   String(String)
   Bool(Bool)
@@ -277,6 +342,10 @@ pub enum ExprKind {
   Arrow(ArrowFunction)
   New(NewExpr)
   TypeAssert(TypeAssert)
+  As(AsExpr)
+  Satisfies(SatisfiesExpr)
+  JSXElement(JSXElement)
+  JSXFragment(JSXFragment)
   Template(TemplateLiteral)
   Unary(UnaryExpr)
   Update(UpdateExpr)
@@ -345,6 +414,25 @@ pub struct ImportAssignDecl {
 }
 pub impl @debug.Debug for ImportAssignDecl
 
+pub struct ImportAttribute {
+  name : String
+  value : ImportAttributeValue
+  span : Span
+}
+pub impl @debug.Debug for ImportAttribute
+
+pub enum ImportAttributeValue {
+  String(String)
+  Object(Array[ImportAttribute])
+}
+pub impl @debug.Debug for ImportAttributeValue
+
+pub struct ImportAttributes {
+  fields : Array[ImportAttribute]
+  span : Span
+}
+pub impl @debug.Debug for ImportAttributes
+
 pub struct ImportDecl {
   is_type_only : Bool
   default_name : String?
@@ -363,6 +451,20 @@ pub struct ImportSpec {
 }
 pub impl @debug.Debug for ImportSpec
 
+pub struct ImportType {
+  argument : String
+  attributes : ImportAttributes?
+  qualifier : String?
+  type_args : Array[TypeNode]
+  is_typeof : Bool
+}
+pub impl @debug.Debug for ImportType
+
+pub struct InferType {
+  type_param : TypeParam
+}
+pub impl @debug.Debug for InferType
+
 pub struct InterfaceDecl {
   name : String
   type_params : Array[TypeParam]
@@ -373,12 +475,71 @@ pub struct InterfaceDecl {
 pub impl @debug.Debug for InterfaceDecl
 
 pub struct InterfaceMember {
-  name : String
+  name : TypeMemberName
   optional : Bool
   type_ann : TypeNode
   span : Span
 }
 pub impl @debug.Debug for InterfaceMember
+
+pub enum JSXAttr {
+  Attribute(JSXAttribute)
+  Spread(JSXExprContainer)
+}
+pub impl @debug.Debug for JSXAttr
+
+pub enum JSXAttrValue {
+  String(String)
+  Expr(JSXExprContainer)
+  Element(Expr)
+}
+pub impl @debug.Debug for JSXAttrValue
+
+pub struct JSXAttribute {
+  name : String
+  value : JSXAttrValue?
+  span : Span
+}
+pub impl @debug.Debug for JSXAttribute
+
+pub enum JSXChild {
+  Text(String)
+  Expr(JSXExprContainer)
+  Element(Expr)
+}
+pub impl @debug.Debug for JSXChild
+
+pub struct JSXElement {
+  name : String
+  type_args : Array[TypeNode]
+  attrs : Array[JSXAttr]
+  children : Array[JSXChild]
+  self_closing : Bool
+  closing_name : String?
+  opening_span : Span
+  closing_span : Span?
+}
+pub impl @debug.Debug for JSXElement
+
+pub struct JSXExprContainer {
+  expr : Expr
+  span : Span
+}
+pub impl @debug.Debug for JSXExprContainer
+
+pub struct JSXFragment {
+  children : Array[JSXChild]
+  opening_span : Span
+  closing_span : Span
+}
+pub impl @debug.Debug for JSXFragment
+
+pub enum JsDocParsingMode {
+  ParseAll
+  ParseNone
+}
+pub impl Eq for JsDocParsingMode
+pub impl @debug.Debug for JsDocParsingMode
 
 pub enum Keyword {
   Let
@@ -439,6 +600,22 @@ pub struct LabeledStmt {
 }
 pub impl @debug.Debug for LabeledStmt
 
+pub struct MappedType {
+  readonly_modifier : MappedTypeModifier?
+  type_param_name : String
+  source_type : TypeNode
+  name_type : TypeNode?
+  optional_modifier : MappedTypeModifier?
+  value_type : TypeNode?
+}
+pub impl @debug.Debug for MappedType
+
+pub enum MappedTypeModifier {
+  Add
+  Remove
+}
+pub impl @debug.Debug for MappedTypeModifier
+
 pub struct MemberExpr {
   object : Expr
   property : MemberProp
@@ -447,8 +624,18 @@ pub struct MemberExpr {
 }
 pub impl @debug.Debug for MemberExpr
 
+pub enum MemberName {
+  Ident(String)
+  String(String)
+  Number(String)
+  Computed(String)
+  Private(String)
+}
+pub impl @debug.Debug for MemberName
+
 pub enum MemberProp {
   Ident(String)
+  Private(String)
   Expr(Expr)
 }
 pub impl @debug.Debug for MemberProp
@@ -514,6 +701,31 @@ pub struct Param {
 }
 pub impl @debug.Debug for Param
 
+pub struct ParenthesizedType {
+  inner : TypeNode
+}
+pub impl @debug.Debug for ParenthesizedType
+
+pub struct ParseOptions {
+  file_name : String
+  script_kind : ScriptKind
+  language_target : String?
+  jsx_mode : Bool
+  strict_mode : Bool
+  module_kind : String?
+  jsdoc_parsing_mode : JsDocParsingMode
+  set_parent_nodes : Bool
+  allow_js : Bool
+  has_multi_target_directive : Bool
+  report_unreachable_code : Bool
+  isolated_modules : Bool
+  allow_synthetic_default_imports : Bool
+  verbatim_module_syntax : Bool
+  erasable_syntax_only : Bool
+  experimental_decorators : Bool
+}
+pub impl @debug.Debug for ParseOptions
+
 pub struct Position {
   offset : Int
   line : Int
@@ -526,6 +738,42 @@ pub struct Program {
   stmts : Array[Stmt]
 }
 pub impl @debug.Debug for Program
+
+pub struct SatisfiesExpr {
+  expr : Expr
+  type_ann : TypeNode
+}
+pub impl @debug.Debug for SatisfiesExpr
+
+pub enum ScriptKind {
+  Ts
+  Tsx
+  Js
+  Jsx
+  Dts
+  Json
+}
+pub impl Eq for ScriptKind
+pub impl @debug.Debug for ScriptKind
+
+pub struct SourceFile {
+  file_name : String
+  script_kind : ScriptKind
+  is_declaration_file : Bool
+  stmts : Array[Stmt]
+  parse_errors : Array[ParseError]
+  comment_directives : Array[CommentDirective]
+  comments : Array[CommentRange]
+  strict_mode : Bool
+  module_kind : String?
+  language_target : String?
+  jsx_mode : Bool
+  jsdoc_parsing_mode : JsDocParsingMode
+  set_parent_nodes : Bool
+  external_module_indicator : Bool
+  identifiers : Array[String]
+}
+pub impl @debug.Debug for SourceFile
 
 pub struct Span {
   start : Position
@@ -563,6 +811,8 @@ pub enum StmtKind {
   Break(String?)
   Continue(String?)
   Throw(Expr)
+  With(WithStmt)
+  Debugger
   Try(TryStmt)
   Labeled(LabeledStmt)
   ExprStmt(Expr)
@@ -589,6 +839,12 @@ pub struct TemplateLiteral {
 }
 pub impl @debug.Debug for TemplateLiteral
 
+pub struct TemplateLiteralType {
+  quasis : Array[String]
+  types : Array[TypeNode]
+}
+pub impl @debug.Debug for TemplateLiteralType
+
 pub struct Token {
   kind : TokenKind
   span : Span
@@ -598,6 +854,7 @@ pub impl @debug.Debug for Token
 
 pub enum TokenKind {
   Ident(String)
+  PrivateIdent(String)
   Number(String)
   String(String)
   Keyword(Keyword)
@@ -679,9 +936,15 @@ pub impl @debug.Debug for TypeAssert
 pub enum TypeKind {
   Ident(String)
   TypeQuery(String)
+  ImportType(ImportType)
   Literal(TypeLiteral)
   Tuple(Array[TypeNode])
   Object(Array[TypeMember])
+  MappedType(MappedType)
+  TemplateLiteral(TemplateLiteralType)
+  InferType(InferType)
+  Constructor(ConstructorType)
+  Parenthesized(ParenthesizedType)
   Union(Array[TypeNode])
   Intersection(Array[TypeNode])
   Conditional(TypeNode, TypeNode, TypeNode, TypeNode)
@@ -705,12 +968,19 @@ pub enum TypeLiteral {
 pub impl @debug.Debug for TypeLiteral
 
 pub struct TypeMember {
-  name : String
+  name : TypeMemberName
   optional : Bool
   type_ann : TypeNode
   span : Span
 }
 pub impl @debug.Debug for TypeMember
+
+pub enum TypeMemberName {
+  Named(MemberName)
+  Call
+  Construct
+}
+pub impl @debug.Debug for TypeMemberName
 
 pub struct TypeNode {
   kind : TypeKind
@@ -784,8 +1054,17 @@ pub enum VarKind {
   Let
   Const
   Var
+  Using
+  AwaitUsing
 }
+pub impl Eq for VarKind
 pub impl @debug.Debug for VarKind
+
+pub struct WithStmt {
+  object : Expr
+  body : Stmt
+}
+pub impl @debug.Debug for WithStmt
 
 // Type aliases
 
