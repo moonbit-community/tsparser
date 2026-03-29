@@ -8,7 +8,9 @@ import {
 // Values
 pub fn create_source_file(String, ParseOptions) -> SourceFile
 
-pub fn default_parse_options(String, script_kind? : ScriptKind) -> ParseOptions
+pub fn default_parse_options(String, script_kind? : ScriptKind, jsdoc_parsing_mode? : JsDocParsingMode) -> ParseOptions
+
+pub fn default_parse_options_without_jsdoc(String, script_kind? : ScriptKind) -> ParseOptions
 
 pub fn parse_isolated_entity_name(String, ParseOptions) -> (Array[ParseError], String?)
 
@@ -714,7 +716,6 @@ pub struct ParseOptions {
   strict_mode : Bool
   module_kind : String?
   jsdoc_parsing_mode : JsDocParsingMode
-  set_parent_nodes : Bool
   allow_js : Bool
   has_multi_target_directive : Bool
   report_unreachable_code : Bool
@@ -769,7 +770,6 @@ pub struct SourceFile {
   language_target : String?
   jsx_mode : Bool
   jsdoc_parsing_mode : JsDocParsingMode
-  set_parent_nodes : Bool
   external_module_indicator : Bool
   identifiers : Array[String]
 }

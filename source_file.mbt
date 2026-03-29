@@ -23,7 +23,6 @@ pub struct ParseOptions {
   strict_mode : Bool
   module_kind : String?
   jsdoc_parsing_mode : JsDocParsingMode
-  set_parent_nodes : Bool
   allow_js : Bool
   has_multi_target_directive : Bool
   report_unreachable_code : Bool
@@ -77,7 +76,6 @@ pub struct SourceFile {
   language_target : String?
   jsx_mode : Bool
   jsdoc_parsing_mode : JsDocParsingMode
-  set_parent_nodes : Bool
   external_module_indicator : Bool
   identifiers : Array[String]
 } derive(Debug)

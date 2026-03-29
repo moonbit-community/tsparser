@@ -227,6 +227,20 @@ test "source file preserves comments and directives" {
 }
 
 ///|
+test "source file can disable jsdoc collection" {
+  let source =
+    #|/** doc */
+    #|const x = 1
+  let source_file = create_source_file(
+    source,
+    default_parse_options_without_jsdoc("x.ts"),
+  )
+  guard source_file.comments is [{ kind: Block, .. }] else {
+    fail("ParseNone should keep jsdoc comments as plain block comments")
+  }
+}
+
+///|
 test "block comments do not mark files as external modules" {
   let source =
     #|/*
@@ -366,6 +380,120 @@ test "parse_isolated_jsdoc_comment reports trailing tokens" {
   }
   guard errors.length() > 0 else {
     fail("isolated jsdoc helper should reject trailing tokens")
+  }
+}
+
+///|
+test "parse_isolated_jsdoc_comment respects ParseNone" {
+  let (errors, jsdoc_comment) = parse_isolated_jsdoc_comment(
+    "/** @type {Foo} */",
+    default_parse_options_without_jsdoc("x.ts"),
+  )
+  guard errors is [] else {
+    fail("disabled jsdoc parsing should not introduce diagnostics")
+  }
+  guard jsdoc_comment is None else {
+    fail("disabled jsdoc parsing should not surface jsdoc comment ranges")
+  }
+}
+
+///|
+test "parse_json_text parses structured root values" {
+  let source =
+    #|{
+    #|  "answer": 42,
+    #|  "items": [true, null, -3]
+    #|}
+  let source_file = parse_json_text(source)
+  guard source_file.parse_errors is [] else {
+    fail("json root value should parse without diagnostics")
+  }
+  guard source_file.stmts
+    is [
+      {
+        kind: ExprStmt(
+          {
+            kind: Object(
+              {
+                props: [
+                  Property(
+                    { name: "answer", value: { kind: Number("42"), .. }, .. }
+                  ),
+                  Property(
+                    {
+                      name: "items",
+                      value: {
+                        kind: Array(
+                          [
+                            Expr({ kind: Bool(true), .. }),
+                            Expr({ kind: Null, .. }),
+                            Expr(
+                              {
+                                kind: Unary(
+                                  { op: Minus, expr: { kind: Number("3"), .. } }
+                                ),
+                                ..,
+                              }
+                            ),
+                          ]
+                        ),
+                        ..,
+                      },
+                      ..,
+                    }
+                  ),
+                ],
+              }
+            ),
+            ..,
+          }
+        ),
+        ..,
+      },
+    ] else {
+    fail("json root should stay as a structured object expression")
+  }
+}
+
+///|
+test "parse_json_text preserves leading root before trailing tokens" {
+  let source =
+    #|{"answer": 42} true
+  let source_file = parse_json_text(source)
+  guard source_file.stmts
+    is [
+      {
+        kind: ExprStmt(
+          { kind: Object({ props: [Property({ name: "answer", .. })] }), .. }
+        ),
+        ..,
+      },
+    ] else {
+    fail("json parser should keep the leading root value AST")
+  }
+  guard source_file.parse_errors.length() > 0 else {
+    fail("trailing json tokens should still report diagnostics")
+  }
+}
+
+///|
+test "parse_json_text rejects comments and single-quoted strings" {
+  let source =
+    #|{
+    #|  // nope
+    #|  'answer': 42
+    #|}
+  let source_file = parse_json_text(source)
+  guard source_file.stmts is [{ kind: ExprStmt({ kind: Object(_), .. }), .. }] else {
+    fail(
+      "json parser should still build the root object for recoverable errors",
+    )
+  }
+  guard source_file.comments is [{ kind: Line, .. }] else {
+    fail("json source file should still retain raw comment ranges")
+  }
+  guard source_file.parse_errors.length() >= 2 else {
+    fail("json parser should reject both comments and single-quoted strings")
   }
 }
 

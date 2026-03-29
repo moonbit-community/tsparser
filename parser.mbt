@@ -5278,6 +5278,275 @@ fn Parser::parse_program(self : Parser) -> (ArrayView[ParseError], Program) {
 }
 
 ///|
+fn json_missing_value_expr(span : Span) -> Expr {
+  { kind: ExprKind::Ident("undefined"), span }
+}
+
+///|
+fn json_number_is_valid(raw : String) -> Bool {
+  let view = raw[:]
+  let len = view.length()
+  let mut index = 0
+  if index < len && view[index] == '-' {
+    index += 1
+  }
+  if index >= len {
+    return false
+  }
+  if view[index] == '0' {
+    index += 1
+    if index < len && is_digit(view[index]) {
+      return false
+    }
+  } else if view[index] >= '1' && view[index] <= '9' {
+    index += 1
+    while index < len && is_digit(view[index]) {
+      index += 1
+    }
+  } else {
+    return false
+  }
+  if index < len && view[index] == '.' {
+    index += 1
+    if index >= len || !is_digit(view[index]) {
+      return false
+    }
+    while index < len && is_digit(view[index]) {
+      index += 1
+    }
+  }
+  if index < len && (view[index] == 'e' || view[index] == 'E') {
+    index += 1
+    if index < len && (view[index] == '+' || view[index] == '-') {
+      index += 1
+    }
+    if index >= len || !is_digit(view[index]) {
+      return false
+    }
+    while index < len && is_digit(view[index]) {
+      index += 1
+    }
+  }
+  index == len
+}
+
+///|
+fn Parser::token_starts_with_double_quote(self : Parser, token : Token) -> Bool {
+  let offset = token.span.start.offset
+  offset < self.source_text.length() && self.source_text[offset] == '"'
+}
+
+///|
+fn Parser::record_json_value_expected(self : Parser, pos : Position) -> Unit {
+  self.record_ts_error(pos, 1109, "JSON value expected.")
+}
+
+///|
+fn Parser::record_json_string_expected(self : Parser, pos : Position) -> Unit {
+  self.record_ts_error(
+    pos, 1141, "Double-quoted string literal expected in JSON.",
+  )
+}
+
+///|
+fn Parser::parse_json_value(self : Parser) -> Expr {
+  let token = self.current()
+  match token.kind {
+    TokenKind::String(value) => {
+      ignore(self.advance())
+      if !self.token_starts_with_double_quote(token) {
+        self.record_json_string_expected(token.span.start)
+      }
+      { kind: ExprKind::String(value), span: token.span }
+    }
+    TokenKind::Number(value) => {
+      ignore(self.advance())
+      if !json_number_is_valid(value) {
+        self.record_json_value_expected(token.span.start)
+      }
+      { kind: ExprKind::Number(value), span: token.span }
+    }
+    TokenKind::Keyword(Keyword::True) => {
+      ignore(self.advance())
+      { kind: ExprKind::Bool(true), span: token.span }
+    }
+    TokenKind::Keyword(Keyword::False) => {
+      ignore(self.advance())
+      { kind: ExprKind::Bool(false), span: token.span }
+    }
+    TokenKind::Keyword(Keyword::Null) => {
+      ignore(self.advance())
+      { kind: ExprKind::Null, span: token.span }
+    }
+    TokenKind::Minus => {
+      let start = self.advance().span
+      let value : Expr = match self.current().kind {
+        TokenKind::Number(raw) => {
+          let number_token = self.current()
+          ignore(self.advance())
+          if !json_number_is_valid(raw) {
+            self.record_json_value_expected(number_token.span.start)
+          }
+          { kind: ExprKind::Number(raw), span: number_token.span }
+        }
+        _ => {
+          self.record_json_value_expected(self.current().span.start)
+          json_missing_value_expr(start)
+        }
+      }
+      {
+        kind: ExprKind::Unary({ op: UnaryOp::Minus, expr: value }),
+        span: start.merge(value.span),
+      }
+    }
+    TokenKind::LBrace => self.parse_json_object_literal()
+    TokenKind::LBracket => self.parse_json_array_literal()
+    TokenKind::Eof => {
+      self.record_json_value_expected(token.span.start)
+      json_missing_value_expr(token.span)
+    }
+    _ => {
+      self.record_json_value_expected(token.span.start)
+      if !self.at_end() {
+        ignore(self.advance())
+      }
+      json_missing_value_expr(token.span)
+    }
+  }
+}
+
+///|
+fn Parser::parse_json_object_literal(self : Parser) -> Expr {
+  let start = self.advance().span
+  let props : Array[ObjectProp] = []
+  let mut end_span = start
+  if self.eat(TokenKind::RBrace) {
+    end_span = self.previous().span
+    return { kind: ExprKind::Object({ props, }), span: start.merge(end_span) }
+  }
+  while !self.at_end() && !self.check(TokenKind::RBrace) {
+    let key_token = self.current()
+    let (name, key_span) = match key_token.kind {
+      TokenKind::String(text) => {
+        ignore(self.advance())
+        if !self.token_starts_with_double_quote(key_token) {
+          self.record_json_string_expected(key_token.span.start)
+        }
+        (text, key_token.span)
+      }
+      _ => {
+        self.record_json_string_expected(key_token.span.start)
+        if !self.at_end() {
+          ignore(self.advance())
+        }
+        ("", key_token.span)
+      }
+    }
+    if !self.eat(TokenKind::Colon) {
+      self.record_ts_error(self.current().span.start, 1005, "':' expected.")
+    }
+    let value = if self.check(TokenKind::Comma) ||
+      self.check(TokenKind::RBrace) ||
+      self.at_end() {
+      self.record_json_value_expected(self.current().span.start)
+      json_missing_value_expr(key_span)
+    } else {
+      self.parse_json_value()
+    }
+    let prop_span = key_span.merge(value.span)
+    props.push(
+      ObjectProp::Property({ name, value, shorthand: false, span: prop_span }),
+    )
+    end_span = prop_span
+    if self.eat(TokenKind::Comma) {
+      end_span = self.previous().span
+      if self.check(TokenKind::RBrace) {
+        self.record_json_value_expected(self.current().span.start)
+        break
+      }
+      continue
+    }
+    break
+  }
+  if self.eat(TokenKind::RBrace) {
+    end_span = self.previous().span
+  } else {
+    self.record_ts_error(self.current().span.start, 1005, "'}' expected.")
+  }
+  { kind: ExprKind::Object({ props, }), span: start.merge(end_span) }
+}
+
+///|
+fn Parser::parse_json_array_literal(self : Parser) -> Expr {
+  let start = self.advance().span
+  let elems : Array[ArrayElement] = []
+  let mut end_span = start
+  if self.eat(TokenKind::RBracket) {
+    end_span = self.previous().span
+    return { kind: ExprKind::Array(elems), span: start.merge(end_span) }
+  }
+  while !self.at_end() && !self.check(TokenKind::RBracket) {
+    let value = if self.check(TokenKind::Comma) ||
+      self.check(TokenKind::RBracket) ||
+      self.at_end() {
+      self.record_json_value_expected(self.current().span.start)
+      json_missing_value_expr(self.current().span)
+    } else {
+      self.parse_json_value()
+    }
+    end_span = value.span
+    elems.push(ArrayElement::Expr(value))
+    if self.eat(TokenKind::Comma) {
+      end_span = self.previous().span
+      if self.check(TokenKind::RBracket) {
+        self.record_json_value_expected(self.current().span.start)
+        break
+      }
+      continue
+    }
+    break
+  }
+  if self.eat(TokenKind::RBracket) {
+    end_span = self.previous().span
+  } else {
+    self.record_ts_error(self.current().span.start, 1005, "']' expected.")
+  }
+  { kind: ExprKind::Array(elems), span: start.merge(end_span) }
+}
+
+///|
+fn Parser::parse_json_program(
+  self : Parser,
+) -> (ArrayView[ParseError], Program) {
+  let stmts : Array[Stmt] = []
+  if self.at_end() {
+    self.record_json_value_expected(self.current().span.start)
+  } else {
+    let expr = self.parse_json_value()
+    stmts.push({ kind: StmtKind::ExprStmt(expr), span: expr.span })
+    if !self.at_end() {
+      self.record_trailing_fragment_error()
+    }
+  }
+  let ordered_errors = order_errors_by_source_name(self.errors)
+  (ordered_errors, Program::{ stmts, })
+}
+
+///|
+fn Parser::record_json_comment_errors(
+  self : Parser,
+  comments : Array[CommentRange],
+) -> Unit {
+  for comment in comments {
+    self.record_ts_error(
+      comment.span.start,
+      1005,
+      "Comments are not permitted in JSON.",
+    )
+  }
+}
+
+///|
 fn Parser::is_label_start(self : Parser) -> Bool {
   match self.current().kind {
     TokenKind::Ident(_) | TokenKind::Keyword(_) =>
@@ -23947,6 +24216,14 @@ fn normalize_comment_directive_line(line : StringView) -> String {
 }
 
 ///|
+fn jsdoc_parsing_mode_collects_jsdoc(mode : JsDocParsingMode) -> Bool {
+  match mode {
+    JsDocParsingMode::ParseAll => true
+    JsDocParsingMode::ParseNone => false
+  }
+}
+
+///|
 fn detect_comment_directive_kind(text : String) -> CommentDirectiveKind? {
   for raw_line in text.split("\n") {
     let candidate = normalize_comment_directive_line(raw_line)
@@ -24010,6 +24287,7 @@ fn scan_comment_trivia_range(
   end_offset : Int,
   line : Int,
   column : Int,
+  parse_jsdoc : Bool,
   comments : Array[CommentRange],
   directives : Array[CommentDirective],
 ) -> (Int, Int) {
@@ -24043,7 +24321,8 @@ fn scan_comment_trivia_range(
       }
       if next == '*' {
         let start : Position = { offset: i, line, column }
-        let is_jsdoc = i + 2 < end_offset &&
+        let is_jsdoc = parse_jsdoc &&
+          i + 2 < end_offset &&
           source[i + 2] == '*' &&
           !(i + 3 < end_offset && source[i + 3] == '/')
         i += 2
@@ -24124,6 +24403,7 @@ fn scan_comment_trivia_range(
 fn collect_comments_and_directives_from_tokens(
   source : StringView,
   tokens : Array[Token],
+  parse_jsdoc : Bool,
 ) -> (Array[CommentRange], Array[CommentDirective]) {
   let comments : Array[CommentRange] = []
   let directives : Array[CommentDirective] = []
@@ -24134,7 +24414,7 @@ fn collect_comments_and_directives_from_tokens(
     let token_start = token.span.start.offset
     let token_end = token.span.end.offset
     let (next_line, next_column) = scan_comment_trivia_range(
-      source, offset, token_start, line, column, comments, directives,
+      source, offset, token_start, line, column, parse_jsdoc, comments, directives,
     )
     line = next_line
     column = next_column
@@ -24152,6 +24432,7 @@ fn collect_comments_and_directives_from_tokens(
       source.length(),
       line,
       column,
+      parse_jsdoc,
       comments,
       directives,
     ),
@@ -24162,6 +24443,7 @@ fn collect_comments_and_directives_from_tokens(
 ///|
 fn collect_comments_and_directives(
   source : StringView,
+  parse_jsdoc : Bool,
 ) -> (Array[CommentRange], Array[CommentDirective]) {
   let comments : Array[CommentRange] = []
   let directives : Array[CommentDirective] = []
@@ -24196,7 +24478,8 @@ fn collect_comments_and_directives(
       }
       if next == '*' {
         let start : Position = { offset: i, line, column }
-        let is_jsdoc = i + 2 < len &&
+        let is_jsdoc = parse_jsdoc &&
+          i + 2 < len &&
           source[i + 2] == '*' &&
           !(i + 3 < len && source[i + 3] == '/')
         i += 2
@@ -24398,47 +24681,26 @@ fn collect_identifier_table(tokens : Array[Token]) -> Array[String] {
 }
 
 ///|
-fn make_source_file(
-  options : ParseOptions,
-  stmts : Array[Stmt],
-  parse_errors : Array[ParseError],
-  comment_directives : Array[CommentDirective],
-  comments : Array[CommentRange],
-  strict_mode : Bool,
-  external_module_indicator : Bool,
-  identifiers : Array[String],
-) -> SourceFile {
-  {
-    file_name: options.file_name,
-    script_kind: options.script_kind,
-    is_declaration_file: options.script_kind == ScriptKind::Dts ||
-    file_name_is_declaration_source(options.file_name),
-    stmts,
-    parse_errors,
-    comment_directives,
-    comments,
-    strict_mode,
-    module_kind: options.module_kind,
-    language_target: options.language_target,
-    jsx_mode: options.jsx_mode,
-    jsdoc_parsing_mode: options.jsdoc_parsing_mode,
-    set_parent_nodes: options.set_parent_nodes,
-    external_module_indicator,
-    identifiers,
-  }
-}
-
-///|
-priv struct IsolatedParseSetup {
-  string_literal_errors : Array[ParseError]
+priv struct PreparedSourceText {
+  line_directive_prefix : Array[Int]
+  virtual_file_markers : Array[(Int, String)]
   default_source_name : String
+  source_name : String?
+  masked_source : StringView
 }
 
 ///|
-fn make_isolated_parse_setup(
+priv struct PreparedTokenStream {
+  tokenize_source : StringView
+  tokens : Array[Token]
+  string_literal_errors : Array[ParseError]
+}
+
+///|
+fn prepare_source_text(
   source : String,
   options : ParseOptions,
-) -> ((Parser, IsolatedParseSetup)?, Array[ParseError]) {
+) -> PreparedSourceText {
   let normalized = normalize_source(source)
   let line_directive_prefix = compute_line_directive_prefix(normalized)
   let virtual_file_markers = parse_virtual_file_markers(normalized)
@@ -24450,20 +24712,34 @@ fn make_isolated_parse_setup(
     virtual_file_markers,
     options.allow_js,
   )
-  if source_looks_binary(masked_source) {
-    return (None, binary_file_parse_errors(source_name, masked_source))
+  {
+    line_directive_prefix,
+    virtual_file_markers,
+    default_source_name,
+    source_name,
+    masked_source,
   }
+}
+
+///|
+fn prepare_token_stream(
+  prepared : PreparedSourceText,
+  options : ParseOptions,
+) -> (PreparedTokenStream?, Array[ParseError]) {
   let string_literal_errors : Array[ParseError] = if options.jsx_mode {
     []
   } else {
     detect_string_literal_lex_errors(
-      masked_source, source_name, line_directive_prefix, virtual_file_markers,
+      prepared.masked_source,
+      prepared.source_name,
+      prepared.line_directive_prefix,
+      prepared.virtual_file_markers,
     )
   }
   let tokenize_source = if options.jsx_mode {
-    mask_multiline_jsx_attribute_backslashes(masked_source)
+    mask_multiline_jsx_attribute_backslashes(prepared.masked_source)
   } else {
-    masked_source
+    prepared.masked_source
   }
   let tokens = tokenize(tokenize_source) catch {
     err => {
@@ -24472,16 +24748,30 @@ fn make_isolated_parse_setup(
       } else {
         [
           lex_error_to_parse_error(
-            err, tokenize_source, source_name, line_directive_prefix, virtual_file_markers,
+            err,
+            tokenize_source,
+            prepared.source_name,
+            prepared.line_directive_prefix,
+            prepared.virtual_file_markers,
           ),
         ]
       }
       return (None, token_errors)
     }
   }
-  let parser = Parser::new(
-    tokenize_source,
-    tokens,
+  (Some({ tokenize_source, tokens, string_literal_errors }), [])
+}
+
+///|
+fn make_parser_from_prepared_source(
+  prepared : PreparedSourceText,
+  token_stream : PreparedTokenStream,
+  options : ParseOptions,
+  module_files : Array[String],
+) -> Parser {
+  Parser::new(
+    token_stream.tokenize_source,
+    token_stream.tokens,
     options.jsx_mode,
     options.strict_mode,
     options.report_unreachable_code,
@@ -24506,13 +24796,86 @@ fn make_isolated_parse_setup(
     options.erasable_syntax_only,
     options.experimental_decorators,
     options.has_multi_target_directive,
-    !string_literal_errors.is_empty(),
-    source_name,
-    line_directive_prefix,
-    virtual_file_markers,
-    [],
+    !token_stream.string_literal_errors.is_empty(),
+    prepared.source_name,
+    prepared.line_directive_prefix,
+    prepared.virtual_file_markers,
+    module_files,
   )
-  (Some((parser, { string_literal_errors, default_source_name })), [])
+}
+
+///|
+fn make_source_file(
+  options : ParseOptions,
+  stmts : Array[Stmt],
+  parse_errors : Array[ParseError],
+  comment_directives : Array[CommentDirective],
+  comments : Array[CommentRange],
+  strict_mode : Bool,
+  external_module_indicator : Bool,
+  identifiers : Array[String],
+) -> SourceFile {
+  {
+    file_name: options.file_name,
+    script_kind: options.script_kind,
+    is_declaration_file: options.script_kind == ScriptKind::Dts ||
+    file_name_is_declaration_source(options.file_name),
+    stmts,
+    parse_errors,
+    comment_directives,
+    comments,
+    strict_mode,
+    module_kind: options.module_kind,
+    language_target: options.language_target,
+    jsx_mode: options.jsx_mode,
+    jsdoc_parsing_mode: options.jsdoc_parsing_mode,
+    external_module_indicator,
+    identifiers,
+  }
+}
+
+///|
+priv struct IsolatedParseSetup {
+  string_literal_errors : Array[ParseError]
+  default_source_name : String
+}
+
+///|
+fn make_isolated_parse_setup(
+  source : String,
+  options : ParseOptions,
+) -> ((Parser, IsolatedParseSetup)?, Array[ParseError]) {
+  let prepared = prepare_source_text(source, options)
+  if source_looks_binary(prepared.masked_source) {
+    return (
+      None,
+      binary_file_parse_errors(prepared.source_name, prepared.masked_source),
+    )
+  }
+  let (token_stream, token_errors) = prepare_token_stream(prepared, options)
+  match token_stream {
+    Some(token_stream) => {
+      let parser = make_parser_from_prepared_source(
+        prepared,
+        token_stream,
+        options,
+        [],
+      )
+      (
+        Some(
+          (
+            parser,
+            {
+              string_literal_errors: token_stream.string_literal_errors,
+              default_source_name: prepared.default_source_name,
+            },
+          ),
+        ),
+        [],
+      )
+    }
+    None => (None, token_errors)
+  }
 }
 
 ///|
@@ -24656,7 +25019,6 @@ fn compatibility_parse_options(
     strict_mode: detect_wrapper_strict_mode(masked_source),
     module_kind: detect_primary_module_kind(masked_source),
     jsdoc_parsing_mode: JsDocParsingMode::ParseAll,
-    set_parent_nodes: false,
     allow_js: tentative_allow_js || script_kind_is_js_like(resolved_script_kind),
     has_multi_target_directive: detect_target_has_multiple_values(masked_source),
     report_unreachable_code: detect_report_unreachable_code(masked_source),
@@ -24674,14 +25036,19 @@ fn compatibility_parse_options(
 pub fn default_parse_options(
   file_name : String,
   script_kind? : ScriptKind,
+  jsdoc_parsing_mode? : JsDocParsingMode,
 ) -> ParseOptions {
   let resolved_script_kind = match script_kind {
     Some(kind) => kind
     None => infer_script_kind(file_name)
   }
-  let jsdoc_parsing_mode = match resolved_script_kind {
-    ScriptKind::Json => JsDocParsingMode::ParseNone
-    _ => JsDocParsingMode::ParseAll
+  let resolved_jsdoc_parsing_mode = match jsdoc_parsing_mode {
+    Some(mode) => mode
+    None =>
+      match resolved_script_kind {
+        ScriptKind::Json => JsDocParsingMode::ParseNone
+        _ => JsDocParsingMode::ParseAll
+      }
   }
   {
     file_name,
@@ -24691,8 +25058,7 @@ pub fn default_parse_options(
     script_kind_is_js_like(resolved_script_kind),
     strict_mode: false,
     module_kind: None,
-    jsdoc_parsing_mode,
-    set_parent_nodes: false,
+    jsdoc_parsing_mode: resolved_jsdoc_parsing_mode,
     allow_js: script_kind_is_js_like(resolved_script_kind),
     has_multi_target_directive: false,
     report_unreachable_code: false,
@@ -24705,36 +25071,44 @@ pub fn default_parse_options(
 }
 
 ///|
+pub fn default_parse_options_without_jsdoc(
+  file_name : String,
+  script_kind? : ScriptKind,
+) -> ParseOptions {
+  default_parse_options(
+    file_name,
+    script_kind?,
+    jsdoc_parsing_mode=JsDocParsingMode::ParseNone,
+  )
+}
+
+///|
 pub fn create_source_file(
   source : String,
   options : ParseOptions,
 ) -> SourceFile {
-  let normalized = normalize_source(source)
-  let line_directive_prefix = compute_line_directive_prefix(normalized)
-  let virtual_file_markers = parse_virtual_file_markers(normalized)
-  let default_source_name = options.file_name
-  let source_name = source_name_option(options.file_name)
-  let masked_source = mask_non_source_virtual_file_content(
-    normalized,
-    default_source_name,
-    virtual_file_markers,
-    options.allow_js,
+  let prepared = prepare_source_text(source, options)
+  let parse_jsdoc = jsdoc_parsing_mode_collects_jsdoc(
+    options.jsdoc_parsing_mode,
   )
   let module_files = detect_module_files(
-    masked_source, default_source_name, virtual_file_markers,
+    prepared.masked_source,
+    prepared.default_source_name,
+    prepared.virtual_file_markers,
   )
   let external_module_indicator = source_file_is_external_module(
     module_files,
     options.file_name,
   )
   let (comments, comment_directives) = collect_comments_and_directives(
-    masked_source,
+    prepared.masked_source,
+    parse_jsdoc,
   )
-  if source_looks_binary(masked_source) {
+  if source_looks_binary(prepared.masked_source) {
     return make_source_file(
       options,
       [],
-      binary_file_parse_errors(source_name, masked_source),
+      binary_file_parse_errors(prepared.source_name, prepared.masked_source),
       comment_directives,
       comments,
       options.strict_mode,
@@ -24743,7 +25117,10 @@ pub fn create_source_file(
     )
   }
   let invalid_reference_directive_errors = detect_invalid_reference_directive_errors(
-    masked_source, source_name, line_directive_prefix, virtual_file_markers,
+    prepared.masked_source,
+    prepared.source_name,
+    prepared.line_directive_prefix,
+    prepared.virtual_file_markers,
   )
   if !invalid_reference_directive_errors.is_empty() {
     return make_source_file(
@@ -24758,10 +25135,16 @@ pub fn create_source_file(
     )
   }
   let conflict_marker_errors = detect_merge_conflict_marker_errors(
-    masked_source, source_name, line_directive_prefix, virtual_file_markers,
+    prepared.masked_source,
+    prepared.source_name,
+    prepared.line_directive_prefix,
+    prepared.virtual_file_markers,
   )
   let shebang_errors = detect_invalid_shebang_errors(
-    masked_source, source_name, line_directive_prefix, virtual_file_markers,
+    prepared.masked_source,
+    prepared.source_name,
+    prepared.line_directive_prefix,
+    prepared.virtual_file_markers,
   )
   if !shebang_errors.is_empty() {
     return make_source_file(
@@ -24775,29 +25158,10 @@ pub fn create_source_file(
       [],
     )
   }
-  let string_literal_errors : Array[ParseError] = if options.jsx_mode {
-    []
-  } else {
-    detect_string_literal_lex_errors(
-      masked_source, source_name, line_directive_prefix, virtual_file_markers,
-    )
-  }
-  let tokenize_source = if options.jsx_mode {
-    mask_multiline_jsx_attribute_backslashes(masked_source)
-  } else {
-    masked_source
-  }
-  let tokens = tokenize(tokenize_source) catch {
-    err => {
-      let token_errors = if !string_literal_errors.is_empty() {
-        order_errors_by_source_name(string_literal_errors)
-      } else {
-        [
-          lex_error_to_parse_error(
-            err, tokenize_source, source_name, line_directive_prefix, virtual_file_markers,
-          ),
-        ]
-      }
+  let (token_stream, token_errors) = prepare_token_stream(prepared, options)
+  let token_stream = match token_stream {
+    Some(token_stream) => token_stream
+    None =>
       return make_source_file(
         options,
         [],
@@ -24808,60 +25172,40 @@ pub fn create_source_file(
         external_module_indicator,
         [],
       )
-    }
   }
   let module_files = detect_module_files_from_tokens(
-    tokens, default_source_name, virtual_file_markers,
+    token_stream.tokens,
+    prepared.default_source_name,
+    prepared.virtual_file_markers,
   )
   let external_module_indicator = source_file_is_external_module(
     module_files,
     options.file_name,
   )
   let (comments, comment_directives) = collect_comments_and_directives_from_tokens(
-    masked_source, tokens,
+    prepared.masked_source,
+    token_stream.tokens,
+    parse_jsdoc,
   )
-  let parser = Parser::new(
-    tokenize_source,
-    tokens,
-    options.jsx_mode,
-    options.strict_mode,
-    options.report_unreachable_code,
-    options.isolated_modules,
-    parse_setting_is_es_module_target(
-      options.language_target,
-      options.module_kind,
-    ),
-    module_kind_is_none(options.module_kind),
-    options.module_kind,
-    options.language_target,
-    parse_settings_enable_es_syntax(
-      options.language_target,
-      options.module_kind,
-    ),
-    parse_settings_enable_es2018_syntax(
-      options.language_target,
-      options.module_kind,
-    ),
-    options.allow_synthetic_default_imports,
-    options.verbatim_module_syntax,
-    options.erasable_syntax_only,
-    options.experimental_decorators,
-    options.has_multi_target_directive,
-    !string_literal_errors.is_empty(),
-    source_name,
-    line_directive_prefix,
-    virtual_file_markers,
-    module_files,
+  let parser = make_parser_from_prepared_source(
+    prepared, token_stream, options, module_files,
   )
-  let (parse_errors, program) = parser.parse_program()
+  let program = if options.script_kind == ScriptKind::Json {
+    parser.parse_json_program().1
+  } else {
+    parser.parse_program().1
+  }
+  if options.script_kind == ScriptKind::Json {
+    parser.record_json_comment_errors(comments)
+  }
   let ordered_errors = finalized_parse_errors(
-    parse_errors,
+    parser.errors,
     conflict_marker_errors,
-    string_literal_errors,
+    token_stream.string_literal_errors,
     parser.source_text,
-    default_source_name,
-    line_directive_prefix,
-    virtual_file_markers,
+    prepared.default_source_name,
+    prepared.line_directive_prefix,
+    prepared.virtual_file_markers,
     options.erasable_syntax_only,
   )
   make_source_file(
@@ -24872,7 +25216,7 @@ pub fn create_source_file(
     comments,
     parser.strict_mode || external_module_indicator,
     external_module_indicator,
-    collect_identifier_table(tokens),
+    collect_identifier_table(token_stream.tokens),
   )
 }
 
@@ -24975,11 +25319,17 @@ pub fn parse_isolated_jsdoc_comment(
   let (setup, setup_errors) = make_isolated_parse_setup(source, options)
   match setup {
     Some((parser, setup)) => {
+      if !jsdoc_parsing_mode_collects_jsdoc(options.jsdoc_parsing_mode) {
+        return (isolated_parse_errors(parser, setup), None)
+      }
       let start_offset = skip_ascii_whitespace(parser.source_text, 0)
       if !source_has_jsdoc_comment_at(parser.source_text, start_offset) {
         return (isolated_parse_errors(parser, setup), None)
       }
-      let (comments, _) = collect_comments_and_directives(parser.source_text)
+      let (comments, _) = collect_comments_and_directives(
+        parser.source_text,
+        true,
+      )
       let mut jsdoc_comment : CommentRange? = None
       for comment in comments {
         if comment.kind is CommentKind::JsDoc &&
