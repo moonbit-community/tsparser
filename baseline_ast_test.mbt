@@ -480,7 +480,13 @@ test "baseline ast: import type and import attributes" {
       #|                      fields: [
       #|                        {
       #|                          name: "resolution-mode",
-      #|                          value: String("import"),
+      #|                          value: {
+      #|                            kind: String("import"),
+      #|                            span: {
+      #|                              start: { offset: 99, line: 2, column: 57 },
+      #|                              end: { offset: 107, line: 2, column: 65 },
+      #|                            },
+      #|                          },
       #|                          span: {
       #|                            start: { offset: 80, line: 2, column: 38 },
       #|                            end: { offset: 107, line: 2, column: 65 },

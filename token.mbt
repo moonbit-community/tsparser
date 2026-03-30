@@ -106,6 +106,7 @@ pub enum TokenKind {
   Caret
   Bang
   Tilde
+  ConflictMarkerTrivia
   Eof
 } derive(Eq, Debug)
 

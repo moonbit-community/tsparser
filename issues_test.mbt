@@ -1034,7 +1034,7 @@ test "export type star reexport parses as type-only export" {
             {
               is_type_only: true,
               specs: [{ name: "*", as_name: None, .. }],
-              from: Some("m"),
+              module_specifier: Some({ kind: String("m"), .. }),
             }
           )
         ),
@@ -1061,7 +1061,7 @@ test "export type namespace reexport parses as type-only export" {
             {
               is_type_only: true,
               specs: [{ name: "*", as_name: Some("ns"), .. }],
-              from: Some("m"),
+              module_specifier: Some({ kind: String("m"), .. }),
             }
           )
         ),

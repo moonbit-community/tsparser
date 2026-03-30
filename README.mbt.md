@@ -2,6 +2,10 @@
 
 A small TypeScript parser written in MoonBit. 
 
+## Diagnostics
+
+Parser diagnostics now go through a centralized error-code template catalog instead of building message strings inline. TypeScript-derived templates, local extension codes, and regeneration instructions are documented in [docs/diagnostics.md](/root/workdir/tsparser/docs/diagnostics.md).
+
 ## Example
 
 ```mbt check

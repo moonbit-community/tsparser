@@ -39,6 +39,7 @@ pub impl @debug.Debug for LexError
 
 pub(all) suberror ParseError {
   LexErr(LexError)
+  SpeculativeArrowFailure
   Diagnostic(filename~ : String, line~ : Int, column~ : Int, error_code~ : Int, error_msg~ : String)
 }
 pub impl Eq for ParseError
@@ -310,7 +311,7 @@ pub impl @debug.Debug for ExportDefault
 pub struct ExportNamed {
   is_type_only : Bool
   specs : Array[ExportSpec]
-  from : String?
+  module_specifier : Expr?
 }
 pub impl @debug.Debug for ExportNamed
 
@@ -418,16 +419,10 @@ pub impl @debug.Debug for ImportAssignDecl
 
 pub struct ImportAttribute {
   name : String
-  value : ImportAttributeValue
+  value : Expr
   span : Span
 }
 pub impl @debug.Debug for ImportAttribute
-
-pub enum ImportAttributeValue {
-  String(String)
-  Object(Array[ImportAttribute])
-}
-pub impl @debug.Debug for ImportAttributeValue
 
 pub struct ImportAttributes {
   fields : Array[ImportAttribute]
@@ -440,7 +435,7 @@ pub struct ImportDecl {
   default_name : String?
   ns_name : String?
   named : Array[ImportSpec]
-  from : String
+  module_specifier : Expr
   span : Span
 }
 pub impl @debug.Debug for ImportDecl
@@ -907,6 +902,7 @@ pub enum TokenKind {
   Caret
   Bang
   Tilde
+  ConflictMarkerTrivia
   Eof
 }
 pub impl Eq for TokenKind

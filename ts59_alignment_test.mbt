@@ -23,6 +23,23 @@ test "parse_program uses file extension to enable tsx" {
 }
 
 ///|
+test "jsx conflict markers keep TS1005 instead of TS17008" {
+  let source =
+    #|const x = <div>
+    #|<<<<<<< HEAD
+  let (errors, _) = parse_program_with_jsx(source, true, name="x.tsx")
+  guard errors
+    is [
+      Diagnostic(error_code=1005, line=1, column=16, ..),
+      Diagnostic(error_code=1185, line=2, column=1, ..),
+    ] else {
+    fail(
+      "tsx conflict marker recovery should stop at the marker and keep TS1005",
+    )
+  }
+}
+
+///|
 test "create_source_file keeps ts type assertions even with jsx pragma" {
   let source =
     #|// @jsx: preserve
@@ -456,7 +473,7 @@ test "parse_json_text parses structured root values" {
 }
 
 ///|
-test "parse_json_text preserves leading root before trailing tokens" {
+test "parse_json_text wraps multiple top-level values like ts" {
   let source =
     #|{"answer": 42} true
   let source_file = parse_json_text(source)
@@ -464,20 +481,33 @@ test "parse_json_text preserves leading root before trailing tokens" {
     is [
       {
         kind: ExprStmt(
-          { kind: Object({ props: [Property({ name: "answer", .. })] }), .. }
+          {
+            kind: Array(
+              [
+                Expr(
+                  {
+                    kind: Object({ props: [Property({ name: "answer", .. })] }),
+                    ..,
+                  }
+                ),
+                Expr({ kind: Bool(true), .. }),
+              ]
+            ),
+            ..,
+          }
         ),
         ..,
       },
     ] else {
-    fail("json parser should keep the leading root value AST")
+    fail("json parser should wrap multiple roots in an array literal")
   }
-  guard source_file.parse_errors.length() > 0 else {
-    fail("trailing json tokens should still report diagnostics")
+  guard source_file.parse_errors is [Diagnostic(error_code=1012, ..)] else {
+    fail("multiple top-level json values should report TS1012")
   }
 }
 
 ///|
-test "parse_json_text rejects comments and single-quoted strings" {
+test "parse_json_text allows comments but rejects single-quoted strings" {
   let source =
     #|{
     #|  // nope
@@ -492,8 +522,8 @@ test "parse_json_text rejects comments and single-quoted strings" {
   guard source_file.comments is [{ kind: Line, .. }] else {
     fail("json source file should still retain raw comment ranges")
   }
-  guard source_file.parse_errors.length() >= 2 else {
-    fail("json parser should reject both comments and single-quoted strings")
+  guard source_file.parse_errors is [Diagnostic(error_code=1327, ..)] else {
+    fail("json parser should only reject the single-quoted key with TS1327")
   }
 }
 

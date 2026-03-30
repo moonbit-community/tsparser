@@ -163,6 +163,80 @@ fn is_line_break_code_unit(ch : UInt16) -> Bool {
 }
 
 ///|
+let merge_conflict_marker_length = 7
+
+///|
+fn source_is_conflict_marker_trivia(source : StringView, pos : Int) -> Bool {
+  if pos < 0 || pos >= source.length() {
+    return false
+  }
+  if pos > 0 && !is_line_break_code_unit(source[pos - 1]) {
+    return false
+  }
+  let ch = source[pos]
+  if ch != '<' && ch != '>' && ch != '=' && ch != '|' {
+    return false
+  }
+  if pos + merge_conflict_marker_length >= source.length() {
+    return false
+  }
+  let mut i = 0
+  while i < merge_conflict_marker_length {
+    if source[pos + i] != ch {
+      return false
+    }
+    i += 1
+  }
+  ch == '=' || source[pos + merge_conflict_marker_length] == ' '
+}
+
+///|
+fn scan_conflict_marker_trivia(source : StringView, start : Int) -> Int {
+  if start < 0 || start >= source.length() {
+    return start
+  }
+  let ch = source[start]
+  let len = source.length()
+  let mut pos = start
+  if ch == '<' || ch == '>' {
+    while pos < len && !is_line_break_code_unit(source[pos]) {
+      pos += 1
+    }
+    return pos
+  }
+  while pos < len {
+    let current = source[pos]
+    if (current == '=' || current == '>') &&
+      current != ch &&
+      source_is_conflict_marker_trivia(source, pos) {
+      break
+    }
+    pos += 1
+  }
+  pos
+}
+
+///|
+fn Lexer::is_conflict_marker_trivia(self : Lexer) -> Bool {
+  source_is_conflict_marker_trivia(self.source, self.pos)
+}
+
+///|
+fn Lexer::scan_conflict_marker_trivia_token(
+  self : Lexer,
+  start : Position,
+) -> Token {
+  let end_offset = scan_conflict_marker_trivia(self.source, self.pos)
+  while self.pos < end_offset {
+    self.bump()
+  }
+  Token::{
+    kind: TokenKind::ConflictMarkerTrivia,
+    span: span_from(start, self.position()),
+  }
+}
+
+///|
 fn Lexer::backslash_likely_in_regex_literal(
   self : Lexer,
   backslash_offset : Int,
@@ -353,26 +427,6 @@ fn Lexer::skip_ws_and_comments(self : Lexer) -> Unit raise LexError {
       let input = self.remaining()
       lexmatch input with longest {
         ("#![^\n]*", rest) => {
-          self.consume_prefix(input, rest)
-          progressed = true
-          continue
-        }
-        ("<<<<<<<[^\n]*", rest) => {
-          self.consume_prefix(input, rest)
-          progressed = true
-          continue
-        }
-        (">>>>>>>[^\n]*", rest) => {
-          self.consume_prefix(input, rest)
-          progressed = true
-          continue
-        }
-        ("=======[^\n]*", rest) => {
-          self.consume_prefix(input, rest)
-          progressed = true
-          continue
-        }
-        ("\|\|\|\|\|\|\|[^\n]*", rest) => {
           self.consume_prefix(input, rest)
           progressed = true
           continue
@@ -825,6 +879,9 @@ fn Lexer::next_token(self : Lexer) -> Token raise LexError {
   }
   self.skip_ws_and_comments()
   let start = self.position()
+  if self.is_conflict_marker_trivia() {
+    return self.scan_conflict_marker_trivia_token(start)
+  }
   let token = match self.peek() {
     None => Token::{ kind: TokenKind::Eof, span: span_from(start, start) }
     Some(b) =>

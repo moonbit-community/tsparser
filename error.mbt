@@ -11,6 +11,7 @@ pub(all) suberror LexError {
 /// https://github.com/microsoft/TypeScript/blob/main/src/compiler/diagnosticMessages.json
 pub(all) suberror ParseError {
   LexErr(LexError)
+  SpeculativeArrowFailure
   Diagnostic(
     filename~ : String,
     line~ : Int,
@@ -24,6 +25,7 @@ pub(all) suberror ParseError {
 fn parse_error_to_string(err : ParseError) -> String {
   match err {
     ParseError::LexErr(inner) => "LexErr(\{@debug.to_string(inner)})"
+    ParseError::SpeculativeArrowFailure => "SpeculativeArrowFailure"
     ParseError::Diagnostic(filename~, line~, column~, error_code~, error_msg~) =>
       "\{filename}(\{line},\{column}): error TS\{error_code}: \{error_msg}"
   }

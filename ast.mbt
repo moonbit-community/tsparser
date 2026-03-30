@@ -292,7 +292,7 @@ pub struct ImportDecl {
   default_name : String?
   ns_name : String?
   named : Array[ImportSpec]
-  from : String
+  module_specifier : Expr
   span : Span
 } derive(Debug)
 
@@ -330,7 +330,7 @@ pub enum ExportDefault {
 pub struct ExportNamed {
   is_type_only : Bool
   specs : Array[ExportSpec]
-  from : String?
+  module_specifier : Expr?
 } derive(Debug)
 
 ///|
@@ -722,14 +722,8 @@ pub struct ImportAttributes {
 ///|
 pub struct ImportAttribute {
   name : String
-  value : ImportAttributeValue
+  value : Expr
   span : Span
-} derive(Debug)
-
-///|
-pub enum ImportAttributeValue {
-  String(String)
-  Object(Array[ImportAttribute])
 } derive(Debug)
 
 ///|
