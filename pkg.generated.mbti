@@ -33,66 +33,55 @@ pub(all) suberror LexError {
   UnexpectedEndOfText(pos~ : Position)
   UnterminatedComment(pos~ : Position)
   InvalidNumber(pos~ : Position, String)
-}
-pub impl Eq for LexError
-pub impl @debug.Debug for LexError
+} derive(Eq, @debug.Debug)
 
 pub(all) suberror ParseError {
   LexErr(LexError)
   SpeculativeArrowFailure
   Diagnostic(filename~ : String, line~ : Int, column~ : Int, error_code~ : Int, error_msg~ : String)
-}
-pub impl Eq for ParseError
+} derive(Eq, @debug.Debug)
 pub impl Show for ParseError
-pub impl @debug.Debug for ParseError
 
 // Types and methods
 pub enum AccessModifier {
   Public
   Private
   Protected
-}
-pub impl @debug.Debug for AccessModifier
+} derive(@debug.Debug)
 
 pub enum ArrayElement {
   Expr(Expr)
   Spread(Expr)
   Hole
-}
-pub impl @debug.Debug for ArrayElement
+} derive(@debug.Debug)
 
 pub struct ArrayPattern {
   elems : Array[ArrayPatternElem]
-}
-pub impl @debug.Debug for ArrayPattern
+} derive(@debug.Debug)
 
 pub enum ArrayPatternElem {
   Elem(BindingElement)
   Rest(BindingPattern)
   Hole
-}
-pub impl @debug.Debug for ArrayPatternElem
+} derive(@debug.Debug)
 
 pub struct ArrowFunction {
   type_params : Array[TypeParam]
   params : Array[Param]
   return_type : TypeNode?
   body : FunctionBody
-}
-pub impl @debug.Debug for ArrowFunction
+} derive(@debug.Debug)
 
 pub struct AsExpr {
   expr : Expr
   type_ann : TypeNode
-}
-pub impl @debug.Debug for AsExpr
+} derive(@debug.Debug)
 
 pub struct AssignExpr {
   op : AssignOp
   target : Expr
   value : Expr
-}
-pub impl @debug.Debug for AssignExpr
+} derive(@debug.Debug)
 
 pub enum AssignOp {
   Assign
@@ -111,15 +100,13 @@ pub enum AssignOp {
   ShlAssign
   ShrAssign
   UShrAssign
-}
-pub impl @debug.Debug for AssignOp
+} derive(@debug.Debug)
 
 pub struct BinaryExpr {
   op : BinaryOp
   left : Expr
   right : Expr
-}
-pub impl @debug.Debug for BinaryExpr
+} derive(@debug.Debug)
 
 pub enum BinaryOp {
   Add
@@ -148,54 +135,46 @@ pub enum BinaryOp {
   UShr
   Comma
   Pow
-}
-pub impl @debug.Debug for BinaryOp
+} derive(@debug.Debug)
 
 pub struct BindingElement {
   pattern : BindingPattern
   default_value : Expr?
   span : Span
-}
-pub impl @debug.Debug for BindingElement
+} derive(@debug.Debug)
 
 pub struct BindingPattern {
   kind : BindingPatternKind
   span : Span
-}
-pub impl @debug.Debug for BindingPattern
+} derive(@debug.Debug)
 
 pub enum BindingPatternKind {
   Ident(String)
   Object(ObjectPattern)
   Array(ArrayPattern)
-}
-pub impl @debug.Debug for BindingPatternKind
+} derive(@debug.Debug)
 
 pub struct Block {
   stmts : Array[Stmt]
   span : Span
-}
-pub impl @debug.Debug for Block
+} derive(@debug.Debug)
 
 pub struct CallExpr {
   callee : Expr
   args : Array[Expr]
   optional : Bool
-}
-pub impl @debug.Debug for CallExpr
+} derive(@debug.Debug)
 
 pub struct CatchClause {
   param : CatchParam?
   body : Block
-}
-pub impl @debug.Debug for CatchClause
+} derive(@debug.Debug)
 
 pub struct CatchParam {
   name : String
   type_ann : TypeNode?
   span : Span
-}
-pub impl @debug.Debug for CatchParam
+} derive(@debug.Debug)
 
 pub struct ClassDecl {
   name : String?
@@ -205,8 +184,7 @@ pub struct ClassDecl {
   implements : Array[TypeNode]
   members : Array[ClassMember]
   span : Span
-}
-pub impl @debug.Debug for ClassDecl
+} derive(@debug.Debug)
 
 pub struct ClassMember {
   kind : ClassMemberKind
@@ -215,8 +193,7 @@ pub struct ClassMember {
   access : AccessModifier?
   is_readonly : Bool
   span : Span
-}
-pub impl @debug.Debug for ClassMember
+} derive(@debug.Debug)
 
 pub enum ClassMemberKind {
   StaticBlock(Block)
@@ -225,109 +202,94 @@ pub enum ClassMemberKind {
   Getter(MemberName, TypeNode?, Block)
   Setter(MemberName, Param, Block)
   Field(MemberName, TypeNode?, Expr?)
-}
-pub impl @debug.Debug for ClassMemberKind
+} derive(@debug.Debug)
 
 pub struct CommentDirective {
   kind : CommentDirectiveKind
   span : Span
   text : String
-}
-pub impl @debug.Debug for CommentDirective
+} derive(@debug.Debug)
 
 pub enum CommentDirectiveKind {
   TsIgnore
   TsExpectError
   TsNoCheck
   TsCheck
-}
-pub impl @debug.Debug for CommentDirectiveKind
+} derive(@debug.Debug)
 
 pub enum CommentKind {
   Line
   Block
   JsDoc
-}
-pub impl @debug.Debug for CommentKind
+} derive(@debug.Debug)
 
 pub struct CommentRange {
   kind : CommentKind
   span : Span
   text : String
-}
-pub impl @debug.Debug for CommentRange
+} derive(@debug.Debug)
 
 pub struct ConditionalExpr {
   condition : Expr
   consequent : Expr
   alternate : Expr
-}
-pub impl @debug.Debug for ConditionalExpr
+} derive(@debug.Debug)
 
 pub struct ConstructorType {
   type_params : Array[TypeParam]
   params : Array[Param]
   return_type : TypeNode
   is_abstract : Bool
-}
-pub impl @debug.Debug for ConstructorType
+} derive(@debug.Debug)
 
 pub struct DoWhileStmt {
   body : Stmt
   condition : Expr
-}
-pub impl @debug.Debug for DoWhileStmt
+} derive(@debug.Debug)
 
 pub struct EnumDecl {
   name : String
   members : Array[EnumMember]
   is_const : Bool
   span : Span
-}
-pub impl @debug.Debug for EnumDecl
+} derive(@debug.Debug)
 
 pub struct EnumMember {
   name : String
   init : Expr?
   span : Span
-}
-pub impl @debug.Debug for EnumMember
+} derive(@debug.Debug)
 
 pub enum ExportDecl {
   Named(ExportNamed)
   Default(ExportDefault)
   Declaration(Stmt)
   Assign(Expr)
-}
-pub impl @debug.Debug for ExportDecl
+} derive(@debug.Debug)
 
 pub enum ExportDefault {
   Expr(Expr)
   Function(FunctionDecl)
   Class(ClassDecl)
-}
-pub impl @debug.Debug for ExportDefault
+} derive(@debug.Debug)
 
 pub struct ExportNamed {
   is_type_only : Bool
   specs : Array[ExportSpec]
   module_specifier : Expr?
-}
-pub impl @debug.Debug for ExportNamed
+} derive(@debug.Debug)
 
 pub struct ExportSpec {
   is_type_only : Bool
   name : String
   as_name : String?
   span : Span
-}
-pub impl @debug.Debug for ExportSpec
+} derive(@debug.Debug)
 
 pub struct Expr {
   kind : ExprKind
   span : Span
-}
-pub impl @debug.Debug for Expr
+} derive(@debug.Debug)
 
 pub enum ExprKind {
   Ident(String)
@@ -358,48 +320,41 @@ pub enum ExprKind {
   Assign(AssignExpr)
   Call(CallExpr)
   Member(MemberExpr)
-}
-pub impl @debug.Debug for ExprKind
+} derive(@debug.Debug)
 
 pub enum ForInLeft {
   Var(VarDecl)
   Expr(Expr)
-}
-pub impl @debug.Debug for ForInLeft
+} derive(@debug.Debug)
 
 pub struct ForInStmt {
   left : ForInLeft
   right : Expr
   body : Stmt
-}
-pub impl @debug.Debug for ForInStmt
+} derive(@debug.Debug)
 
 pub enum ForInit {
   Var(VarDecl)
   Expr(Expr)
-}
-pub impl @debug.Debug for ForInit
+} derive(@debug.Debug)
 
 pub struct ForOfStmt {
   left : ForInLeft
   right : Expr
   body : Stmt
-}
-pub impl @debug.Debug for ForOfStmt
+} derive(@debug.Debug)
 
 pub struct ForStmt {
   init : ForInit?
   condition : Expr?
   update : Expr?
   body : Stmt
-}
-pub impl @debug.Debug for ForStmt
+} derive(@debug.Debug)
 
 pub enum FunctionBody {
   Block(Block)
   Expr(Expr)
-}
-pub impl @debug.Debug for FunctionBody
+} derive(@debug.Debug)
 
 pub struct FunctionDecl {
   name : String?
@@ -407,28 +362,24 @@ pub struct FunctionDecl {
   params : Array[Param]
   return_type : TypeNode?
   body : Block
-}
-pub impl @debug.Debug for FunctionDecl
+} derive(@debug.Debug)
 
 pub struct ImportAssignDecl {
   name : String
   value : Expr
   span : Span
-}
-pub impl @debug.Debug for ImportAssignDecl
+} derive(@debug.Debug)
 
 pub struct ImportAttribute {
   name : String
   value : Expr
   span : Span
-}
-pub impl @debug.Debug for ImportAttribute
+} derive(@debug.Debug)
 
 pub struct ImportAttributes {
   fields : Array[ImportAttribute]
   span : Span
-}
-pub impl @debug.Debug for ImportAttributes
+} derive(@debug.Debug)
 
 pub struct ImportDecl {
   is_type_only : Bool
@@ -437,16 +388,14 @@ pub struct ImportDecl {
   named : Array[ImportSpec]
   module_specifier : Expr
   span : Span
-}
-pub impl @debug.Debug for ImportDecl
+} derive(@debug.Debug)
 
 pub struct ImportSpec {
   is_type_only : Bool
   name : String
   as_name : String?
   span : Span
-}
-pub impl @debug.Debug for ImportSpec
+} derive(@debug.Debug)
 
 pub struct ImportType {
   argument : String
@@ -454,13 +403,11 @@ pub struct ImportType {
   qualifier : String?
   type_args : Array[TypeNode]
   is_typeof : Bool
-}
-pub impl @debug.Debug for ImportType
+} derive(@debug.Debug)
 
 pub struct InferType {
   type_param : TypeParam
-}
-pub impl @debug.Debug for InferType
+} derive(@debug.Debug)
 
 pub struct InterfaceDecl {
   name : String
@@ -468,43 +415,37 @@ pub struct InterfaceDecl {
   extends : Array[TypeNode]
   members : Array[InterfaceMember]
   span : Span
-}
-pub impl @debug.Debug for InterfaceDecl
+} derive(@debug.Debug)
 
 pub struct InterfaceMember {
   name : TypeMemberName
   optional : Bool
   type_ann : TypeNode
   span : Span
-}
-pub impl @debug.Debug for InterfaceMember
+} derive(@debug.Debug)
 
 pub enum JSXAttr {
   Attribute(JSXAttribute)
   Spread(JSXExprContainer)
-}
-pub impl @debug.Debug for JSXAttr
+} derive(@debug.Debug)
 
 pub enum JSXAttrValue {
   String(String)
   Expr(JSXExprContainer)
   Element(Expr)
-}
-pub impl @debug.Debug for JSXAttrValue
+} derive(@debug.Debug)
 
 pub struct JSXAttribute {
   name : String
   value : JSXAttrValue?
   span : Span
-}
-pub impl @debug.Debug for JSXAttribute
+} derive(@debug.Debug)
 
 pub enum JSXChild {
   Text(String)
   Expr(JSXExprContainer)
   Element(Expr)
-}
-pub impl @debug.Debug for JSXChild
+} derive(@debug.Debug)
 
 pub struct JSXElement {
   name : String
@@ -515,28 +456,23 @@ pub struct JSXElement {
   closing_name : String?
   opening_span : Span
   closing_span : Span?
-}
-pub impl @debug.Debug for JSXElement
+} derive(@debug.Debug)
 
 pub struct JSXExprContainer {
   expr : Expr
   span : Span
-}
-pub impl @debug.Debug for JSXExprContainer
+} derive(@debug.Debug)
 
 pub struct JSXFragment {
   children : Array[JSXChild]
   opening_span : Span
   closing_span : Span
-}
-pub impl @debug.Debug for JSXFragment
+} derive(@debug.Debug)
 
 pub enum JsDocParsingMode {
   ParseAll
   ParseNone
-}
-pub impl Eq for JsDocParsingMode
-pub impl @debug.Debug for JsDocParsingMode
+} derive(Eq, @debug.Debug)
 
 pub enum Keyword {
   Let
@@ -587,15 +523,12 @@ pub enum Keyword {
   Catch
   Finally
   Throw
-}
-pub impl Eq for Keyword
-pub impl @debug.Debug for Keyword
+} derive(Eq, @debug.Debug)
 
 pub struct LabeledStmt {
   label : String
   stmt : Stmt
-}
-pub impl @debug.Debug for LabeledStmt
+} derive(@debug.Debug)
 
 pub struct MappedType {
   readonly_modifier : MappedTypeModifier?
@@ -604,22 +537,19 @@ pub struct MappedType {
   name_type : TypeNode?
   optional_modifier : MappedTypeModifier?
   value_type : TypeNode?
-}
-pub impl @debug.Debug for MappedType
+} derive(@debug.Debug)
 
 pub enum MappedTypeModifier {
   Add
   Remove
-}
-pub impl @debug.Debug for MappedTypeModifier
+} derive(@debug.Debug)
 
 pub struct MemberExpr {
   object : Expr
   property : MemberProp
   computed : Bool
   optional : Bool
-}
-pub impl @debug.Debug for MemberExpr
+} derive(@debug.Debug)
 
 pub enum MemberName {
   Ident(String)
@@ -627,66 +557,56 @@ pub enum MemberName {
   Number(String)
   Computed(String)
   Private(String)
-}
-pub impl @debug.Debug for MemberName
+} derive(@debug.Debug)
 
 pub enum MemberProp {
   Ident(String)
   Private(String)
   Expr(Expr)
-}
-pub impl @debug.Debug for MemberProp
+} derive(@debug.Debug)
 
 pub struct NamespaceDecl {
   name : String
   body : Block
   span : Span
-}
-pub impl @debug.Debug for NamespaceDecl
+} derive(@debug.Debug)
 
 pub struct NewExpr {
   callee : Expr
   args : Array[Expr]
-}
-pub impl @debug.Debug for NewExpr
+} derive(@debug.Debug)
 
 pub struct ObjectLiteral {
   props : Array[ObjectProp]
-}
-pub impl @debug.Debug for ObjectLiteral
+} derive(@debug.Debug)
 
 pub struct ObjectPattern {
   props : Array[ObjectPatternProp]
-}
-pub impl @debug.Debug for ObjectPattern
+} derive(@debug.Debug)
 
 pub enum ObjectPatternProp {
   Property(ObjectPatternProperty)
   Rest(BindingPattern)
-}
-pub impl @debug.Debug for ObjectPatternProp
+} derive(@debug.Debug)
 
 pub struct ObjectPatternProperty {
   key : String
   binding : BindingElement
   shorthand : Bool
   span : Span
-}
-pub impl @debug.Debug for ObjectPatternProperty
+} derive(@debug.Debug)
 
 pub enum ObjectProp {
   Property(ObjectPropEntry)
   Spread(Expr)
-}
-pub impl @debug.Debug for ObjectProp
+} derive(@debug.Debug)
 
 pub struct ObjectPropEntry {
   name : String
   value : Expr
   shorthand : Bool
   span : Span
-}
-pub impl @debug.Debug for ObjectPropEntry
+} derive(@debug.Debug)
 
 pub struct Param {
   pattern : BindingPattern
@@ -695,13 +615,11 @@ pub struct Param {
   default_value : Expr?
   is_rest : Bool
   span : Span
-}
-pub impl @debug.Debug for Param
+} derive(@debug.Debug)
 
 pub struct ParenthesizedType {
   inner : TypeNode
-}
-pub impl @debug.Debug for ParenthesizedType
+} derive(@debug.Debug)
 
 pub struct ParseOptions {
   file_name : String
@@ -719,27 +637,22 @@ pub struct ParseOptions {
   verbatim_module_syntax : Bool
   erasable_syntax_only : Bool
   experimental_decorators : Bool
-}
-pub impl @debug.Debug for ParseOptions
+} derive(@debug.Debug)
 
 pub struct Position {
   offset : Int
   line : Int
   column : Int
-}
-pub impl Eq for Position
-pub impl @debug.Debug for Position
+} derive(Eq, @debug.Debug)
 
 pub struct Program {
   stmts : Array[Stmt]
-}
-pub impl @debug.Debug for Program
+} derive(@debug.Debug)
 
 pub struct SatisfiesExpr {
   expr : Expr
   type_ann : TypeNode
-}
-pub impl @debug.Debug for SatisfiesExpr
+} derive(@debug.Debug)
 
 pub enum ScriptKind {
   Ts
@@ -748,9 +661,7 @@ pub enum ScriptKind {
   Jsx
   Dts
   Json
-}
-pub impl Eq for ScriptKind
-pub impl @debug.Debug for ScriptKind
+} derive(Eq, @debug.Debug)
 
 pub struct SourceFile {
   file_name : String
@@ -767,22 +678,18 @@ pub struct SourceFile {
   jsdoc_parsing_mode : JsDocParsingMode
   external_module_indicator : Bool
   identifiers : Array[String]
-}
-pub impl @debug.Debug for SourceFile
+} derive(@debug.Debug)
 
 pub struct Span {
   start : Position
   end : Position
-}
+} derive(Eq, @debug.Debug)
 pub fn Span::merge(Self, Self) -> Self
-pub impl Eq for Span
-pub impl @debug.Debug for Span
 
 pub struct Stmt {
   kind : StmtKind
   span : Span
-}
-pub impl @debug.Debug for Stmt
+} derive(@debug.Debug)
 
 pub enum StmtKind {
   ImportDecl(ImportDecl)
@@ -813,39 +720,32 @@ pub enum StmtKind {
   ExprStmt(Expr)
   Block(Block)
   Empty
-}
-pub impl @debug.Debug for StmtKind
+} derive(@debug.Debug)
 
 pub struct SwitchCase {
   case_expr : Expr?
   consequent : Array[Stmt]
-}
-pub impl @debug.Debug for SwitchCase
+} derive(@debug.Debug)
 
 pub struct SwitchStmt {
   discriminant : Expr
   cases : Array[SwitchCase]
-}
-pub impl @debug.Debug for SwitchStmt
+} derive(@debug.Debug)
 
 pub struct TemplateLiteral {
   quasis : Array[String]
   exprs : Array[Expr]
-}
-pub impl @debug.Debug for TemplateLiteral
+} derive(@debug.Debug)
 
 pub struct TemplateLiteralType {
   quasis : Array[String]
   types : Array[TypeNode]
-}
-pub impl @debug.Debug for TemplateLiteralType
+} derive(@debug.Debug)
 
 pub struct Token {
   kind : TokenKind
   span : Span
-}
-pub impl Eq for Token
-pub impl @debug.Debug for Token
+} derive(Eq, @debug.Debug)
 
 pub enum TokenKind {
   Ident(String)
@@ -904,30 +804,25 @@ pub enum TokenKind {
   Tilde
   ConflictMarkerTrivia
   Eof
-}
-pub impl Eq for TokenKind
-pub impl @debug.Debug for TokenKind
+} derive(Eq, @debug.Debug)
 
 pub struct TryStmt {
   block : Block
   handler : CatchClause?
   finalizer : Block?
-}
-pub impl @debug.Debug for TryStmt
+} derive(@debug.Debug)
 
 pub struct TypeAliasDecl {
   name : String
   type_params : Array[TypeParam]
   value : TypeNode
   span : Span
-}
-pub impl @debug.Debug for TypeAliasDecl
+} derive(@debug.Debug)
 
 pub struct TypeAssert {
   expr : Expr
   type_ann : TypeNode
-}
-pub impl @debug.Debug for TypeAssert
+} derive(@debug.Debug)
 
 pub enum TypeKind {
   Ident(String)
@@ -951,8 +846,7 @@ pub enum TypeKind {
   Generic(TypeNode, Array[TypeNode])
   Function(Array[Param], TypeNode)
   GenericFunction(Array[TypeParam], Array[Param], TypeNode)
-}
-pub impl @debug.Debug for TypeKind
+} derive(@debug.Debug)
 
 pub enum TypeLiteral {
   String(String)
@@ -960,29 +854,25 @@ pub enum TypeLiteral {
   Bool(Bool)
   Null
   Undefined
-}
-pub impl @debug.Debug for TypeLiteral
+} derive(@debug.Debug)
 
 pub struct TypeMember {
   name : TypeMemberName
   optional : Bool
   type_ann : TypeNode
   span : Span
-}
-pub impl @debug.Debug for TypeMember
+} derive(@debug.Debug)
 
 pub enum TypeMemberName {
   Named(MemberName)
   Call
   Construct
-}
-pub impl @debug.Debug for TypeMemberName
+} derive(@debug.Debug)
 
 pub struct TypeNode {
   kind : TypeKind
   span : Span
-}
-pub impl @debug.Debug for TypeNode
+} derive(@debug.Debug)
 
 pub struct TypeParam {
   name : String
@@ -990,20 +880,17 @@ pub struct TypeParam {
   constraint : TypeNode?
   default_type : TypeNode?
   span : Span
-}
-pub impl @debug.Debug for TypeParam
+} derive(@debug.Debug)
 
 pub enum TypeParamVariance {
   In
   Out
-}
-pub impl @debug.Debug for TypeParamVariance
+} derive(@debug.Debug)
 
 pub struct UnaryExpr {
   op : UnaryOp
   expr : Expr
-}
-pub impl @debug.Debug for UnaryExpr
+} derive(@debug.Debug)
 
 pub enum UnaryOp {
   Plus
@@ -1016,35 +903,30 @@ pub enum UnaryOp {
   Await
   Yield
   YieldStar
-}
-pub impl @debug.Debug for UnaryOp
+} derive(@debug.Debug)
 
 pub struct UpdateExpr {
   op : UpdateOp
   prefix : Bool
   expr : Expr
-}
-pub impl @debug.Debug for UpdateExpr
+} derive(@debug.Debug)
 
 pub enum UpdateOp {
   Increment
   Decrement
-}
-pub impl @debug.Debug for UpdateOp
+} derive(@debug.Debug)
 
 pub struct VarDecl {
   kind : VarKind
   decls : Array[VarDeclarator]
-}
-pub impl @debug.Debug for VarDecl
+} derive(@debug.Debug)
 
 pub struct VarDeclarator {
   pattern : BindingPattern
   type_ann : TypeNode?
   init : Expr?
   span : Span
-}
-pub impl @debug.Debug for VarDeclarator
+} derive(@debug.Debug)
 
 pub enum VarKind {
   Let
@@ -1052,15 +934,12 @@ pub enum VarKind {
   Var
   Using
   AwaitUsing
-}
-pub impl Eq for VarKind
-pub impl @debug.Debug for VarKind
+} derive(Eq, @debug.Debug)
 
 pub struct WithStmt {
   object : Expr
   body : Stmt
-}
-pub impl @debug.Debug for WithStmt
+} derive(@debug.Debug)
 
 // Type aliases
 
