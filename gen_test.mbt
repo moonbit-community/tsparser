@@ -1,21 +1,4 @@
 ///|
-// test "gen" {
-//   let tsfiles = @fs.read_dir("./tsfiles")
-//   let buf = StringBuilder::new()
-//   for file in tsfiles {
-//     if file.has_suffix(".ts") || file.has_suffix(".tsx") {
-//       let test_block =
-//         $|test "\{file}" {
-//         $|  check_tsfile("\{file}")
-//         #|}
-//         #|
-//       buf.write_string(test_block)
-//     }
-//   }
-//   @fs.write_string_to_file("./tsfiles_test", buf.to_string())
-// }
-
-///|
 fn check_tsfile(filename : String) -> Unit raise {
   let basename = if filename.chop_suffix(".ts") is Some(base) {
     base
