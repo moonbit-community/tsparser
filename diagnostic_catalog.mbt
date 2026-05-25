@@ -489,7 +489,7 @@ fn format_diagnostic_template(
           sb.write_string(
             template
             .view(start_offset=index, end_offset=placeholder_end + 1)
-            .to_string(),
+            .to_owned(),
           )
         }
         index = placeholder_end + 1
@@ -497,7 +497,7 @@ fn format_diagnostic_template(
       }
     }
     sb.write_string(
-      template.view(start_offset=index, end_offset=index + 1).to_string(),
+      template.view(start_offset=index, end_offset=index + 1).to_owned(),
     )
     index += 1
   }
@@ -509,20 +509,20 @@ fn expected_syntax_code_and_args(
   expected : ExpectedSyntax,
 ) -> (Int, Array[String]) {
   match expected {
-    ExpectedSyntax::Identifier => (1003, [])
-    ExpectedSyntax::Expression => (1109, [])
-    ExpectedSyntax::StringLiteral => (1141, [])
-    ExpectedSyntax::Type => (1110, [])
-    ExpectedSyntax::TypeArgument => (1140, [])
-    ExpectedSyntax::BindingPattern => (1180, [])
-    ExpectedSyntax::MemberName => (1003, [])
-    ExpectedSyntax::PropertyName => (1136, [])
-    ExpectedSyntax::TemplateChunk => (1005, ["}"])
-    ExpectedSyntax::JSXAttributeValue => (1145, [])
-    ExpectedSyntax::CaseOrDefault => (1130, [])
-    ExpectedSyntax::FunctionType => (1110, [])
-    ExpectedSyntax::EndOfFile => (1012, [])
-    ExpectedSyntax::Token(text) => (1005, [text])
+    Identifier => (1003, [])
+    Expression => (1109, [])
+    StringLiteral => (1141, [])
+    Type => (1110, [])
+    TypeArgument => (1140, [])
+    BindingPattern => (1180, [])
+    MemberName => (1003, [])
+    PropertyName => (1136, [])
+    TemplateChunk => (1005, ["}"])
+    JSXAttributeValue => (1145, [])
+    CaseOrDefault => (1130, [])
+    FunctionType => (1110, [])
+    EndOfFile => (1012, [])
+    Token(text) => (1005, [text])
   }
 }
 

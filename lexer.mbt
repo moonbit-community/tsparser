@@ -25,7 +25,7 @@ fn Lexer::new(input : StringView) -> Lexer {
     pos: 0,
     line: 1,
     column: 1,
-    mode: LexerMode::Normal,
+    mode: Normal,
     mode_stack: [],
     template_expr_depth: 0,
     pending: [],
@@ -101,7 +101,7 @@ fn Lexer::token_from_match(
   rest : StringView,
 ) -> Token {
   self.consume_prefix(input, rest)
-  Token::{ kind, span: span_from(start, self.position()) }
+  { kind, span: span_from(start, self.position()) }
 }
 
 ///|
@@ -114,7 +114,7 @@ fn Lexer::push_mode(self : Lexer, mode : LexerMode) -> Unit {
 fn Lexer::pop_mode(self : Lexer) -> Unit {
   match self.mode_stack.pop() {
     Some(prev) => self.mode = prev
-    None => self.mode = LexerMode::Normal
+    None => self.mode = Normal
   }
 }
 
@@ -230,10 +230,7 @@ fn Lexer::scan_conflict_marker_trivia_token(
   while self.pos < end_offset {
     self.bump()
   }
-  Token::{
-    kind: TokenKind::ConflictMarkerTrivia,
-    span: span_from(start, self.position()),
-  }
+  { kind: ConflictMarkerTrivia, span: span_from(start, self.position()) }
 }
 
 ///|
@@ -355,54 +352,54 @@ fn Lexer::slash_likely_in_regex_literal(
 ///|
 fn keyword_from_ident(name : String) -> Keyword? {
   match name {
-    "let" => Some(Keyword::Let)
-    "const" => Some(Keyword::Const)
-    "var" => Some(Keyword::Var)
-    "function" => Some(Keyword::Function)
-    "return" => Some(Keyword::Return)
-    "if" => Some(Keyword::If)
-    "else" => Some(Keyword::Else)
-    "while" => Some(Keyword::While)
-    "for" => Some(Keyword::For)
-    "do" => Some(Keyword::Do)
-    "switch" => Some(Keyword::Switch)
-    "case" => Some(Keyword::Case)
-    "type" => Some(Keyword::Type)
-    "typeof" => Some(Keyword::Typeof)
-    "interface" => Some(Keyword::Interface)
-    "enum" => Some(Keyword::Enum)
-    "true" => Some(Keyword::True)
-    "false" => Some(Keyword::False)
-    "null" => Some(Keyword::Null)
-    "undefined" => Some(Keyword::Undefined)
-    "this" => Some(Keyword::This)
-    "delete" => Some(Keyword::Delete)
-    "void" => Some(Keyword::Void)
-    "await" => Some(Keyword::Await)
-    "yield" => Some(Keyword::Yield)
-    "new" => Some(Keyword::New)
-    "class" => Some(Keyword::Class)
-    "extends" => Some(Keyword::Extends)
-    "implements" => Some(Keyword::Implements)
-    "export" => Some(Keyword::Export)
-    "import" => Some(Keyword::Import)
-    "from" => Some(Keyword::From)
-    "as" => Some(Keyword::As)
-    "default" => Some(Keyword::Default)
-    "abstract" => Some(Keyword::Abstract)
-    "public" => Some(Keyword::Public)
-    "private" => Some(Keyword::Private)
-    "protected" => Some(Keyword::Protected)
-    "readonly" => Some(Keyword::Readonly)
-    "static" => Some(Keyword::Static)
-    "get" => Some(Keyword::Get)
-    "set" => Some(Keyword::Set)
-    "break" => Some(Keyword::Break)
-    "continue" => Some(Keyword::Continue)
-    "try" => Some(Keyword::Try)
-    "catch" => Some(Keyword::Catch)
-    "finally" => Some(Keyword::Finally)
-    "throw" => Some(Keyword::Throw)
+    "let" => Some(Let)
+    "const" => Some(Const)
+    "var" => Some(Var)
+    "function" => Some(Function)
+    "return" => Some(Return)
+    "if" => Some(If)
+    "else" => Some(Else)
+    "while" => Some(While)
+    "for" => Some(For)
+    "do" => Some(Do)
+    "switch" => Some(Switch)
+    "case" => Some(Case)
+    "type" => Some(Type)
+    "typeof" => Some(Typeof)
+    "interface" => Some(Interface)
+    "enum" => Some(Enum)
+    "true" => Some(True)
+    "false" => Some(False)
+    "null" => Some(Null)
+    "undefined" => Some(Undefined)
+    "this" => Some(This)
+    "delete" => Some(Delete)
+    "void" => Some(Void)
+    "await" => Some(Await)
+    "yield" => Some(Yield)
+    "new" => Some(New)
+    "class" => Some(Class)
+    "extends" => Some(Extends)
+    "implements" => Some(Implements)
+    "export" => Some(Export)
+    "import" => Some(Import)
+    "from" => Some(From)
+    "as" => Some(As)
+    "default" => Some(Default)
+    "abstract" => Some(Abstract)
+    "public" => Some(Public)
+    "private" => Some(Private)
+    "protected" => Some(Protected)
+    "readonly" => Some(Readonly)
+    "static" => Some(Static)
+    "get" => Some(Get)
+    "set" => Some(Set)
+    "break" => Some(Break)
+    "continue" => Some(Continue)
+    "try" => Some(Try)
+    "catch" => Some(Catch)
+    "finally" => Some(Finally)
+    "throw" => Some(Throw)
     _ => None
   }
 }
@@ -464,7 +461,7 @@ fn Lexer::skip_ws_and_comments(self : Lexer) -> Unit raise LexError {
             self.bump()
           }
           if !closed {
-            raise LexError::UnterminatedComment(pos=comment_start)
+            raise UnterminatedComment(pos=comment_start)
           }
           progressed = true
         }
@@ -476,7 +473,7 @@ fn Lexer::skip_ws_and_comments(self : Lexer) -> Unit raise LexError {
 
 ///|
 fn Lexer::slice_to_string(self : Lexer, start : Int, end_ : Int) -> String {
-  self.source.view(start_offset=start, end_offset=end_).to_string()
+  self.source.view(start_offset=start, end_offset=end_).to_owned()
 }
 
 ///|
@@ -531,7 +528,7 @@ fn Lexer::read_ident(self : Lexer) -> String raise LexError {
         continue
       }
       if saved_pos == start {
-        raise LexError::InvalidChar(pos=escape_pos, '\\')
+        raise InvalidChar(pos=escape_pos, '\\')
       }
       self.pos = saved_pos
       self.line = saved_line
@@ -639,7 +636,7 @@ fn Lexer::read_string(self : Lexer, quote : UInt16) -> String raise LexError {
         }
         Some('\n') => self.bump()
         Some(_) => self.bump()
-        None => raise LexError::UnexpectedEndOfText(pos=self.position())
+        None => raise UnexpectedEndOfText(pos=self.position())
       }
     } else {
       self.bump()
@@ -730,14 +727,11 @@ fn Lexer::next_template_token(self : Lexer) -> Token {
     if b == '`' {
       let chunk = self.slice_to_string(start, self.pos)
       let chunk_span = span_from(chunk_start_pos, self.position())
-      let chunk_token = Token::{
-        kind: TokenKind::TemplateChunk(chunk),
-        span: chunk_span,
-      }
+      let chunk_token = Token::{ kind: TemplateChunk(chunk), span: chunk_span }
       let end_start = self.position()
       self.bump()
       let end_token = Token::{
-        kind: TokenKind::TemplateEnd,
+        kind: TemplateEnd,
         span: span_from(end_start, self.position()),
       }
       self.pending.push(end_token)
@@ -747,19 +741,16 @@ fn Lexer::next_template_token(self : Lexer) -> Token {
     if b == '$' && self.peek_n(1) == Some('{') {
       let chunk = self.slice_to_string(start, self.pos)
       let chunk_span = span_from(chunk_start_pos, self.position())
-      let chunk_token = Token::{
-        kind: TokenKind::TemplateChunk(chunk),
-        span: chunk_span,
-      }
+      let chunk_token = Token::{ kind: TemplateChunk(chunk), span: chunk_span }
       let expr_start = self.position()
       self.bump()
       self.bump()
       let expr_token = Token::{
-        kind: TokenKind::TemplateExprStart,
+        kind: TemplateExprStart,
         span: span_from(expr_start, self.position()),
       }
       self.pending.push(expr_token)
-      self.push_mode(LexerMode::TemplateExpr)
+      self.push_mode(TemplateExpr)
       self.template_expr_depth = 0
       return chunk_token
     }
@@ -768,7 +759,7 @@ fn Lexer::next_template_token(self : Lexer) -> Token {
   let chunk = self.slice_to_string(start, self.pos)
   let chunk_span = span_from(chunk_start_pos, self.position())
   self.pop_mode()
-  Token::{ kind: TokenKind::TemplateChunk(chunk), span: chunk_span }
+  { kind: TemplateChunk(chunk), span: chunk_span }
 }
 
 ///|
@@ -776,95 +767,52 @@ fn Lexer::next_punct_token(self : Lexer, start : Position) -> Token? {
   let input = self.remaining()
   lexmatch input with longest {
     ("\.\.\.", rest) =>
-      Some(self.token_from_match(TokenKind::Ellipsis, start, input, rest))
-    ("\?\?", rest) =>
-      Some(self.token_from_match(TokenKind::Nullish, start, input, rest))
+      Some(self.token_from_match(Ellipsis, start, input, rest))
+    ("\?\?", rest) => Some(self.token_from_match(Nullish, start, input, rest))
     ("\?\.", rest) =>
-      Some(self.token_from_match(TokenKind::QuestionDot, start, input, rest))
-    ("\+\+", rest) =>
-      Some(self.token_from_match(TokenKind::PlusPlus, start, input, rest))
-    ("\+=", rest) =>
-      Some(self.token_from_match(TokenKind::PlusEq, start, input, rest))
-    ("\+", rest) =>
-      Some(self.token_from_match(TokenKind::Plus, start, input, rest))
-    ("--", rest) =>
-      Some(self.token_from_match(TokenKind::MinusMinus, start, input, rest))
-    ("-=", rest) =>
-      Some(self.token_from_match(TokenKind::MinusEq, start, input, rest))
-    ("-", rest) =>
-      Some(self.token_from_match(TokenKind::Minus, start, input, rest))
-    ("\*\*", rest) =>
-      Some(self.token_from_match(TokenKind::StarStar, start, input, rest))
-    ("\*=", rest) =>
-      Some(self.token_from_match(TokenKind::StarEq, start, input, rest))
-    ("\*", rest) =>
-      Some(self.token_from_match(TokenKind::Star, start, input, rest))
-    ("/=", rest) =>
-      Some(self.token_from_match(TokenKind::SlashEq, start, input, rest))
-    ("/", rest) =>
-      Some(self.token_from_match(TokenKind::Slash, start, input, rest))
-    ("%=", rest) =>
-      Some(self.token_from_match(TokenKind::PercentEq, start, input, rest))
-    ("%", rest) =>
-      Some(self.token_from_match(TokenKind::Percent, start, input, rest))
-    ("===", rest) =>
-      Some(self.token_from_match(TokenKind::EqEqEq, start, input, rest))
-    ("==", rest) =>
-      Some(self.token_from_match(TokenKind::EqEq, start, input, rest))
-    ("=>", rest) =>
-      Some(self.token_from_match(TokenKind::Arrow, start, input, rest))
-    ("=", rest) =>
-      Some(self.token_from_match(TokenKind::Eq, start, input, rest))
-    ("!==", rest) =>
-      Some(self.token_from_match(TokenKind::NotEqEq, start, input, rest))
-    ("!=", rest) =>
-      Some(self.token_from_match(TokenKind::NotEq, start, input, rest))
-    ("!", rest) =>
-      Some(self.token_from_match(TokenKind::Bang, start, input, rest))
-    ("<=", rest) =>
-      Some(self.token_from_match(TokenKind::Lte, start, input, rest))
-    ("<", rest) =>
-      Some(self.token_from_match(TokenKind::Lt, start, input, rest))
-    (">=", rest) =>
-      Some(self.token_from_match(TokenKind::Gte, start, input, rest))
-    (">", rest) =>
-      Some(self.token_from_match(TokenKind::Gt, start, input, rest))
-    ("&&", rest) =>
-      Some(self.token_from_match(TokenKind::AndAnd, start, input, rest))
-    ("&", rest) =>
-      Some(self.token_from_match(TokenKind::Ampersand, start, input, rest))
-    ("\|\|", rest) =>
-      Some(self.token_from_match(TokenKind::OrOr, start, input, rest))
-    ("\|", rest) =>
-      Some(self.token_from_match(TokenKind::Pipe, start, input, rest))
-    ("\(", rest) =>
-      Some(self.token_from_match(TokenKind::LParen, start, input, rest))
-    ("\)", rest) =>
-      Some(self.token_from_match(TokenKind::RParen, start, input, rest))
-    ("[{]", rest) =>
-      Some(self.token_from_match(TokenKind::LBrace, start, input, rest))
-    ("[}]", rest) =>
-      Some(self.token_from_match(TokenKind::RBrace, start, input, rest))
-    ("\[", rest) =>
-      Some(self.token_from_match(TokenKind::LBracket, start, input, rest))
-    ("\]", rest) =>
-      Some(self.token_from_match(TokenKind::RBracket, start, input, rest))
-    (",", rest) =>
-      Some(self.token_from_match(TokenKind::Comma, start, input, rest))
-    (";", rest) =>
-      Some(self.token_from_match(TokenKind::Semicolon, start, input, rest))
-    (":", rest) =>
-      Some(self.token_from_match(TokenKind::Colon, start, input, rest))
-    ("\.", rest) =>
-      Some(self.token_from_match(TokenKind::Dot, start, input, rest))
-    ("@", rest) =>
-      Some(self.token_from_match(TokenKind::At, start, input, rest))
-    ("\?", rest) =>
-      Some(self.token_from_match(TokenKind::Question, start, input, rest))
-    ("~", rest) =>
-      Some(self.token_from_match(TokenKind::Tilde, start, input, rest))
-    ("\^", rest) =>
-      Some(self.token_from_match(TokenKind::Caret, start, input, rest))
+      Some(self.token_from_match(QuestionDot, start, input, rest))
+    ("\+\+", rest) => Some(self.token_from_match(PlusPlus, start, input, rest))
+    ("\+=", rest) => Some(self.token_from_match(PlusEq, start, input, rest))
+    ("\+", rest) => Some(self.token_from_match(Plus, start, input, rest))
+    ("--", rest) => Some(self.token_from_match(MinusMinus, start, input, rest))
+    ("-=", rest) => Some(self.token_from_match(MinusEq, start, input, rest))
+    ("-", rest) => Some(self.token_from_match(Minus, start, input, rest))
+    ("\*\*", rest) => Some(self.token_from_match(StarStar, start, input, rest))
+    ("\*=", rest) => Some(self.token_from_match(StarEq, start, input, rest))
+    ("\*", rest) => Some(self.token_from_match(Star, start, input, rest))
+    ("/=", rest) => Some(self.token_from_match(SlashEq, start, input, rest))
+    ("/", rest) => Some(self.token_from_match(Slash, start, input, rest))
+    ("%=", rest) => Some(self.token_from_match(PercentEq, start, input, rest))
+    ("%", rest) => Some(self.token_from_match(Percent, start, input, rest))
+    ("===", rest) => Some(self.token_from_match(EqEqEq, start, input, rest))
+    ("==", rest) => Some(self.token_from_match(EqEq, start, input, rest))
+    ("=>", rest) => Some(self.token_from_match(Arrow, start, input, rest))
+    ("=", rest) => Some(self.token_from_match(Eq, start, input, rest))
+    ("!==", rest) => Some(self.token_from_match(NotEqEq, start, input, rest))
+    ("!=", rest) => Some(self.token_from_match(NotEq, start, input, rest))
+    ("!", rest) => Some(self.token_from_match(Bang, start, input, rest))
+    ("<=", rest) => Some(self.token_from_match(Lte, start, input, rest))
+    ("<", rest) => Some(self.token_from_match(Lt, start, input, rest))
+    (">=", rest) => Some(self.token_from_match(Gte, start, input, rest))
+    (">", rest) => Some(self.token_from_match(Gt, start, input, rest))
+    ("&&", rest) => Some(self.token_from_match(AndAnd, start, input, rest))
+    ("&", rest) => Some(self.token_from_match(Ampersand, start, input, rest))
+    ("\|\|", rest) => Some(self.token_from_match(OrOr, start, input, rest))
+    ("\|", rest) => Some(self.token_from_match(Pipe, start, input, rest))
+    ("\(", rest) => Some(self.token_from_match(LParen, start, input, rest))
+    ("\)", rest) => Some(self.token_from_match(RParen, start, input, rest))
+    ("[{]", rest) => Some(self.token_from_match(LBrace, start, input, rest))
+    ("[}]", rest) => Some(self.token_from_match(RBrace, start, input, rest))
+    ("\[", rest) => Some(self.token_from_match(LBracket, start, input, rest))
+    ("\]", rest) => Some(self.token_from_match(RBracket, start, input, rest))
+    (",", rest) => Some(self.token_from_match(Comma, start, input, rest))
+    (";", rest) => Some(self.token_from_match(Semicolon, start, input, rest))
+    (":", rest) => Some(self.token_from_match(Colon, start, input, rest))
+    ("\.", rest) => Some(self.token_from_match(Dot, start, input, rest))
+    ("@", rest) => Some(self.token_from_match(At, start, input, rest))
+    ("\?", rest) => Some(self.token_from_match(Question, start, input, rest))
+    ("~", rest) => Some(self.token_from_match(Tilde, start, input, rest))
+    ("\^", rest) => Some(self.token_from_match(Caret, start, input, rest))
     _ => None
   }
 }
@@ -874,7 +822,7 @@ fn Lexer::next_token(self : Lexer) -> Token raise LexError {
   if self.pending.length() > 0 {
     return self.pending.unsafe_pop()
   }
-  if self.mode == LexerMode::Template {
+  if self.mode == Template {
     return self.next_template_token()
   }
   self.skip_ws_and_comments()
@@ -883,39 +831,31 @@ fn Lexer::next_token(self : Lexer) -> Token raise LexError {
     return self.scan_conflict_marker_trivia_token(start)
   }
   let token = match self.peek() {
-    None => Token::{ kind: TokenKind::Eof, span: span_from(start, start) }
+    None => Token::{ kind: Eof, span: span_from(start, start) }
     Some(b) =>
       if is_ident_start(b) {
         let name = self.read_ident()
         let end = self.position()
         match keyword_from_raw_ident(name) {
-          Some(kw) =>
-            Token::{ kind: TokenKind::Keyword(kw), span: span_from(start, end) }
-          None =>
-            Token::{ kind: TokenKind::Ident(name), span: span_from(start, end) }
+          Some(kw) => { kind: Keyword(kw), span: span_from(start, end) }
+          None => { kind: Ident(name), span: span_from(start, end) }
         }
       } else if is_digit(b) {
         let number = self.read_number()
         let end = self.position()
-        Token::{ kind: TokenKind::Number(number), span: span_from(start, end) }
+        { kind: Number(number), span: span_from(start, end) }
       } else {
         match b {
           '`' => {
             self.bump()
-            self.push_mode(LexerMode::Template)
-            Token::{
-              kind: TokenKind::TemplateStart,
-              span: span_from(start, self.position()),
-            }
+            self.push_mode(Template)
+            { kind: TemplateStart, span: span_from(start, self.position()) }
           }
           '\'' | '"' => {
             self.bump()
             let value = self.read_string(b)
             let end = self.position()
-            Token::{
-              kind: TokenKind::String(value),
-              span: span_from(start, end),
-            }
+            { kind: String(value), span: span_from(start, end) }
           }
           '\\' => {
             if self.peek_n(1) == Some('u') {
@@ -927,15 +867,9 @@ fn Lexer::next_token(self : Lexer) -> Token raise LexError {
                 let end = self.position()
                 match keyword_from_raw_ident(ident) {
                   Some(kw) =>
-                    return Token::{
-                      kind: TokenKind::Keyword(kw),
-                      span: span_from(start, end),
-                    }
+                    return { kind: Keyword(kw), span: span_from(start, end) }
                   None =>
-                    return Token::{
-                      kind: TokenKind::Ident(ident),
-                      span: span_from(start, end),
-                    }
+                    return { kind: Ident(ident), span: span_from(start, end) }
                 }
               } catch {
                 _ => {
@@ -947,10 +881,7 @@ fn Lexer::next_token(self : Lexer) -> Token raise LexError {
             }
             if self.backslash_likely_in_regex_literal(start.offset) {
               self.bump()
-              Token::{
-                kind: TokenKind::Ident("\\"),
-                span: span_from(start, self.position()),
-              }
+              { kind: Ident("\\"), span: span_from(start, self.position()) }
             } else {
               self.bump()
               if self.peek() == Some('\n') {
@@ -964,7 +895,7 @@ fn Lexer::next_token(self : Lexer) -> Token raise LexError {
                 }
                 return self.next_token()
               }
-              raise LexError::InvalidChar(pos=start, '\\')
+              raise InvalidChar(pos=start, '\\')
             }
           }
           '#' => {
@@ -982,26 +913,17 @@ fn Lexer::next_token(self : Lexer) -> Token raise LexError {
               try {
                 let name = self.read_ident()
                 let end = self.position()
-                Token::{
-                  kind: TokenKind::PrivateIdent(name),
-                  span: span_from(start, end),
-                }
+                { kind: PrivateIdent(name), span: span_from(start, end) }
               } catch {
                 _ => {
                   self.pos = saved_pos
                   self.line = saved_line
                   self.column = saved_column
-                  Token::{
-                    kind: TokenKind::Ident("#"),
-                    span: span_from(start, self.position()),
-                  }
+                  { kind: Ident("#"), span: span_from(start, self.position()) }
                 }
               }
             } else {
-              Token::{
-                kind: TokenKind::Ident("#"),
-                span: span_from(start, self.position()),
-              }
+              { kind: Ident("#"), span: span_from(start, self.position()) }
             }
           }
           '.' =>
@@ -1022,30 +944,28 @@ fn Lexer::next_token(self : Lexer) -> Token raise LexError {
                 }
                 _ => ()
               }
-              Token::{
-                kind: TokenKind::Number(
-                  self.slice_to_string(start.offset, self.pos),
-                ),
+              {
+                kind: Number(self.slice_to_string(start.offset, self.pos)),
                 span: span_from(start, self.position()),
               }
             } else {
               match self.next_punct_token(start) {
                 Some(token) => token
-                None => raise LexError::InvalidChar(pos=start, '.')
+                None => raise InvalidChar(pos=start, '.')
               }
             }
           other =>
             match self.next_punct_token(start) {
               Some(token) => token
-              None => raise LexError::InvalidChar(pos=start, other)
+              None => raise InvalidChar(pos=start, other)
             }
         }
       }
   }
-  if self.mode == LexerMode::TemplateExpr {
+  if self.mode == TemplateExpr {
     match token.kind {
-      TokenKind::LBrace => self.template_expr_depth += 1
-      TokenKind::RBrace =>
+      LBrace => self.template_expr_depth += 1
+      RBrace =>
         if self.template_expr_depth == 0 {
           self.pop_mode()
         } else {
@@ -1064,7 +984,7 @@ fn tokenize(source : StringView) -> Array[Token] raise LexError {
   while true {
     let token = lexer.next_token()
     tokens.push(token)
-    if token.kind is TokenKind::Eof {
+    if token.kind is Eof {
       break
     }
   }

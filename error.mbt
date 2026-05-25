@@ -24,14 +24,14 @@ pub(all) suberror ParseError {
 ///|
 fn parse_error_to_string(err : ParseError) -> String {
   match err {
-    ParseError::LexErr(inner) => "LexErr(\{@debug.to_string(inner)})"
-    ParseError::SpeculativeArrowFailure => "SpeculativeArrowFailure"
-    ParseError::Diagnostic(filename~, line~, column~, error_code~, error_msg~) =>
+    LexErr(inner) => "LexErr(\{@debug.to_string(inner)})"
+    SpeculativeArrowFailure => "SpeculativeArrowFailure"
+    Diagnostic(filename~, line~, column~, error_code~, error_msg~) =>
       "\{filename}(\{line},\{column}): error TS\{error_code}: \{error_msg}"
   }
 }
 
 ///|
-pub impl Show for ParseError with output(self, logger) {
+pub impl Show for ParseError with fn output(self, logger) {
   logger.write_string(parse_error_to_string(self))
 }

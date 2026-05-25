@@ -31,22 +31,20 @@ test "diagnostic catalog formats standard ts templates" {
 ///|
 test "expected syntax mapping stays typed" {
   let (identifier_code, identifier_args) = expected_syntax_code_and_args(
-    ExpectedSyntax::Identifier,
+    Identifier,
   )
   assert_eq(identifier_code, 1003)
-  assert_eq(identifier_args, [])
+  assert_true(identifier_args is [])
 
-  let (token_code, token_args) = expected_syntax_code_and_args(
-    ExpectedSyntax::Token("}"),
-  )
+  let (token_code, token_args) = expected_syntax_code_and_args(Token("}"))
   assert_eq(token_code, 1005)
-  assert_eq(token_args, ["}"])
+  assert_true(token_args is ["}"])
 
   let (binding_code, binding_args) = expected_syntax_code_and_args(
-    ExpectedSyntax::BindingPattern,
+    BindingPattern,
   )
   assert_eq(binding_code, 1180)
-  assert_eq(binding_args, [])
+  assert_true(binding_args is [])
 }
 
 ///|

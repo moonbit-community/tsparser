@@ -31,35 +31,34 @@ fn rescan_less_than_token(tokens : Array[Token], index : Int) -> LessThanRescan 
   match token_at(tokens, index) {
     Some(current) =>
       match current.kind {
-        TokenKind::Lte => { kind: LessThanRescanKind::Lte, width: 1 }
-        TokenKind::Lt =>
+        Lte => { kind: Lte, width: 1 }
+        Lt =>
           match token_at(tokens, index + 1) {
             Some(next) =>
               if !token_spans_are_adjacent(current, next) {
-                { kind: LessThanRescanKind::Lt, width: 1 }
+                { kind: Lt, width: 1 }
               } else {
                 match next.kind {
-                  TokenKind::Lte =>
-                    { kind: LessThanRescanKind::ShlAssign, width: 2 }
-                  TokenKind::Lt =>
+                  Lte => { kind: ShlAssign, width: 2 }
+                  Lt =>
                     match token_at(tokens, index + 2) {
                       Some(third) =>
                         if token_spans_are_adjacent(next, third) &&
-                          third.kind == TokenKind::Eq {
-                          { kind: LessThanRescanKind::ShlAssign, width: 3 }
+                          third.kind == Eq {
+                          { kind: ShlAssign, width: 3 }
                         } else {
-                          { kind: LessThanRescanKind::Shl, width: 2 }
+                          { kind: Shl, width: 2 }
                         }
-                      None => { kind: LessThanRescanKind::Shl, width: 2 }
+                      None => { kind: Shl, width: 2 }
                     }
-                  _ => { kind: LessThanRescanKind::Lt, width: 1 }
+                  _ => { kind: Lt, width: 1 }
                 }
               }
-            None => { kind: LessThanRescanKind::Lt, width: 1 }
+            None => { kind: Lt, width: 1 }
           }
-        _ => { kind: LessThanRescanKind::Lt, width: 1 }
+        _ => { kind: Lt, width: 1 }
       }
-    None => { kind: LessThanRescanKind::Lt, width: 1 }
+    None => { kind: Lt, width: 1 }
   }
 }
 
@@ -87,67 +86,48 @@ fn rescan_greater_than_token(
   match token_at(tokens, index) {
     Some(current) =>
       match current.kind {
-        TokenKind::Gte => { kind: GreaterThanRescanKind::Gte, width: 1 }
-        TokenKind::Gt =>
+        Gte => { kind: Gte, width: 1 }
+        Gt =>
           match token_at(tokens, index + 1) {
             Some(next) =>
               if !token_spans_are_adjacent(current, next) {
-                { kind: GreaterThanRescanKind::Gt, width: 1 }
+                { kind: Gt, width: 1 }
               } else {
                 match next.kind {
-                  TokenKind::Gte =>
-                    { kind: GreaterThanRescanKind::ShrAssign, width: 2 }
-                  TokenKind::Gt =>
+                  Gte => { kind: ShrAssign, width: 2 }
+                  Gt =>
                     match token_at(tokens, index + 2) {
                       Some(third) =>
                         if !token_spans_are_adjacent(next, third) {
-                          { kind: GreaterThanRescanKind::Shr, width: 2 }
+                          { kind: Shr, width: 2 }
                         } else {
                           match third.kind {
-                            TokenKind::Gte =>
-                              {
-                                kind: GreaterThanRescanKind::UShrAssign,
-                                width: 3,
-                              }
-                            TokenKind::Gt =>
+                            Gte => { kind: UShrAssign, width: 3 }
+                            Gt =>
                               match token_at(tokens, index + 3) {
                                 Some(fourth) =>
                                   if token_spans_are_adjacent(third, fourth) &&
-                                    fourth.kind == TokenKind::Eq {
-                                    {
-                                      kind: GreaterThanRescanKind::UShrAssign,
-                                      width: 4,
-                                    }
+                                    fourth.kind == Eq {
+                                    { kind: UShrAssign, width: 4 }
                                   } else {
-                                    {
-                                      kind: GreaterThanRescanKind::UShr,
-                                      width: 3,
-                                    }
+                                    { kind: UShr, width: 3 }
                                   }
-                                None =>
-                                  {
-                                    kind: GreaterThanRescanKind::UShr,
-                                    width: 3,
-                                  }
+                                None => { kind: UShr, width: 3 }
                               }
-                            TokenKind::Eq =>
-                              {
-                                kind: GreaterThanRescanKind::ShrAssign,
-                                width: 3,
-                              }
-                            _ => { kind: GreaterThanRescanKind::Shr, width: 2 }
+                            Eq => { kind: ShrAssign, width: 3 }
+                            _ => { kind: Shr, width: 2 }
                           }
                         }
-                      None => { kind: GreaterThanRescanKind::Shr, width: 2 }
+                      None => { kind: Shr, width: 2 }
                     }
-                  _ => { kind: GreaterThanRescanKind::Gt, width: 1 }
+                  _ => { kind: Gt, width: 1 }
                 }
               }
-            None => { kind: GreaterThanRescanKind::Gt, width: 1 }
+            None => { kind: Gt, width: 1 }
           }
-        _ => { kind: GreaterThanRescanKind::Gt, width: 1 }
+        _ => { kind: Gt, width: 1 }
       }
-    None => { kind: GreaterThanRescanKind::Gt, width: 1 }
+    None => { kind: Gt, width: 1 }
   }
 }
 
@@ -170,23 +150,21 @@ fn rescan_question_token(tokens : Array[Token], index : Int) -> QuestionRescan {
   match token_at(tokens, index) {
     Some(current) =>
       match current.kind {
-        TokenKind::Question => { kind: QuestionRescanKind::Question, width: 1 }
-        TokenKind::QuestionDot =>
-          { kind: QuestionRescanKind::QuestionDot, width: 1 }
-        TokenKind::Nullish =>
+        Question => { kind: Question, width: 1 }
+        QuestionDot => { kind: QuestionDot, width: 1 }
+        Nullish =>
           match token_at(tokens, index + 1) {
             Some(next) =>
-              if token_spans_are_adjacent(current, next) &&
-                next.kind == TokenKind::Eq {
-                { kind: QuestionRescanKind::NullishAssign, width: 2 }
+              if token_spans_are_adjacent(current, next) && next.kind == Eq {
+                { kind: NullishAssign, width: 2 }
               } else {
-                { kind: QuestionRescanKind::Nullish, width: 1 }
+                { kind: Nullish, width: 1 }
               }
-            None => { kind: QuestionRescanKind::Nullish, width: 1 }
+            None => { kind: Nullish, width: 1 }
           }
-        _ => { kind: QuestionRescanKind::Question, width: 1 }
+        _ => { kind: Question, width: 1 }
       }
-    None => { kind: QuestionRescanKind::Question, width: 1 }
+    None => { kind: Question, width: 1 }
   }
 }
 
@@ -207,12 +185,11 @@ fn rescan_hash_token(tokens : Array[Token], index : Int) -> HashRescan {
   match token_at(tokens, index) {
     Some(current) =>
       match current.kind {
-        TokenKind::PrivateIdent(name) =>
-          { kind: HashRescanKind::PrivateIdent, name: Some(name) }
-        TokenKind::Ident("#") => { kind: HashRescanKind::Hash, name: None }
-        _ => { kind: HashRescanKind::Hash, name: None }
+        PrivateIdent(name) => { kind: PrivateIdent, name: Some(name) }
+        Ident("#") => { kind: Hash, name: None }
+        _ => { kind: Hash, name: None }
       }
-    None => { kind: HashRescanKind::Hash, name: None }
+    None => { kind: Hash, name: None }
   }
 }
 
@@ -235,7 +212,7 @@ fn rescan_slash_token(
   match token_at(tokens, index) {
     Some(current) =>
       match current.kind {
-        TokenKind::Slash | TokenKind::SlashEq => {
+        Slash | SlashEq => {
           let regex_scan = rescan_regex_literal(
             source,
             current.span.start.offset,
@@ -312,22 +289,22 @@ fn rescan_template_token(
   let fallback_kind = if is_head {
     TemplateRescanKind::NoSubstitution
   } else {
-    TemplateRescanKind::Tail
+    Tail
   }
   match token_at(tokens, index) {
     Some(current) =>
       match current.kind {
-        TokenKind::TemplateChunk(chunk) =>
+        TemplateChunk(chunk) =>
           match token_at(tokens, index + 1) {
             Some(next) =>
               if token_spans_are_adjacent(current, next) {
                 match next.kind {
-                  TokenKind::TemplateExprStart =>
+                  TemplateExprStart =>
                     {
                       kind: if is_head {
-                        TemplateRescanKind::Head
+                        Head
                       } else {
-                        TemplateRescanKind::Middle
+                        Middle
                       },
                       chunk,
                       chunk_span: current.span,
@@ -335,12 +312,12 @@ fn rescan_template_token(
                       width: 2,
                       terminated: true,
                     }
-                  TokenKind::TemplateEnd =>
+                  TemplateEnd =>
                     {
                       kind: if is_head {
-                        TemplateRescanKind::NoSubstitution
+                        NoSubstitution
                       } else {
-                        TemplateRescanKind::Tail
+                        Tail
                       },
                       chunk,
                       chunk_span: current.span,

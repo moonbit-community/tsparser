@@ -20,6 +20,6 @@ fn check_tsfile(filename : String) -> Unit raise {
     let errors = errors.map(err => err.to_string()).join("\n")[:]
     assert_eq(errors, expected_errors)
   } else if !errors.is_empty() {
-    fail("\{errors}")
+    fail(@debug.to_string(errors))
   }
 }
