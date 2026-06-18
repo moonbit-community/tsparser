@@ -1,3 +1,4 @@
+﻿// @target: es2015
 // @removeComments: true
 var x = 10;
 

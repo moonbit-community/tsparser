@@ -1,4 +1,4 @@
-// @target: ES6
+﻿// @target: ES6
 
 function CheckAssignability() {
     let arr_Int8Array           = new Int8Array(1);

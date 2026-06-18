@@ -1,3 +1,4 @@
+﻿// @target: es2015
 // @declaration: true
 // For an array binding pattern with empty elements,
 // we will not make any modification and will emit

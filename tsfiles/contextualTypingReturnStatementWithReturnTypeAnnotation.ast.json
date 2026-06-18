@@ -1,0 +1,1086 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 500,
+    "line": 20,
+    "column": 1
+  },
+  "children": [
+    {
+      "kind": "TypeAliasDeclaration",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 113,
+        "line": 5,
+        "column": 60
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 58,
+            "line": 5,
+            "column": 5
+          },
+          "end": {
+            "offset": 68,
+            "line": 5,
+            "column": 15
+          },
+          "text": "PropOfRaw"
+        },
+        {
+          "kind": "TypeParameter",
+          "pos": {
+            "offset": 69,
+            "line": 5,
+            "column": 16
+          },
+          "end": {
+            "offset": 70,
+            "line": 5,
+            "column": 17
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 69,
+                "line": 5,
+                "column": 16
+              },
+              "end": {
+                "offset": 70,
+                "line": 5,
+                "column": 17
+              },
+              "text": "T"
+            }
+          ]
+        },
+        {
+          "kind": "UnionType",
+          "pos": {
+            "offset": 73,
+            "line": 5,
+            "column": 20
+          },
+          "end": {
+            "offset": 112,
+            "line": 5,
+            "column": 59
+          },
+          "children": [
+            {
+              "kind": "TypeOperator",
+              "pos": {
+                "offset": 73,
+                "line": 5,
+                "column": 20
+              },
+              "end": {
+                "offset": 86,
+                "line": 5,
+                "column": 33
+              },
+              "children": [
+                {
+                  "kind": "ArrayType",
+                  "pos": {
+                    "offset": 82,
+                    "line": 5,
+                    "column": 29
+                  },
+                  "end": {
+                    "offset": 86,
+                    "line": 5,
+                    "column": 33
+                  },
+                  "children": [
+                    {
+                      "kind": "TypeReference",
+                      "pos": {
+                        "offset": 82,
+                        "line": 5,
+                        "column": 29
+                      },
+                      "end": {
+                        "offset": 84,
+                        "line": 5,
+                        "column": 31
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 82,
+                            "line": 5,
+                            "column": 29
+                          },
+                          "end": {
+                            "offset": 84,
+                            "line": 5,
+                            "column": 31
+                          },
+                          "text": "T"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "LiteralType",
+              "pos": {
+                "offset": 88,
+                "line": 5,
+                "column": 35
+              },
+              "end": {
+                "offset": 100,
+                "line": 5,
+                "column": 47
+              },
+              "children": [
+                {
+                  "kind": "StringLiteral",
+                  "pos": {
+                    "offset": 88,
+                    "line": 5,
+                    "column": 35
+                  },
+                  "end": {
+                    "offset": 100,
+                    "line": 5,
+                    "column": 47
+                  },
+                  "text": "not-array"
+                }
+              ]
+            },
+            {
+              "kind": "LiteralType",
+              "pos": {
+                "offset": 102,
+                "line": 5,
+                "column": 49
+              },
+              "end": {
+                "offset": 112,
+                "line": 5,
+                "column": 59
+              },
+              "children": [
+                {
+                  "kind": "StringLiteral",
+                  "pos": {
+                    "offset": 102,
+                    "line": 5,
+                    "column": 49
+                  },
+                  "end": {
+                    "offset": 112,
+                    "line": 5,
+                    "column": 59
+                  },
+                  "text": "no-prop"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "FunctionDeclaration",
+      "pos": {
+        "offset": 113,
+        "line": 5,
+        "column": 60
+      },
+      "end": {
+        "offset": 172,
+        "line": 7,
+        "column": 58
+      },
+      "children": [
+        {
+          "kind": "DeclareKeyword",
+          "pos": {
+            "offset": 113,
+            "line": 5,
+            "column": 60
+          },
+          "end": {
+            "offset": 122,
+            "line": 7,
+            "column": 8
+          },
+          "text": "declare"
+        },
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 131,
+            "line": 7,
+            "column": 17
+          },
+          "end": {
+            "offset": 140,
+            "line": 7,
+            "column": 26
+          },
+          "text": "isString"
+        },
+        {
+          "kind": "Parameter",
+          "pos": {
+            "offset": 141,
+            "line": 7,
+            "column": 27
+          },
+          "end": {
+            "offset": 154,
+            "line": 7,
+            "column": 40
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 141,
+                "line": 7,
+                "column": 27
+              },
+              "end": {
+                "offset": 145,
+                "line": 7,
+                "column": 31
+              },
+              "text": "text"
+            },
+            {
+              "kind": "UnknownKeyword",
+              "pos": {
+                "offset": 146,
+                "line": 7,
+                "column": 32
+              },
+              "end": {
+                "offset": 154,
+                "line": 7,
+                "column": 40
+              },
+              "text": "unknown"
+            }
+          ]
+        },
+        {
+          "kind": "FirstTypeNode",
+          "pos": {
+            "offset": 156,
+            "line": 7,
+            "column": 42
+          },
+          "end": {
+            "offset": 171,
+            "line": 7,
+            "column": 57
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 156,
+                "line": 7,
+                "column": 42
+              },
+              "end": {
+                "offset": 161,
+                "line": 7,
+                "column": 47
+              },
+              "text": "text"
+            },
+            {
+              "kind": "StringKeyword",
+              "pos": {
+                "offset": 164,
+                "line": 7,
+                "column": 50
+              },
+              "end": {
+                "offset": 171,
+                "line": 7,
+                "column": 57
+              },
+              "text": "string"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "FunctionDeclaration",
+      "pos": {
+        "offset": 172,
+        "line": 7,
+        "column": 58
+      },
+      "end": {
+        "offset": 356,
+        "line": 13,
+        "column": 17
+      },
+      "children": [
+        {
+          "kind": "DeclareKeyword",
+          "pos": {
+            "offset": 172,
+            "line": 7,
+            "column": 58
+          },
+          "end": {
+            "offset": 181,
+            "line": 9,
+            "column": 8
+          },
+          "text": "declare"
+        },
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 190,
+            "line": 9,
+            "column": 17
+          },
+          "end": {
+            "offset": 205,
+            "line": 9,
+            "column": 32
+          },
+          "text": "getPropFromRaw"
+        },
+        {
+          "kind": "TypeParameter",
+          "pos": {
+            "offset": 206,
+            "line": 9,
+            "column": 33
+          },
+          "end": {
+            "offset": 207,
+            "line": 9,
+            "column": 34
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 206,
+                "line": 9,
+                "column": 33
+              },
+              "end": {
+                "offset": 207,
+                "line": 9,
+                "column": 34
+              },
+              "text": "T"
+            }
+          ]
+        },
+        {
+          "kind": "Parameter",
+          "pos": {
+            "offset": 209,
+            "line": 9,
+            "column": 36
+          },
+          "end": {
+            "offset": 264,
+            "line": 10,
+            "column": 55
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 209,
+                "line": 9,
+                "column": 36
+              },
+              "end": {
+                "offset": 216,
+                "line": 10,
+                "column": 7
+              },
+              "text": "prop"
+            },
+            {
+              "kind": "UnionType",
+              "pos": {
+                "offset": 217,
+                "line": 10,
+                "column": 8
+              },
+              "end": {
+                "offset": 264,
+                "line": 10,
+                "column": 55
+              },
+              "children": [
+                {
+                  "kind": "LiteralType",
+                  "pos": {
+                    "offset": 217,
+                    "line": 10,
+                    "column": 8
+                  },
+                  "end": {
+                    "offset": 225,
+                    "line": 10,
+                    "column": 16
+                  },
+                  "children": [
+                    {
+                      "kind": "StringLiteral",
+                      "pos": {
+                        "offset": 217,
+                        "line": 10,
+                        "column": 8
+                      },
+                      "end": {
+                        "offset": 225,
+                        "line": 10,
+                        "column": 16
+                      },
+                      "text": "files"
+                    }
+                  ]
+                },
+                {
+                  "kind": "LiteralType",
+                  "pos": {
+                    "offset": 227,
+                    "line": 10,
+                    "column": 18
+                  },
+                  "end": {
+                    "offset": 237,
+                    "line": 10,
+                    "column": 28
+                  },
+                  "children": [
+                    {
+                      "kind": "StringLiteral",
+                      "pos": {
+                        "offset": 227,
+                        "line": 10,
+                        "column": 18
+                      },
+                      "end": {
+                        "offset": 237,
+                        "line": 10,
+                        "column": 28
+                      },
+                      "text": "include"
+                    }
+                  ]
+                },
+                {
+                  "kind": "LiteralType",
+                  "pos": {
+                    "offset": 239,
+                    "line": 10,
+                    "column": 30
+                  },
+                  "end": {
+                    "offset": 249,
+                    "line": 10,
+                    "column": 40
+                  },
+                  "children": [
+                    {
+                      "kind": "StringLiteral",
+                      "pos": {
+                        "offset": 239,
+                        "line": 10,
+                        "column": 30
+                      },
+                      "end": {
+                        "offset": 249,
+                        "line": 10,
+                        "column": 40
+                      },
+                      "text": "exclude"
+                    }
+                  ]
+                },
+                {
+                  "kind": "LiteralType",
+                  "pos": {
+                    "offset": 251,
+                    "line": 10,
+                    "column": 42
+                  },
+                  "end": {
+                    "offset": 264,
+                    "line": 10,
+                    "column": 55
+                  },
+                  "children": [
+                    {
+                      "kind": "StringLiteral",
+                      "pos": {
+                        "offset": 251,
+                        "line": 10,
+                        "column": 42
+                      },
+                      "end": {
+                        "offset": 264,
+                        "line": 10,
+                        "column": 55
+                      },
+                      "text": "references"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "Parameter",
+          "pos": {
+            "offset": 265,
+            "line": 10,
+            "column": 56
+          },
+          "end": {
+            "offset": 312,
+            "line": 11,
+            "column": 47
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 265,
+                "line": 10,
+                "column": 56
+              },
+              "end": {
+                "offset": 283,
+                "line": 11,
+                "column": 18
+              },
+              "text": "validateElement"
+            },
+            {
+              "kind": "FunctionType",
+              "pos": {
+                "offset": 284,
+                "line": 11,
+                "column": 19
+              },
+              "end": {
+                "offset": 312,
+                "line": 11,
+                "column": 47
+              },
+              "children": [
+                {
+                  "kind": "Parameter",
+                  "pos": {
+                    "offset": 286,
+                    "line": 11,
+                    "column": 21
+                  },
+                  "end": {
+                    "offset": 300,
+                    "line": 11,
+                    "column": 35
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 286,
+                        "line": 11,
+                        "column": 21
+                      },
+                      "end": {
+                        "offset": 291,
+                        "line": 11,
+                        "column": 26
+                      },
+                      "text": "value"
+                    },
+                    {
+                      "kind": "UnknownKeyword",
+                      "pos": {
+                        "offset": 292,
+                        "line": 11,
+                        "column": 27
+                      },
+                      "end": {
+                        "offset": 300,
+                        "line": 11,
+                        "column": 35
+                      },
+                      "text": "unknown"
+                    }
+                  ]
+                },
+                {
+                  "kind": "BooleanKeyword",
+                  "pos": {
+                    "offset": 304,
+                    "line": 11,
+                    "column": 39
+                  },
+                  "end": {
+                    "offset": 312,
+                    "line": 11,
+                    "column": 47
+                  },
+                  "text": "boolean"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "Parameter",
+          "pos": {
+            "offset": 313,
+            "line": 11,
+            "column": 48
+          },
+          "end": {
+            "offset": 339,
+            "line": 12,
+            "column": 26
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 313,
+                "line": 11,
+                "column": 48
+              },
+              "end": {
+                "offset": 331,
+                "line": 12,
+                "column": 18
+              },
+              "text": "elementTypeName"
+            },
+            {
+              "kind": "StringKeyword",
+              "pos": {
+                "offset": 332,
+                "line": 12,
+                "column": 19
+              },
+              "end": {
+                "offset": 339,
+                "line": 12,
+                "column": 26
+              },
+              "text": "string"
+            }
+          ]
+        },
+        {
+          "kind": "TypeReference",
+          "pos": {
+            "offset": 342,
+            "line": 13,
+            "column": 3
+          },
+          "end": {
+            "offset": 355,
+            "line": 13,
+            "column": 16
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 342,
+                "line": 13,
+                "column": 3
+              },
+              "end": {
+                "offset": 352,
+                "line": 13,
+                "column": 13
+              },
+              "text": "PropOfRaw"
+            },
+            {
+              "kind": "TypeReference",
+              "pos": {
+                "offset": 353,
+                "line": 13,
+                "column": 14
+              },
+              "end": {
+                "offset": 354,
+                "line": 13,
+                "column": 15
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 353,
+                    "line": 13,
+                    "column": 14
+                  },
+                  "end": {
+                    "offset": 354,
+                    "line": 13,
+                    "column": 15
+                  },
+                  "text": "T"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "FunctionDeclaration",
+      "pos": {
+        "offset": 356,
+        "line": 13,
+        "column": 17
+      },
+      "end": {
+        "offset": 499,
+        "line": 19,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 366,
+            "line": 15,
+            "column": 9
+          },
+          "end": {
+            "offset": 382,
+            "line": 15,
+            "column": 25
+          },
+          "text": "getSpecsFromRaw"
+        },
+        {
+          "kind": "Parameter",
+          "pos": {
+            "offset": 383,
+            "line": 15,
+            "column": 26
+          },
+          "end": {
+            "offset": 423,
+            "line": 16,
+            "column": 40
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 383,
+                "line": 15,
+                "column": 26
+              },
+              "end": {
+                "offset": 390,
+                "line": 16,
+                "column": 7
+              },
+              "text": "prop"
+            },
+            {
+              "kind": "UnionType",
+              "pos": {
+                "offset": 391,
+                "line": 16,
+                "column": 8
+              },
+              "end": {
+                "offset": 423,
+                "line": 16,
+                "column": 40
+              },
+              "children": [
+                {
+                  "kind": "LiteralType",
+                  "pos": {
+                    "offset": 391,
+                    "line": 16,
+                    "column": 8
+                  },
+                  "end": {
+                    "offset": 399,
+                    "line": 16,
+                    "column": 16
+                  },
+                  "children": [
+                    {
+                      "kind": "StringLiteral",
+                      "pos": {
+                        "offset": 391,
+                        "line": 16,
+                        "column": 8
+                      },
+                      "end": {
+                        "offset": 399,
+                        "line": 16,
+                        "column": 16
+                      },
+                      "text": "files"
+                    }
+                  ]
+                },
+                {
+                  "kind": "LiteralType",
+                  "pos": {
+                    "offset": 401,
+                    "line": 16,
+                    "column": 18
+                  },
+                  "end": {
+                    "offset": 411,
+                    "line": 16,
+                    "column": 28
+                  },
+                  "children": [
+                    {
+                      "kind": "StringLiteral",
+                      "pos": {
+                        "offset": 401,
+                        "line": 16,
+                        "column": 18
+                      },
+                      "end": {
+                        "offset": 411,
+                        "line": 16,
+                        "column": 28
+                      },
+                      "text": "include"
+                    }
+                  ]
+                },
+                {
+                  "kind": "LiteralType",
+                  "pos": {
+                    "offset": 413,
+                    "line": 16,
+                    "column": 30
+                  },
+                  "end": {
+                    "offset": 423,
+                    "line": 16,
+                    "column": 40
+                  },
+                  "children": [
+                    {
+                      "kind": "StringLiteral",
+                      "pos": {
+                        "offset": 413,
+                        "line": 16,
+                        "column": 30
+                      },
+                      "end": {
+                        "offset": 423,
+                        "line": 16,
+                        "column": 40
+                      },
+                      "text": "exclude"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "TypeReference",
+          "pos": {
+            "offset": 426,
+            "line": 17,
+            "column": 3
+          },
+          "end": {
+            "offset": 444,
+            "line": 17,
+            "column": 21
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 426,
+                "line": 17,
+                "column": 3
+              },
+              "end": {
+                "offset": 436,
+                "line": 17,
+                "column": 13
+              },
+              "text": "PropOfRaw"
+            },
+            {
+              "kind": "StringKeyword",
+              "pos": {
+                "offset": 437,
+                "line": 17,
+                "column": 14
+              },
+              "end": {
+                "offset": 443,
+                "line": 17,
+                "column": 20
+              },
+              "text": "string"
+            }
+          ]
+        },
+        {
+          "kind": "Block",
+          "pos": {
+            "offset": 444,
+            "line": 17,
+            "column": 21
+          },
+          "end": {
+            "offset": 499,
+            "line": 19,
+            "column": 2
+          },
+          "children": [
+            {
+              "kind": "ReturnStatement",
+              "pos": {
+                "offset": 446,
+                "line": 17,
+                "column": 23
+              },
+              "end": {
+                "offset": 497,
+                "line": 18,
+                "column": 51
+              },
+              "children": [
+                {
+                  "kind": "CallExpression",
+                  "pos": {
+                    "offset": 455,
+                    "line": 18,
+                    "column": 9
+                  },
+                  "end": {
+                    "offset": 496,
+                    "line": 18,
+                    "column": 50
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 455,
+                        "line": 18,
+                        "column": 9
+                      },
+                      "end": {
+                        "offset": 470,
+                        "line": 18,
+                        "column": 24
+                      },
+                      "text": "getPropFromRaw"
+                    },
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 471,
+                        "line": 18,
+                        "column": 25
+                      },
+                      "end": {
+                        "offset": 475,
+                        "line": 18,
+                        "column": 29
+                      },
+                      "text": "prop"
+                    },
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 476,
+                        "line": 18,
+                        "column": 30
+                      },
+                      "end": {
+                        "offset": 485,
+                        "line": 18,
+                        "column": 39
+                      },
+                      "text": "isString"
+                    },
+                    {
+                      "kind": "StringLiteral",
+                      "pos": {
+                        "offset": 486,
+                        "line": 18,
+                        "column": 40
+                      },
+                      "end": {
+                        "offset": 495,
+                        "line": 18,
+                        "column": 49
+                      },
+                      "text": "string"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 499,
+        "line": 19,
+        "column": 2
+      },
+      "end": {
+        "offset": 500,
+        "line": 20,
+        "column": 1
+      },
+      "text": ""
+    }
+  ]
+}

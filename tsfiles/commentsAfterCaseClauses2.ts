@@ -1,3 +1,5 @@
+﻿// @strict: false
+// @target: es2015
 function getSecurity(level) {
     switch(level){
         case 0: // Zero

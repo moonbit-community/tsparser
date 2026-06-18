@@ -1,3 +1,4 @@
+﻿// @target: es2015
 //@noImplicitAny: true
 
 declare class D_C {

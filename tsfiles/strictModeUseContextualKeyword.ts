@@ -1,3 +1,4 @@
+﻿// @target: es2015
 "use strict"
 var as = 0;
 function foo(as: string) { }

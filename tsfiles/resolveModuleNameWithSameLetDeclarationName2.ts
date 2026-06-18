@@ -1,3 +1,4 @@
+﻿// @target: es2015
 declare module "punycode" {
     interface ucs2 {
         decode(string: string): string;

@@ -1,3 +1,4 @@
+﻿// @target: es2015
 //@sourceMap: true
 function P() {
     // Test this

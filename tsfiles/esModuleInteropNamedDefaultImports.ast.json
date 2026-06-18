@@ -1,0 +1,596 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 326,
+    "line": 14,
+    "column": 12
+  },
+  "children": [
+    {
+      "kind": "ClassDeclaration",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 118,
+        "line": 5,
+        "column": 28
+      },
+      "children": [
+        {
+          "kind": "ExportKeyword",
+          "pos": {
+            "offset": 0,
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "offset": 97,
+            "line": 5,
+            "column": 7
+          },
+          "text": "export"
+        },
+        {
+          "kind": "DefaultKeyword",
+          "pos": {
+            "offset": 97,
+            "line": 5,
+            "column": 7
+          },
+          "end": {
+            "offset": 105,
+            "line": 5,
+            "column": 15
+          },
+          "text": "default"
+        },
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 111,
+            "line": 5,
+            "column": 21
+          },
+          "end": {
+            "offset": 115,
+            "line": 5,
+            "column": 25
+          },
+          "text": "Foo"
+        }
+      ]
+    },
+    {
+      "kind": "ClassDeclaration",
+      "pos": {
+        "offset": 118,
+        "line": 5,
+        "column": 28
+      },
+      "end": {
+        "offset": 139,
+        "line": 6,
+        "column": 20
+      },
+      "children": [
+        {
+          "kind": "ExportKeyword",
+          "pos": {
+            "offset": 118,
+            "line": 5,
+            "column": 28
+          },
+          "end": {
+            "offset": 126,
+            "line": 6,
+            "column": 7
+          },
+          "text": "export"
+        },
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 132,
+            "line": 6,
+            "column": 13
+          },
+          "end": {
+            "offset": 136,
+            "line": 6,
+            "column": 17
+          },
+          "text": "Bar"
+        }
+      ]
+    },
+    {
+      "kind": "ImportDeclaration",
+      "pos": {
+        "offset": 139,
+        "line": 6,
+        "column": 20
+      },
+      "end": {
+        "offset": 187,
+        "line": 8,
+        "column": 25
+      },
+      "children": [
+        {
+          "kind": "ImportClause",
+          "pos": {
+            "offset": 169,
+            "line": 8,
+            "column": 7
+          },
+          "end": {
+            "offset": 173,
+            "line": 8,
+            "column": 11
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 169,
+                "line": 8,
+                "column": 7
+              },
+              "end": {
+                "offset": 173,
+                "line": 8,
+                "column": 11
+              },
+              "text": "Foo"
+            }
+          ]
+        },
+        {
+          "kind": "StringLiteral",
+          "pos": {
+            "offset": 178,
+            "line": 8,
+            "column": 16
+          },
+          "end": {
+            "offset": 186,
+            "line": 8,
+            "column": 24
+          },
+          "text": "./mod"
+        }
+      ]
+    },
+    {
+      "kind": "ImportDeclaration",
+      "pos": {
+        "offset": 187,
+        "line": 8,
+        "column": 25
+      },
+      "end": {
+        "offset": 229,
+        "line": 9,
+        "column": 41
+      },
+      "children": [
+        {
+          "kind": "ImportClause",
+          "pos": {
+            "offset": 195,
+            "line": 9,
+            "column": 7
+          },
+          "end": {
+            "offset": 215,
+            "line": 9,
+            "column": 27
+          },
+          "children": [
+            {
+              "kind": "NamedImports",
+              "pos": {
+                "offset": 195,
+                "line": 9,
+                "column": 7
+              },
+              "end": {
+                "offset": 215,
+                "line": 9,
+                "column": 27
+              },
+              "children": [
+                {
+                  "kind": "ImportSpecifier",
+                  "pos": {
+                    "offset": 197,
+                    "line": 9,
+                    "column": 9
+                  },
+                  "end": {
+                    "offset": 213,
+                    "line": 9,
+                    "column": 25
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 197,
+                        "line": 9,
+                        "column": 9
+                      },
+                      "end": {
+                        "offset": 205,
+                        "line": 9,
+                        "column": 17
+                      },
+                      "text": "default"
+                    },
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 208,
+                        "line": 9,
+                        "column": 20
+                      },
+                      "end": {
+                        "offset": 213,
+                        "line": 9,
+                        "column": 25
+                      },
+                      "text": "Foo2"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "StringLiteral",
+          "pos": {
+            "offset": 220,
+            "line": 9,
+            "column": 32
+          },
+          "end": {
+            "offset": 228,
+            "line": 9,
+            "column": 40
+          },
+          "text": "./mod"
+        }
+      ]
+    },
+    {
+      "kind": "ImportDeclaration",
+      "pos": {
+        "offset": 229,
+        "line": 9,
+        "column": 41
+      },
+      "end": {
+        "offset": 276,
+        "line": 10,
+        "column": 46
+      },
+      "children": [
+        {
+          "kind": "ImportClause",
+          "pos": {
+            "offset": 237,
+            "line": 10,
+            "column": 7
+          },
+          "end": {
+            "offset": 262,
+            "line": 10,
+            "column": 32
+          },
+          "children": [
+            {
+              "kind": "NamedImports",
+              "pos": {
+                "offset": 237,
+                "line": 10,
+                "column": 7
+              },
+              "end": {
+                "offset": 262,
+                "line": 10,
+                "column": 32
+              },
+              "children": [
+                {
+                  "kind": "ImportSpecifier",
+                  "pos": {
+                    "offset": 239,
+                    "line": 10,
+                    "column": 9
+                  },
+                  "end": {
+                    "offset": 243,
+                    "line": 10,
+                    "column": 13
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 239,
+                        "line": 10,
+                        "column": 9
+                      },
+                      "end": {
+                        "offset": 243,
+                        "line": 10,
+                        "column": 13
+                      },
+                      "text": "Bar"
+                    }
+                  ]
+                },
+                {
+                  "kind": "ImportSpecifier",
+                  "pos": {
+                    "offset": 244,
+                    "line": 10,
+                    "column": 14
+                  },
+                  "end": {
+                    "offset": 260,
+                    "line": 10,
+                    "column": 30
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 244,
+                        "line": 10,
+                        "column": 14
+                      },
+                      "end": {
+                        "offset": 252,
+                        "line": 10,
+                        "column": 22
+                      },
+                      "text": "default"
+                    },
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 255,
+                        "line": 10,
+                        "column": 25
+                      },
+                      "end": {
+                        "offset": 260,
+                        "line": 10,
+                        "column": 30
+                      },
+                      "text": "Foo3"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "StringLiteral",
+          "pos": {
+            "offset": 267,
+            "line": 10,
+            "column": 37
+          },
+          "end": {
+            "offset": 275,
+            "line": 10,
+            "column": 45
+          },
+          "text": "./mod"
+        }
+      ]
+    },
+    {
+      "kind": "ExpressionStatement",
+      "pos": {
+        "offset": 276,
+        "line": 10,
+        "column": 46
+      },
+      "end": {
+        "offset": 288,
+        "line": 11,
+        "column": 11
+      },
+      "children": [
+        {
+          "kind": "NewExpression",
+          "pos": {
+            "offset": 276,
+            "line": 10,
+            "column": 46
+          },
+          "end": {
+            "offset": 287,
+            "line": 11,
+            "column": 10
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 281,
+                "line": 11,
+                "column": 4
+              },
+              "end": {
+                "offset": 285,
+                "line": 11,
+                "column": 8
+              },
+              "text": "Foo"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ExpressionStatement",
+      "pos": {
+        "offset": 288,
+        "line": 11,
+        "column": 11
+      },
+      "end": {
+        "offset": 301,
+        "line": 12,
+        "column": 12
+      },
+      "children": [
+        {
+          "kind": "NewExpression",
+          "pos": {
+            "offset": 288,
+            "line": 11,
+            "column": 11
+          },
+          "end": {
+            "offset": 300,
+            "line": 12,
+            "column": 11
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 293,
+                "line": 12,
+                "column": 4
+              },
+              "end": {
+                "offset": 298,
+                "line": 12,
+                "column": 9
+              },
+              "text": "Foo2"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ExpressionStatement",
+      "pos": {
+        "offset": 301,
+        "line": 12,
+        "column": 12
+      },
+      "end": {
+        "offset": 313,
+        "line": 13,
+        "column": 11
+      },
+      "children": [
+        {
+          "kind": "NewExpression",
+          "pos": {
+            "offset": 301,
+            "line": 12,
+            "column": 12
+          },
+          "end": {
+            "offset": 312,
+            "line": 13,
+            "column": 10
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 306,
+                "line": 13,
+                "column": 4
+              },
+              "end": {
+                "offset": 310,
+                "line": 13,
+                "column": 8
+              },
+              "text": "Bar"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ExpressionStatement",
+      "pos": {
+        "offset": 313,
+        "line": 13,
+        "column": 11
+      },
+      "end": {
+        "offset": 326,
+        "line": 14,
+        "column": 12
+      },
+      "children": [
+        {
+          "kind": "NewExpression",
+          "pos": {
+            "offset": 313,
+            "line": 13,
+            "column": 11
+          },
+          "end": {
+            "offset": 325,
+            "line": 14,
+            "column": 11
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 318,
+                "line": 14,
+                "column": 4
+              },
+              "end": {
+                "offset": 323,
+                "line": 14,
+                "column": 9
+              },
+              "text": "Foo3"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 326,
+        "line": 14,
+        "column": 12
+      },
+      "end": {
+        "offset": 326,
+        "line": 14,
+        "column": 12
+      },
+      "text": ""
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-// @lib: es6
+﻿// @lib: es6
 // @target: es6
 
 // Using Es6 array

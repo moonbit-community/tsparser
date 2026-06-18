@@ -1,3 +1,4 @@
+﻿// @target: es2015
 // @alwaysStrict: true
 // @module: es2015
 

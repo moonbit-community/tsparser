@@ -1,0 +1,808 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 414,
+    "line": 21,
+    "column": 2
+  },
+  "children": [
+    {
+      "kind": "ImportDeclaration",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 173,
+        "line": 6,
+        "column": 31
+      },
+      "children": [
+        {
+          "kind": "ImportClause",
+          "pos": {
+            "offset": 149,
+            "line": 6,
+            "column": 7
+          },
+          "end": {
+            "offset": 160,
+            "line": 6,
+            "column": 18
+          },
+          "children": [
+            {
+              "kind": "NamespaceImport",
+              "pos": {
+                "offset": 149,
+                "line": 6,
+                "column": 7
+              },
+              "end": {
+                "offset": 160,
+                "line": 6,
+                "column": 18
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 154,
+                    "line": 6,
+                    "column": 12
+                  },
+                  "end": {
+                    "offset": 160,
+                    "line": 6,
+                    "column": 18
+                  },
+                  "text": "React"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "StringLiteral",
+          "pos": {
+            "offset": 165,
+            "line": 6,
+            "column": 23
+          },
+          "end": {
+            "offset": 173,
+            "line": 6,
+            "column": 31
+          },
+          "text": "react"
+        }
+      ]
+    },
+    {
+      "kind": "InterfaceDeclaration",
+      "pos": {
+        "offset": 173,
+        "line": 6,
+        "column": 31
+      },
+      "end": {
+        "offset": 236,
+        "line": 10,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 186,
+            "line": 8,
+            "column": 10
+          },
+          "end": {
+            "offset": 192,
+            "line": 8,
+            "column": 16
+          },
+          "text": "Props"
+        },
+        {
+          "kind": "PropertySignature",
+          "pos": {
+            "offset": 194,
+            "line": 8,
+            "column": 18
+          },
+          "end": {
+            "offset": 233,
+            "line": 9,
+            "column": 38
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 194,
+                "line": 8,
+                "column": 18
+              },
+              "end": {
+                "offset": 208,
+                "line": 9,
+                "column": 13
+              },
+              "text": "children"
+            },
+            {
+              "kind": "TypeReference",
+              "pos": {
+                "offset": 209,
+                "line": 9,
+                "column": 14
+              },
+              "end": {
+                "offset": 233,
+                "line": 9,
+                "column": 38
+              },
+              "children": [
+                {
+                  "kind": "FirstNode",
+                  "pos": {
+                    "offset": 209,
+                    "line": 9,
+                    "column": 14
+                  },
+                  "end": {
+                    "offset": 228,
+                    "line": 9,
+                    "column": 33
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 209,
+                        "line": 9,
+                        "column": 14
+                      },
+                      "end": {
+                        "offset": 215,
+                        "line": 9,
+                        "column": 20
+                      },
+                      "text": "React"
+                    },
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 216,
+                        "line": 9,
+                        "column": 21
+                      },
+                      "end": {
+                        "offset": 228,
+                        "line": 9,
+                        "column": 33
+                      },
+                      "text": "ReactElement"
+                    }
+                  ]
+                },
+                {
+                  "kind": "AnyKeyword",
+                  "pos": {
+                    "offset": 229,
+                    "line": 9,
+                    "column": 34
+                  },
+                  "end": {
+                    "offset": 232,
+                    "line": 9,
+                    "column": 37
+                  },
+                  "text": "any"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "FunctionDeclaration",
+      "pos": {
+        "offset": 236,
+        "line": 10,
+        "column": 2
+      },
+      "end": {
+        "offset": 315,
+        "line": 14,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 248,
+            "line": 12,
+            "column": 9
+          },
+          "end": {
+            "offset": 256,
+            "line": 12,
+            "column": 17
+          },
+          "text": "Wrapper"
+        },
+        {
+          "kind": "Parameter",
+          "pos": {
+            "offset": 257,
+            "line": 12,
+            "column": 18
+          },
+          "end": {
+            "offset": 269,
+            "line": 12,
+            "column": 30
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 257,
+                "line": 12,
+                "column": 18
+              },
+              "end": {
+                "offset": 262,
+                "line": 12,
+                "column": 23
+              },
+              "text": "props"
+            },
+            {
+              "kind": "TypeReference",
+              "pos": {
+                "offset": 263,
+                "line": 12,
+                "column": 24
+              },
+              "end": {
+                "offset": 269,
+                "line": 12,
+                "column": 30
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 263,
+                    "line": 12,
+                    "column": 24
+                  },
+                  "end": {
+                    "offset": 269,
+                    "line": 12,
+                    "column": 30
+                  },
+                  "text": "Props"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "Block",
+          "pos": {
+            "offset": 270,
+            "line": 12,
+            "column": 31
+          },
+          "end": {
+            "offset": 315,
+            "line": 14,
+            "column": 2
+          },
+          "children": [
+            {
+              "kind": "ReturnStatement",
+              "pos": {
+                "offset": 272,
+                "line": 12,
+                "column": 33
+              },
+              "end": {
+                "offset": 312,
+                "line": 13,
+                "column": 39
+              },
+              "children": [
+                {
+                  "kind": "JsxElement",
+                  "pos": {
+                    "offset": 284,
+                    "line": 13,
+                    "column": 11
+                  },
+                  "end": {
+                    "offset": 312,
+                    "line": 13,
+                    "column": 39
+                  },
+                  "children": [
+                    {
+                      "kind": "JsxOpeningElement",
+                      "pos": {
+                        "offset": 284,
+                        "line": 13,
+                        "column": 11
+                      },
+                      "end": {
+                        "offset": 290,
+                        "line": 13,
+                        "column": 17
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 286,
+                            "line": 13,
+                            "column": 13
+                          },
+                          "end": {
+                            "offset": 289,
+                            "line": 13,
+                            "column": 16
+                          },
+                          "text": "div"
+                        },
+                        {
+                          "kind": "JsxAttributes",
+                          "pos": {
+                            "offset": 289,
+                            "line": 13,
+                            "column": 16
+                          },
+                          "end": {
+                            "offset": 289,
+                            "line": 13,
+                            "column": 16
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "JsxExpression",
+                      "pos": {
+                        "offset": 290,
+                        "line": 13,
+                        "column": 17
+                      },
+                      "end": {
+                        "offset": 306,
+                        "line": 13,
+                        "column": 33
+                      },
+                      "children": [
+                        {
+                          "kind": "PropertyAccessExpression",
+                          "pos": {
+                            "offset": 291,
+                            "line": 13,
+                            "column": 18
+                          },
+                          "end": {
+                            "offset": 305,
+                            "line": 13,
+                            "column": 32
+                          },
+                          "children": [
+                            {
+                              "kind": "Identifier",
+                              "pos": {
+                                "offset": 291,
+                                "line": 13,
+                                "column": 18
+                              },
+                              "end": {
+                                "offset": 296,
+                                "line": 13,
+                                "column": 23
+                              },
+                              "text": "props"
+                            },
+                            {
+                              "kind": "Identifier",
+                              "pos": {
+                                "offset": 297,
+                                "line": 13,
+                                "column": 24
+                              },
+                              "end": {
+                                "offset": 305,
+                                "line": 13,
+                                "column": 32
+                              },
+                              "text": "children"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "JsxClosingElement",
+                      "pos": {
+                        "offset": 306,
+                        "line": 13,
+                        "column": 33
+                      },
+                      "end": {
+                        "offset": 312,
+                        "line": 13,
+                        "column": 39
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 308,
+                            "line": 13,
+                            "column": 35
+                          },
+                          "end": {
+                            "offset": 311,
+                            "line": 13,
+                            "column": 38
+                          },
+                          "text": "div"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "FirstStatement",
+      "pos": {
+        "offset": 315,
+        "line": 14,
+        "column": 2
+      },
+      "end": {
+        "offset": 414,
+        "line": 21,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "VariableDeclarationList",
+          "pos": {
+            "offset": 315,
+            "line": 14,
+            "column": 2
+          },
+          "end": {
+            "offset": 414,
+            "line": 21,
+            "column": 2
+          },
+          "children": [
+            {
+              "kind": "VariableDeclaration",
+              "pos": {
+                "offset": 324,
+                "line": 16,
+                "column": 6
+              },
+              "end": {
+                "offset": 414,
+                "line": 21,
+                "column": 2
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 324,
+                    "line": 16,
+                    "column": 6
+                  },
+                  "end": {
+                    "offset": 332,
+                    "line": 16,
+                    "column": 14
+                  },
+                  "text": "element"
+                },
+                {
+                  "kind": "ParenthesizedExpression",
+                  "pos": {
+                    "offset": 334,
+                    "line": 16,
+                    "column": 16
+                  },
+                  "end": {
+                    "offset": 414,
+                    "line": 21,
+                    "column": 2
+                  },
+                  "children": [
+                    {
+                      "kind": "JsxElement",
+                      "pos": {
+                        "offset": 336,
+                        "line": 16,
+                        "column": 18
+                      },
+                      "end": {
+                        "offset": 411,
+                        "line": 20,
+                        "column": 15
+                      },
+                      "children": [
+                        {
+                          "kind": "JsxOpeningElement",
+                          "pos": {
+                            "offset": 336,
+                            "line": 16,
+                            "column": 18
+                          },
+                          "end": {
+                            "offset": 351,
+                            "line": 17,
+                            "column": 14
+                          },
+                          "children": [
+                            {
+                              "kind": "Identifier",
+                              "pos": {
+                                "offset": 343,
+                                "line": 17,
+                                "column": 6
+                              },
+                              "end": {
+                                "offset": 350,
+                                "line": 17,
+                                "column": 13
+                              },
+                              "text": "Wrapper"
+                            },
+                            {
+                              "kind": "JsxAttributes",
+                              "pos": {
+                                "offset": 350,
+                                "line": 17,
+                                "column": 13
+                              },
+                              "end": {
+                                "offset": 350,
+                                "line": 17,
+                                "column": 13
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "JsxText",
+                          "pos": {
+                            "offset": 351,
+                            "line": 17,
+                            "column": 14
+                          },
+                          "end": {
+                            "offset": 357,
+                            "line": 18,
+                            "column": 5
+                          },
+                          "text": ""
+                        },
+                        {
+                          "kind": "JsxExpression",
+                          "pos": {
+                            "offset": 357,
+                            "line": 18,
+                            "column": 5
+                          },
+                          "end": {
+                            "offset": 372,
+                            "line": 18,
+                            "column": 20
+                          }
+                        },
+                        {
+                          "kind": "JsxText",
+                          "pos": {
+                            "offset": 372,
+                            "line": 18,
+                            "column": 20
+                          },
+                          "end": {
+                            "offset": 379,
+                            "line": 19,
+                            "column": 6
+                          },
+                          "text": ""
+                        },
+                        {
+                          "kind": "JsxElement",
+                          "pos": {
+                            "offset": 379,
+                            "line": 19,
+                            "column": 6
+                          },
+                          "end": {
+                            "offset": 395,
+                            "line": 19,
+                            "column": 22
+                          },
+                          "children": [
+                            {
+                              "kind": "JsxOpeningElement",
+                              "pos": {
+                                "offset": 379,
+                                "line": 19,
+                                "column": 6
+                              },
+                              "end": {
+                                "offset": 384,
+                                "line": 19,
+                                "column": 11
+                              },
+                              "children": [
+                                {
+                                  "kind": "Identifier",
+                                  "pos": {
+                                    "offset": 380,
+                                    "line": 19,
+                                    "column": 7
+                                  },
+                                  "end": {
+                                    "offset": 383,
+                                    "line": 19,
+                                    "column": 10
+                                  },
+                                  "text": "div"
+                                },
+                                {
+                                  "kind": "JsxAttributes",
+                                  "pos": {
+                                    "offset": 383,
+                                    "line": 19,
+                                    "column": 10
+                                  },
+                                  "end": {
+                                    "offset": 383,
+                                    "line": 19,
+                                    "column": 10
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "kind": "JsxText",
+                              "pos": {
+                                "offset": 384,
+                                "line": 19,
+                                "column": 11
+                              },
+                              "end": {
+                                "offset": 389,
+                                "line": 19,
+                                "column": 16
+                              },
+                              "text": "Hello"
+                            },
+                            {
+                              "kind": "JsxClosingElement",
+                              "pos": {
+                                "offset": 389,
+                                "line": 19,
+                                "column": 16
+                              },
+                              "end": {
+                                "offset": 395,
+                                "line": 19,
+                                "column": 22
+                              },
+                              "children": [
+                                {
+                                  "kind": "Identifier",
+                                  "pos": {
+                                    "offset": 391,
+                                    "line": 19,
+                                    "column": 18
+                                  },
+                                  "end": {
+                                    "offset": 394,
+                                    "line": 19,
+                                    "column": 21
+                                  },
+                                  "text": "div"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "JsxText",
+                          "pos": {
+                            "offset": 395,
+                            "line": 19,
+                            "column": 22
+                          },
+                          "end": {
+                            "offset": 401,
+                            "line": 20,
+                            "column": 5
+                          },
+                          "text": ""
+                        },
+                        {
+                          "kind": "JsxClosingElement",
+                          "pos": {
+                            "offset": 401,
+                            "line": 20,
+                            "column": 5
+                          },
+                          "end": {
+                            "offset": 411,
+                            "line": 20,
+                            "column": 15
+                          },
+                          "children": [
+                            {
+                              "kind": "Identifier",
+                              "pos": {
+                                "offset": 403,
+                                "line": 20,
+                                "column": 7
+                              },
+                              "end": {
+                                "offset": 410,
+                                "line": 20,
+                                "column": 14
+                              },
+                              "text": "Wrapper"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 414,
+        "line": 21,
+        "column": 2
+      },
+      "end": {
+        "offset": 414,
+        "line": 21,
+        "column": 2
+      },
+      "text": ""
+    }
+  ]
+}

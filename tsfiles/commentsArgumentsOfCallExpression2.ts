@@ -1,3 +1,4 @@
+﻿// @target: es2015
 function foo(/*c1*/ x: any, /*d1*/ y: any,/*e1*/w?: any) { }
 var a, b: any;
 foo(/*c2*/ 1, /*d2*/ 1 + 2, /*e1*/ a + b);

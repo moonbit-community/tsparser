@@ -1,0 +1,160 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 104,
+    "line": 7,
+    "column": 1
+  },
+  "children": [
+    {
+      "kind": "ClassDeclaration",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 99,
+        "line": 5,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 44,
+            "line": 3,
+            "column": 6
+          },
+          "end": {
+            "offset": 52,
+            "line": 3,
+            "column": 14
+          },
+          "text": "MyClass"
+        },
+        {
+          "kind": "GetAccessor",
+          "pos": {
+            "offset": 54,
+            "line": 3,
+            "column": 16
+          },
+          "end": {
+            "offset": 96,
+            "line": 4,
+            "column": 41
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 59,
+                "line": 4,
+                "column": 4
+              },
+              "end": {
+                "offset": 68,
+                "line": 4,
+                "column": 13
+              },
+              "text": "testProp"
+            },
+            {
+              "kind": "Block",
+              "pos": {
+                "offset": 70,
+                "line": 4,
+                "column": 15
+              },
+              "end": {
+                "offset": 96,
+                "line": 4,
+                "column": 41
+              },
+              "children": [
+                {
+                  "kind": "ReturnStatement",
+                  "pos": {
+                    "offset": 72,
+                    "line": 4,
+                    "column": 17
+                  },
+                  "end": {
+                    "offset": 94,
+                    "line": 4,
+                    "column": 39
+                  },
+                  "children": [
+                    {
+                      "kind": "PropertyAccessExpression",
+                      "pos": {
+                        "offset": 79,
+                        "line": 4,
+                        "column": 24
+                      },
+                      "end": {
+                        "offset": 93,
+                        "line": 4,
+                        "column": 38
+                      },
+                      "children": [
+                        {
+                          "kind": "ThisKeyword",
+                          "pos": {
+                            "offset": 79,
+                            "line": 4,
+                            "column": 24
+                          },
+                          "end": {
+                            "offset": 84,
+                            "line": 4,
+                            "column": 29
+                          },
+                          "text": "this"
+                        },
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 85,
+                            "line": 4,
+                            "column": 30
+                          },
+                          "end": {
+                            "offset": 93,
+                            "line": 4,
+                            "column": 38
+                          },
+                          "text": "testProp"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 99,
+        "line": 5,
+        "column": 2
+      },
+      "end": {
+        "offset": 104,
+        "line": 7,
+        "column": 1
+      },
+      "text": ""
+    }
+  ]
+}

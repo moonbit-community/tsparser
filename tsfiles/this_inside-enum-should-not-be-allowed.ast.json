@@ -1,0 +1,217 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 251,
+    "line": 10,
+    "column": 2
+  },
+  "children": [
+    {
+      "kind": "EnumDeclaration",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 108,
+        "line": 4,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 24,
+            "line": 2,
+            "column": 5
+          },
+          "end": {
+            "offset": 37,
+            "line": 2,
+            "column": 18
+          },
+          "text": "TopLevelEnum"
+        },
+        {
+          "kind": "EnumMember",
+          "pos": {
+            "offset": 39,
+            "line": 2,
+            "column": 20
+          },
+          "end": {
+            "offset": 80,
+            "line": 3,
+            "column": 40
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 39,
+                "line": 2,
+                "column": 20
+              },
+              "end": {
+                "offset": 73,
+                "line": 3,
+                "column": 33
+              },
+              "text": "ThisWasAllowedButShouldNotBe"
+            },
+            {
+              "kind": "ThisKeyword",
+              "pos": {
+                "offset": 75,
+                "line": 3,
+                "column": 35
+              },
+              "end": {
+                "offset": 80,
+                "line": 3,
+                "column": 40
+              },
+              "text": "this"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ModuleDeclaration",
+      "pos": {
+        "offset": 108,
+        "line": 4,
+        "column": 2
+      },
+      "end": {
+        "offset": 251,
+        "line": 10,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 121,
+            "line": 6,
+            "column": 10
+          },
+          "end": {
+            "offset": 132,
+            "line": 6,
+            "column": 21
+          },
+          "text": "ModuleEnum"
+        },
+        {
+          "kind": "ModuleBlock",
+          "pos": {
+            "offset": 132,
+            "line": 6,
+            "column": 21
+          },
+          "end": {
+            "offset": 251,
+            "line": 10,
+            "column": 2
+          },
+          "children": [
+            {
+              "kind": "EnumDeclaration",
+              "pos": {
+                "offset": 134,
+                "line": 6,
+                "column": 23
+              },
+              "end": {
+                "offset": 248,
+                "line": 9,
+                "column": 6
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 144,
+                    "line": 7,
+                    "column": 9
+                  },
+                  "end": {
+                    "offset": 157,
+                    "line": 7,
+                    "column": 22
+                  },
+                  "text": "EnumInModule"
+                },
+                {
+                  "kind": "EnumMember",
+                  "pos": {
+                    "offset": 159,
+                    "line": 7,
+                    "column": 24
+                  },
+                  "end": {
+                    "offset": 194,
+                    "line": 8,
+                    "column": 34
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 159,
+                        "line": 7,
+                        "column": 24
+                      },
+                      "end": {
+                        "offset": 187,
+                        "line": 8,
+                        "column": 27
+                      },
+                      "text": "WasADifferentError"
+                    },
+                    {
+                      "kind": "ThisKeyword",
+                      "pos": {
+                        "offset": 189,
+                        "line": 8,
+                        "column": 29
+                      },
+                      "end": {
+                        "offset": 194,
+                        "line": 8,
+                        "column": 34
+                      },
+                      "text": "this"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 251,
+        "line": 10,
+        "column": 2
+      },
+      "end": {
+        "offset": 251,
+        "line": 10,
+        "column": 2
+      },
+      "text": ""
+    }
+  ]
+}

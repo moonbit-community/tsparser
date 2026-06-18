@@ -1,3 +1,4 @@
+﻿// @target: es2015
 // @module: none
 // @filename: 0.d.ts
 

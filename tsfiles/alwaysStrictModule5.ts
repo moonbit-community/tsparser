@@ -1,4 +1,4 @@
-// @alwaysStrict: true
+﻿// @alwaysStrict: true
 // @target: es6
 
 // Targeting ES6

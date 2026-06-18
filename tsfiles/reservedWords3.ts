@@ -1,3 +1,4 @@
+﻿// @target: es2015
 function f1(enum) {}
 function f2(class) {}
 function f3(function) {}

@@ -1,0 +1,420 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 296,
+    "line": 18,
+    "column": 25
+  },
+  "children": [
+    {
+      "kind": "ExportAssignment",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 76,
+        "line": 4,
+        "column": 14
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 71,
+            "line": 4,
+            "column": 9
+          },
+          "end": {
+            "offset": 75,
+            "line": 4,
+            "column": 13
+          },
+          "text": "Foo"
+        }
+      ]
+    },
+    {
+      "kind": "NamespaceExportDeclaration",
+      "pos": {
+        "offset": 76,
+        "line": 4,
+        "column": 14
+      },
+      "end": {
+        "offset": 102,
+        "line": 5,
+        "column": 25
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 97,
+            "line": 5,
+            "column": 20
+          },
+          "end": {
+            "offset": 101,
+            "line": 5,
+            "column": 24
+          },
+          "text": "Foo"
+        }
+      ]
+    },
+    {
+      "kind": "ModuleDeclaration",
+      "pos": {
+        "offset": 102,
+        "line": 5,
+        "column": 25
+      },
+      "end": {
+        "offset": 153,
+        "line": 9,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "DeclareKeyword",
+          "pos": {
+            "offset": 102,
+            "line": 5,
+            "column": 25
+          },
+          "end": {
+            "offset": 113,
+            "line": 7,
+            "column": 8
+          },
+          "text": "declare"
+        },
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 123,
+            "line": 7,
+            "column": 18
+          },
+          "end": {
+            "offset": 127,
+            "line": 7,
+            "column": 22
+          },
+          "text": "Foo"
+        },
+        {
+          "kind": "ModuleBlock",
+          "pos": {
+            "offset": 127,
+            "line": 7,
+            "column": 22
+          },
+          "end": {
+            "offset": 153,
+            "line": 9,
+            "column": 2
+          },
+          "children": [
+            {
+              "kind": "FunctionDeclaration",
+              "pos": {
+                "offset": 129,
+                "line": 7,
+                "column": 24
+              },
+              "end": {
+                "offset": 150,
+                "line": 8,
+                "column": 20
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 143,
+                    "line": 8,
+                    "column": 13
+                  },
+                  "end": {
+                    "offset": 147,
+                    "line": 8,
+                    "column": 17
+                  },
+                  "text": "foo"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ModuleDeclaration",
+      "pos": {
+        "offset": 153,
+        "line": 9,
+        "column": 2
+      },
+      "end": {
+        "offset": 199,
+        "line": 13,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "DeclareKeyword",
+          "pos": {
+            "offset": 153,
+            "line": 9,
+            "column": 2
+          },
+          "end": {
+            "offset": 164,
+            "line": 11,
+            "column": 8
+          },
+          "text": "declare"
+        },
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 164,
+            "line": 11,
+            "column": 8
+          },
+          "end": {
+            "offset": 171,
+            "line": 11,
+            "column": 15
+          },
+          "text": "global"
+        },
+        {
+          "kind": "ModuleBlock",
+          "pos": {
+            "offset": 171,
+            "line": 11,
+            "column": 15
+          },
+          "end": {
+            "offset": 199,
+            "line": 13,
+            "column": 2
+          },
+          "children": [
+            {
+              "kind": "ModuleDeclaration",
+              "pos": {
+                "offset": 173,
+                "line": 11,
+                "column": 17
+              },
+              "end": {
+                "offset": 196,
+                "line": 12,
+                "column": 22
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 188,
+                    "line": 12,
+                    "column": 14
+                  },
+                  "end": {
+                    "offset": 192,
+                    "line": 12,
+                    "column": 18
+                  },
+                  "text": "Bar"
+                },
+                {
+                  "kind": "ModuleBlock",
+                  "pos": {
+                    "offset": 192,
+                    "line": 12,
+                    "column": 18
+                  },
+                  "end": {
+                    "offset": 196,
+                    "line": 12,
+                    "column": 22
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ImportDeclaration",
+      "pos": {
+        "offset": 199,
+        "line": 13,
+        "column": 2
+      },
+      "end": {
+        "offset": 255,
+        "line": 16,
+        "column": 29
+      },
+      "children": [
+        {
+          "kind": "ImportClause",
+          "pos": {
+            "offset": 233,
+            "line": 16,
+            "column": 7
+          },
+          "end": {
+            "offset": 241,
+            "line": 16,
+            "column": 15
+          },
+          "children": [
+            {
+              "kind": "NamedImports",
+              "pos": {
+                "offset": 233,
+                "line": 16,
+                "column": 7
+              },
+              "end": {
+                "offset": 241,
+                "line": 16,
+                "column": 15
+              },
+              "children": [
+                {
+                  "kind": "ImportSpecifier",
+                  "pos": {
+                    "offset": 235,
+                    "line": 16,
+                    "column": 9
+                  },
+                  "end": {
+                    "offset": 239,
+                    "line": 16,
+                    "column": 13
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 235,
+                        "line": 16,
+                        "column": 9
+                      },
+                      "end": {
+                        "offset": 239,
+                        "line": 16,
+                        "column": 13
+                      },
+                      "text": "Bar"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "StringLiteral",
+          "pos": {
+            "offset": 246,
+            "line": 16,
+            "column": 20
+          },
+          "end": {
+            "offset": 254,
+            "line": 16,
+            "column": 28
+          },
+          "text": "./foo"
+        }
+      ]
+    },
+    {
+      "kind": "ExportAssignment",
+      "pos": {
+        "offset": 255,
+        "line": 16,
+        "column": 29
+      },
+      "end": {
+        "offset": 270,
+        "line": 17,
+        "column": 14
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 265,
+            "line": 17,
+            "column": 9
+          },
+          "end": {
+            "offset": 269,
+            "line": 17,
+            "column": 13
+          },
+          "text": "Bar"
+        }
+      ]
+    },
+    {
+      "kind": "NamespaceExportDeclaration",
+      "pos": {
+        "offset": 270,
+        "line": 17,
+        "column": 14
+      },
+      "end": {
+        "offset": 296,
+        "line": 18,
+        "column": 25
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 291,
+            "line": 18,
+            "column": 20
+          },
+          "end": {
+            "offset": 295,
+            "line": 18,
+            "column": 24
+          },
+          "text": "Bar"
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 296,
+        "line": 18,
+        "column": 25
+      },
+      "end": {
+        "offset": 296,
+        "line": 18,
+        "column": 25
+      },
+      "text": ""
+    }
+  ]
+}

@@ -1,5 +1,6 @@
+﻿// @target: es2015
 //@sourceMap: true
-module Q {
+namespace Q {
     function P() {
         // Test this
         var a = 1;

@@ -1,0 +1,726 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 511,
+    "line": 21,
+    "column": 1
+  },
+  "children": [
+    {
+      "kind": "EnumDeclaration",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 124,
+        "line": 7,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "ExportKeyword",
+          "pos": {
+            "offset": 0,
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "offset": 77,
+            "line": 4,
+            "column": 7
+          },
+          "text": "export"
+        },
+        {
+          "kind": "ConstKeyword",
+          "pos": {
+            "offset": 77,
+            "line": 4,
+            "column": 7
+          },
+          "end": {
+            "offset": 83,
+            "line": 4,
+            "column": 13
+          },
+          "text": "const"
+        },
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 88,
+            "line": 4,
+            "column": 18
+          },
+          "end": {
+            "offset": 100,
+            "line": 4,
+            "column": 30
+          },
+          "text": "MyConstEnum"
+        },
+        {
+          "kind": "EnumMember",
+          "pos": {
+            "offset": 102,
+            "line": 4,
+            "column": 32
+          },
+          "end": {
+            "offset": 111,
+            "line": 5,
+            "column": 8
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 102,
+                "line": 4,
+                "column": 32
+              },
+              "end": {
+                "offset": 111,
+                "line": 5,
+                "column": 8
+              },
+              "text": "Foo"
+            }
+          ]
+        },
+        {
+          "kind": "EnumMember",
+          "pos": {
+            "offset": 112,
+            "line": 5,
+            "column": 9
+          },
+          "end": {
+            "offset": 121,
+            "line": 6,
+            "column": 8
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 112,
+                "line": 5,
+                "column": 9
+              },
+              "end": {
+                "offset": 121,
+                "line": 6,
+                "column": 8
+              },
+              "text": "Bar"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ImportDeclaration",
+      "pos": {
+        "offset": 124,
+        "line": 7,
+        "column": 2
+      },
+      "end": {
+        "offset": 201,
+        "line": 9,
+        "column": 43
+      },
+      "children": [
+        {
+          "kind": "ImportClause",
+          "pos": {
+            "offset": 165,
+            "line": 9,
+            "column": 7
+          },
+          "end": {
+            "offset": 181,
+            "line": 9,
+            "column": 23
+          },
+          "children": [
+            {
+              "kind": "NamedImports",
+              "pos": {
+                "offset": 165,
+                "line": 9,
+                "column": 7
+              },
+              "end": {
+                "offset": 181,
+                "line": 9,
+                "column": 23
+              },
+              "children": [
+                {
+                  "kind": "ImportSpecifier",
+                  "pos": {
+                    "offset": 167,
+                    "line": 9,
+                    "column": 9
+                  },
+                  "end": {
+                    "offset": 179,
+                    "line": 9,
+                    "column": 21
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 167,
+                        "line": 9,
+                        "column": 9
+                      },
+                      "end": {
+                        "offset": 179,
+                        "line": 9,
+                        "column": 21
+                      },
+                      "text": "MyConstEnum"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "StringLiteral",
+          "pos": {
+            "offset": 186,
+            "line": 9,
+            "column": 28
+          },
+          "end": {
+            "offset": 200,
+            "line": 9,
+            "column": 42
+          },
+          "text": "./ConstEnum"
+        }
+      ]
+    },
+    {
+      "kind": "ExportAssignment",
+      "pos": {
+        "offset": 201,
+        "line": 9,
+        "column": 43
+      },
+      "end": {
+        "offset": 230,
+        "line": 10,
+        "column": 28
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 217,
+            "line": 10,
+            "column": 15
+          },
+          "end": {
+            "offset": 229,
+            "line": 10,
+            "column": 27
+          },
+          "text": "MyConstEnum"
+        }
+      ]
+    },
+    {
+      "kind": "ExportDeclaration",
+      "pos": {
+        "offset": 230,
+        "line": 10,
+        "column": 28
+      },
+      "end": {
+        "offset": 314,
+        "line": 12,
+        "column": 54
+      },
+      "children": [
+        {
+          "kind": "NamedExports",
+          "pos": {
+            "offset": 267,
+            "line": 12,
+            "column": 7
+          },
+          "end": {
+            "offset": 294,
+            "line": 12,
+            "column": 34
+          },
+          "children": [
+            {
+              "kind": "ExportSpecifier",
+              "pos": {
+                "offset": 269,
+                "line": 12,
+                "column": 9
+              },
+              "end": {
+                "offset": 292,
+                "line": 12,
+                "column": 32
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 269,
+                    "line": 12,
+                    "column": 9
+                  },
+                  "end": {
+                    "offset": 281,
+                    "line": 12,
+                    "column": 21
+                  },
+                  "text": "MyConstEnum"
+                },
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 284,
+                    "line": 12,
+                    "column": 24
+                  },
+                  "end": {
+                    "offset": 292,
+                    "line": 12,
+                    "column": 32
+                  },
+                  "text": "default"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "StringLiteral",
+          "pos": {
+            "offset": 299,
+            "line": 12,
+            "column": 39
+          },
+          "end": {
+            "offset": 313,
+            "line": 12,
+            "column": 53
+          },
+          "text": "./ConstEnum"
+        }
+      ]
+    },
+    {
+      "kind": "ImportDeclaration",
+      "pos": {
+        "offset": 314,
+        "line": 12,
+        "column": 54
+      },
+      "end": {
+        "offset": 381,
+        "line": 14,
+        "column": 41
+      },
+      "children": [
+        {
+          "kind": "ImportClause",
+          "pos": {
+            "offset": 347,
+            "line": 14,
+            "column": 7
+          },
+          "end": {
+            "offset": 361,
+            "line": 14,
+            "column": 21
+          },
+          "children": [
+            {
+              "kind": "NamedImports",
+              "pos": {
+                "offset": 347,
+                "line": 14,
+                "column": 7
+              },
+              "end": {
+                "offset": 361,
+                "line": 14,
+                "column": 21
+              },
+              "children": [
+                {
+                  "kind": "ImportSpecifier",
+                  "pos": {
+                    "offset": 349,
+                    "line": 14,
+                    "column": 9
+                  },
+                  "end": {
+                    "offset": 360,
+                    "line": 14,
+                    "column": 20
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 349,
+                        "line": 14,
+                        "column": 9
+                      },
+                      "end": {
+                        "offset": 360,
+                        "line": 14,
+                        "column": 20
+                      },
+                      "text": "MyConstEnum"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "StringLiteral",
+          "pos": {
+            "offset": 366,
+            "line": 14,
+            "column": 26
+          },
+          "end": {
+            "offset": 380,
+            "line": 14,
+            "column": 40
+          },
+          "text": "./ConstEnum"
+        }
+      ]
+    },
+    {
+      "kind": "ImportDeclaration",
+      "pos": {
+        "offset": 381,
+        "line": 14,
+        "column": 41
+      },
+      "end": {
+        "offset": 421,
+        "line": 15,
+        "column": 39
+      },
+      "children": [
+        {
+          "kind": "ImportClause",
+          "pos": {
+            "offset": 389,
+            "line": 15,
+            "column": 7
+          },
+          "end": {
+            "offset": 398,
+            "line": 15,
+            "column": 16
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 389,
+                "line": 15,
+                "column": 7
+              },
+              "end": {
+                "offset": 398,
+                "line": 15,
+                "column": 16
+              },
+              "text": "AlsoEnum"
+            }
+          ]
+        },
+        {
+          "kind": "StringLiteral",
+          "pos": {
+            "offset": 403,
+            "line": 15,
+            "column": 21
+          },
+          "end": {
+            "offset": 420,
+            "line": 15,
+            "column": 38
+          },
+          "text": "./ImportExport"
+        }
+      ]
+    },
+    {
+      "kind": "ImportDeclaration",
+      "pos": {
+        "offset": 421,
+        "line": 15,
+        "column": 39
+      },
+      "end": {
+        "offset": 458,
+        "line": 16,
+        "column": 36
+      },
+      "children": [
+        {
+          "kind": "ImportClause",
+          "pos": {
+            "offset": 429,
+            "line": 16,
+            "column": 7
+          },
+          "end": {
+            "offset": 439,
+            "line": 16,
+            "column": 17
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 429,
+                "line": 16,
+                "column": 7
+              },
+              "end": {
+                "offset": 439,
+                "line": 16,
+                "column": 17
+              },
+              "text": "StillEnum"
+            }
+          ]
+        },
+        {
+          "kind": "StringLiteral",
+          "pos": {
+            "offset": 444,
+            "line": 16,
+            "column": 22
+          },
+          "end": {
+            "offset": 457,
+            "line": 16,
+            "column": 35
+          },
+          "text": "./ReExport"
+        }
+      ]
+    },
+    {
+      "kind": "ExpressionStatement",
+      "pos": {
+        "offset": 458,
+        "line": 16,
+        "column": 36
+      },
+      "end": {
+        "offset": 478,
+        "line": 18,
+        "column": 17
+      },
+      "children": [
+        {
+          "kind": "PropertyAccessExpression",
+          "pos": {
+            "offset": 458,
+            "line": 16,
+            "column": 36
+          },
+          "end": {
+            "offset": 477,
+            "line": 18,
+            "column": 16
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 458,
+                "line": 16,
+                "column": 36
+              },
+              "end": {
+                "offset": 473,
+                "line": 18,
+                "column": 12
+              },
+              "text": "MyConstEnum"
+            },
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 474,
+                "line": 18,
+                "column": 13
+              },
+              "end": {
+                "offset": 477,
+                "line": 18,
+                "column": 16
+              },
+              "text": "Foo"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ExpressionStatement",
+      "pos": {
+        "offset": 478,
+        "line": 18,
+        "column": 17
+      },
+      "end": {
+        "offset": 493,
+        "line": 19,
+        "column": 14
+      },
+      "children": [
+        {
+          "kind": "PropertyAccessExpression",
+          "pos": {
+            "offset": 478,
+            "line": 18,
+            "column": 17
+          },
+          "end": {
+            "offset": 492,
+            "line": 19,
+            "column": 13
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 478,
+                "line": 18,
+                "column": 17
+              },
+              "end": {
+                "offset": 488,
+                "line": 19,
+                "column": 9
+              },
+              "text": "AlsoEnum"
+            },
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 489,
+                "line": 19,
+                "column": 10
+              },
+              "end": {
+                "offset": 492,
+                "line": 19,
+                "column": 13
+              },
+              "text": "Foo"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ExpressionStatement",
+      "pos": {
+        "offset": 493,
+        "line": 19,
+        "column": 14
+      },
+      "end": {
+        "offset": 509,
+        "line": 20,
+        "column": 15
+      },
+      "children": [
+        {
+          "kind": "PropertyAccessExpression",
+          "pos": {
+            "offset": 493,
+            "line": 19,
+            "column": 14
+          },
+          "end": {
+            "offset": 508,
+            "line": 20,
+            "column": 14
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 493,
+                "line": 19,
+                "column": 14
+              },
+              "end": {
+                "offset": 504,
+                "line": 20,
+                "column": 10
+              },
+              "text": "StillEnum"
+            },
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 505,
+                "line": 20,
+                "column": 11
+              },
+              "end": {
+                "offset": 508,
+                "line": 20,
+                "column": 14
+              },
+              "text": "Foo"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 509,
+        "line": 20,
+        "column": 15
+      },
+      "end": {
+        "offset": 511,
+        "line": 21,
+        "column": 1
+      },
+      "text": ""
+    }
+  ]
+}

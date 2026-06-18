@@ -1,3 +1,4 @@
+﻿// @target: es2015
 let let = 10;
 
 function foo() {

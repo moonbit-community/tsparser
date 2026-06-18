@@ -1,0 +1,318 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 215,
+    "line": 11,
+    "column": 1
+  },
+  "children": [
+    {
+      "kind": "EnumDeclaration",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 122,
+        "line": 6,
+        "column": 30
+      },
+      "children": [
+        {
+          "kind": "ExportKeyword",
+          "pos": {
+            "offset": 0,
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "offset": 99,
+            "line": 6,
+            "column": 7
+          },
+          "text": "export"
+        },
+        {
+          "kind": "ConstKeyword",
+          "pos": {
+            "offset": 99,
+            "line": 6,
+            "column": 7
+          },
+          "end": {
+            "offset": 105,
+            "line": 6,
+            "column": 13
+          },
+          "text": "const"
+        },
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 110,
+            "line": 6,
+            "column": 18
+          },
+          "end": {
+            "offset": 114,
+            "line": 6,
+            "column": 22
+          },
+          "text": "Foo"
+        },
+        {
+          "kind": "EnumMember",
+          "pos": {
+            "offset": 116,
+            "line": 6,
+            "column": 24
+          },
+          "end": {
+            "offset": 120,
+            "line": 6,
+            "column": 28
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 116,
+                "line": 6,
+                "column": 24
+              },
+              "end": {
+                "offset": 120,
+                "line": 6,
+                "column": 28
+              },
+              "text": "Bar"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ImportDeclaration",
+      "pos": {
+        "offset": 122,
+        "line": 6,
+        "column": 30
+      },
+      "end": {
+        "offset": 179,
+        "line": 9,
+        "column": 30
+      },
+      "children": [
+        {
+          "kind": "ImportClause",
+          "pos": {
+            "offset": 156,
+            "line": 9,
+            "column": 7
+          },
+          "end": {
+            "offset": 164,
+            "line": 9,
+            "column": 15
+          },
+          "children": [
+            {
+              "kind": "NamedImports",
+              "pos": {
+                "offset": 156,
+                "line": 9,
+                "column": 7
+              },
+              "end": {
+                "offset": 164,
+                "line": 9,
+                "column": 15
+              },
+              "children": [
+                {
+                  "kind": "ImportSpecifier",
+                  "pos": {
+                    "offset": 158,
+                    "line": 9,
+                    "column": 9
+                  },
+                  "end": {
+                    "offset": 162,
+                    "line": 9,
+                    "column": 13
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 158,
+                        "line": 9,
+                        "column": 9
+                      },
+                      "end": {
+                        "offset": 162,
+                        "line": 9,
+                        "column": 13
+                      },
+                      "text": "Foo"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "StringLiteral",
+          "pos": {
+            "offset": 169,
+            "line": 9,
+            "column": 20
+          },
+          "end": {
+            "offset": 178,
+            "line": 9,
+            "column": 29
+          },
+          "text": "./enum"
+        }
+      ]
+    },
+    {
+      "kind": "FunctionDeclaration",
+      "pos": {
+        "offset": 179,
+        "line": 9,
+        "column": 30
+      },
+      "end": {
+        "offset": 213,
+        "line": 10,
+        "column": 33
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 189,
+            "line": 10,
+            "column": 9
+          },
+          "end": {
+            "offset": 191,
+            "line": 10,
+            "column": 11
+          },
+          "text": "f"
+        },
+        {
+          "kind": "Parameter",
+          "pos": {
+            "offset": 192,
+            "line": 10,
+            "column": 12
+          },
+          "end": {
+            "offset": 200,
+            "line": 10,
+            "column": 20
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 192,
+                "line": 10,
+                "column": 12
+              },
+              "end": {
+                "offset": 195,
+                "line": 10,
+                "column": 15
+              },
+              "text": "foo"
+            },
+            {
+              "kind": "TypeReference",
+              "pos": {
+                "offset": 196,
+                "line": 10,
+                "column": 16
+              },
+              "end": {
+                "offset": 200,
+                "line": 10,
+                "column": 20
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 196,
+                    "line": 10,
+                    "column": 16
+                  },
+                  "end": {
+                    "offset": 200,
+                    "line": 10,
+                    "column": 20
+                  },
+                  "text": "Foo"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "Block",
+          "pos": {
+            "offset": 201,
+            "line": 10,
+            "column": 21
+          },
+          "end": {
+            "offset": 213,
+            "line": 10,
+            "column": 33
+          },
+          "children": [
+            {
+              "kind": "ReturnStatement",
+              "pos": {
+                "offset": 203,
+                "line": 10,
+                "column": 23
+              },
+              "end": {
+                "offset": 211,
+                "line": 10,
+                "column": 31
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 213,
+        "line": 10,
+        "column": 33
+      },
+      "end": {
+        "offset": 215,
+        "line": 11,
+        "column": 1
+      },
+      "text": ""
+    }
+  ]
+}

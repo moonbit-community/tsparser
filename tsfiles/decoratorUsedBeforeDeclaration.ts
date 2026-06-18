@@ -1,3 +1,4 @@
+﻿// @target: es2015
 // @experimentalDecorators: true
 @lambda(Enum.No)
 @deco(Enum.No)

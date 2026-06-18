@@ -1,0 +1,622 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 255,
+    "line": 16,
+    "column": 2
+  },
+  "children": [
+    {
+      "kind": "ClassDeclaration",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 33,
+        "line": 3,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 24,
+            "line": 2,
+            "column": 6
+          },
+          "end": {
+            "offset": 29,
+            "line": 2,
+            "column": 11
+          },
+          "text": "Cell"
+        }
+      ]
+    },
+    {
+      "kind": "ClassDeclaration",
+      "pos": {
+        "offset": 33,
+        "line": 3,
+        "column": 2
+      },
+      "end": {
+        "offset": 78,
+        "line": 7,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 40,
+            "line": 5,
+            "column": 6
+          },
+          "end": {
+            "offset": 45,
+            "line": 5,
+            "column": 11
+          },
+          "text": "Ship"
+        },
+        {
+          "kind": "PropertyDeclaration",
+          "pos": {
+            "offset": 47,
+            "line": 5,
+            "column": 13
+          },
+          "end": {
+            "offset": 76,
+            "line": 6,
+            "column": 29
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 47,
+                "line": 5,
+                "column": 13
+              },
+              "end": {
+                "offset": 58,
+                "line": 6,
+                "column": 11
+              },
+              "text": "isSunk"
+            },
+            {
+              "kind": "BooleanKeyword",
+              "pos": {
+                "offset": 59,
+                "line": 6,
+                "column": 12
+              },
+              "end": {
+                "offset": 67,
+                "line": 6,
+                "column": 20
+              },
+              "text": "boolean"
+            },
+            {
+              "kind": "FalseKeyword",
+              "pos": {
+                "offset": 69,
+                "line": 6,
+                "column": 22
+              },
+              "end": {
+                "offset": 75,
+                "line": 6,
+                "column": 28
+              },
+              "text": "false"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ClassDeclaration",
+      "pos": {
+        "offset": 78,
+        "line": 7,
+        "column": 2
+      },
+      "end": {
+        "offset": 255,
+        "line": 16,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 85,
+            "line": 9,
+            "column": 6
+          },
+          "end": {
+            "offset": 91,
+            "line": 9,
+            "column": 12
+          },
+          "text": "Board"
+        },
+        {
+          "kind": "PropertyDeclaration",
+          "pos": {
+            "offset": 93,
+            "line": 9,
+            "column": 14
+          },
+          "end": {
+            "offset": 117,
+            "line": 10,
+            "column": 24
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 93,
+                "line": 9,
+                "column": 14
+              },
+              "end": {
+                "offset": 103,
+                "line": 10,
+                "column": 10
+              },
+              "text": "ships"
+            },
+            {
+              "kind": "ArrayType",
+              "pos": {
+                "offset": 104,
+                "line": 10,
+                "column": 11
+              },
+              "end": {
+                "offset": 111,
+                "line": 10,
+                "column": 18
+              },
+              "children": [
+                {
+                  "kind": "TypeReference",
+                  "pos": {
+                    "offset": 104,
+                    "line": 10,
+                    "column": 11
+                  },
+                  "end": {
+                    "offset": 109,
+                    "line": 10,
+                    "column": 16
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 104,
+                        "line": 10,
+                        "column": 11
+                      },
+                      "end": {
+                        "offset": 109,
+                        "line": 10,
+                        "column": 16
+                      },
+                      "text": "Ship"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "ArrayLiteralExpression",
+              "pos": {
+                "offset": 113,
+                "line": 10,
+                "column": 20
+              },
+              "end": {
+                "offset": 116,
+                "line": 10,
+                "column": 23
+              }
+            }
+          ]
+        },
+        {
+          "kind": "PropertyDeclaration",
+          "pos": {
+            "offset": 117,
+            "line": 10,
+            "column": 24
+          },
+          "end": {
+            "offset": 141,
+            "line": 11,
+            "column": 24
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 117,
+                "line": 10,
+                "column": 24
+              },
+              "end": {
+                "offset": 127,
+                "line": 11,
+                "column": 10
+              },
+              "text": "cells"
+            },
+            {
+              "kind": "ArrayType",
+              "pos": {
+                "offset": 128,
+                "line": 11,
+                "column": 11
+              },
+              "end": {
+                "offset": 135,
+                "line": 11,
+                "column": 18
+              },
+              "children": [
+                {
+                  "kind": "TypeReference",
+                  "pos": {
+                    "offset": 128,
+                    "line": 11,
+                    "column": 11
+                  },
+                  "end": {
+                    "offset": 133,
+                    "line": 11,
+                    "column": 16
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 128,
+                        "line": 11,
+                        "column": 11
+                      },
+                      "end": {
+                        "offset": 133,
+                        "line": 11,
+                        "column": 16
+                      },
+                      "text": "Cell"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "ArrayLiteralExpression",
+              "pos": {
+                "offset": 137,
+                "line": 11,
+                "column": 20
+              },
+              "end": {
+                "offset": 140,
+                "line": 11,
+                "column": 23
+              }
+            }
+          ]
+        },
+        {
+          "kind": "MethodDeclaration",
+          "pos": {
+            "offset": 141,
+            "line": 11,
+            "column": 24
+          },
+          "end": {
+            "offset": 249,
+            "line": 15,
+            "column": 6
+          },
+          "children": [
+            {
+              "kind": "PrivateKeyword",
+              "pos": {
+                "offset": 141,
+                "line": 11,
+                "column": 24
+              },
+              "end": {
+                "offset": 154,
+                "line": 13,
+                "column": 12
+              },
+              "text": "private"
+            },
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 154,
+                "line": 13,
+                "column": 12
+              },
+              "end": {
+                "offset": 167,
+                "line": 13,
+                "column": 25
+              },
+              "text": "allShipsSunk"
+            },
+            {
+              "kind": "Block",
+              "pos": {
+                "offset": 169,
+                "line": 13,
+                "column": 27
+              },
+              "end": {
+                "offset": 249,
+                "line": 15,
+                "column": 6
+              },
+              "children": [
+                {
+                  "kind": "ReturnStatement",
+                  "pos": {
+                    "offset": 171,
+                    "line": 13,
+                    "column": 29
+                  },
+                  "end": {
+                    "offset": 243,
+                    "line": 14,
+                    "column": 72
+                  },
+                  "children": [
+                    {
+                      "kind": "CallExpression",
+                      "pos": {
+                        "offset": 186,
+                        "line": 14,
+                        "column": 15
+                      },
+                      "end": {
+                        "offset": 242,
+                        "line": 14,
+                        "column": 71
+                      },
+                      "children": [
+                        {
+                          "kind": "PropertyAccessExpression",
+                          "pos": {
+                            "offset": 186,
+                            "line": 14,
+                            "column": 15
+                          },
+                          "end": {
+                            "offset": 203,
+                            "line": 14,
+                            "column": 32
+                          },
+                          "children": [
+                            {
+                              "kind": "PropertyAccessExpression",
+                              "pos": {
+                                "offset": 186,
+                                "line": 14,
+                                "column": 15
+                              },
+                              "end": {
+                                "offset": 197,
+                                "line": 14,
+                                "column": 26
+                              },
+                              "children": [
+                                {
+                                  "kind": "ThisKeyword",
+                                  "pos": {
+                                    "offset": 186,
+                                    "line": 14,
+                                    "column": 15
+                                  },
+                                  "end": {
+                                    "offset": 191,
+                                    "line": 14,
+                                    "column": 20
+                                  },
+                                  "text": "this"
+                                },
+                                {
+                                  "kind": "Identifier",
+                                  "pos": {
+                                    "offset": 192,
+                                    "line": 14,
+                                    "column": 21
+                                  },
+                                  "end": {
+                                    "offset": 197,
+                                    "line": 14,
+                                    "column": 26
+                                  },
+                                  "text": "ships"
+                                }
+                              ]
+                            },
+                            {
+                              "kind": "Identifier",
+                              "pos": {
+                                "offset": 198,
+                                "line": 14,
+                                "column": 27
+                              },
+                              "end": {
+                                "offset": 203,
+                                "line": 14,
+                                "column": 32
+                              },
+                              "text": "every"
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "FunctionExpression",
+                          "pos": {
+                            "offset": 204,
+                            "line": 14,
+                            "column": 33
+                          },
+                          "end": {
+                            "offset": 241,
+                            "line": 14,
+                            "column": 70
+                          },
+                          "children": [
+                            {
+                              "kind": "Parameter",
+                              "pos": {
+                                "offset": 214,
+                                "line": 14,
+                                "column": 43
+                              },
+                              "end": {
+                                "offset": 217,
+                                "line": 14,
+                                "column": 46
+                              },
+                              "children": [
+                                {
+                                  "kind": "Identifier",
+                                  "pos": {
+                                    "offset": 214,
+                                    "line": 14,
+                                    "column": 43
+                                  },
+                                  "end": {
+                                    "offset": 217,
+                                    "line": 14,
+                                    "column": 46
+                                  },
+                                  "text": "val"
+                                }
+                              ]
+                            },
+                            {
+                              "kind": "Block",
+                              "pos": {
+                                "offset": 218,
+                                "line": 14,
+                                "column": 47
+                              },
+                              "end": {
+                                "offset": 241,
+                                "line": 14,
+                                "column": 70
+                              },
+                              "children": [
+                                {
+                                  "kind": "ReturnStatement",
+                                  "pos": {
+                                    "offset": 220,
+                                    "line": 14,
+                                    "column": 49
+                                  },
+                                  "end": {
+                                    "offset": 239,
+                                    "line": 14,
+                                    "column": 68
+                                  },
+                                  "children": [
+                                    {
+                                      "kind": "PropertyAccessExpression",
+                                      "pos": {
+                                        "offset": 227,
+                                        "line": 14,
+                                        "column": 56
+                                      },
+                                      "end": {
+                                        "offset": 238,
+                                        "line": 14,
+                                        "column": 67
+                                      },
+                                      "children": [
+                                        {
+                                          "kind": "Identifier",
+                                          "pos": {
+                                            "offset": 227,
+                                            "line": 14,
+                                            "column": 56
+                                          },
+                                          "end": {
+                                            "offset": 231,
+                                            "line": 14,
+                                            "column": 60
+                                          },
+                                          "text": "val"
+                                        },
+                                        {
+                                          "kind": "Identifier",
+                                          "pos": {
+                                            "offset": 232,
+                                            "line": 14,
+                                            "column": 61
+                                          },
+                                          "end": {
+                                            "offset": 238,
+                                            "line": 14,
+                                            "column": 67
+                                          },
+                                          "text": "isSunk"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 255,
+        "line": 16,
+        "column": 2
+      },
+      "end": {
+        "offset": 255,
+        "line": 16,
+        "column": 2
+      },
+      "text": ""
+    }
+  ]
+}

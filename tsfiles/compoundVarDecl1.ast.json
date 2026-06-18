@@ -1,0 +1,420 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 91,
+    "line": 4,
+    "column": 22
+  },
+  "children": [
+    {
+      "kind": "ModuleDeclaration",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 66,
+        "line": 2,
+        "column": 47
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 29,
+            "line": 2,
+            "column": 10
+          },
+          "end": {
+            "offset": 33,
+            "line": 2,
+            "column": 14
+          },
+          "text": "Foo"
+        },
+        {
+          "kind": "ModuleBlock",
+          "pos": {
+            "offset": 33,
+            "line": 2,
+            "column": 14
+          },
+          "end": {
+            "offset": 66,
+            "line": 2,
+            "column": 47
+          },
+          "children": [
+            {
+              "kind": "FirstStatement",
+              "pos": {
+                "offset": 35,
+                "line": 2,
+                "column": 16
+              },
+              "end": {
+                "offset": 53,
+                "line": 2,
+                "column": 34
+              },
+              "children": [
+                {
+                  "kind": "VariableDeclarationList",
+                  "pos": {
+                    "offset": 35,
+                    "line": 2,
+                    "column": 16
+                  },
+                  "end": {
+                    "offset": 52,
+                    "line": 2,
+                    "column": 33
+                  },
+                  "children": [
+                    {
+                      "kind": "VariableDeclaration",
+                      "pos": {
+                        "offset": 39,
+                        "line": 2,
+                        "column": 20
+                      },
+                      "end": {
+                        "offset": 45,
+                        "line": 2,
+                        "column": 26
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 39,
+                            "line": 2,
+                            "column": 20
+                          },
+                          "end": {
+                            "offset": 41,
+                            "line": 2,
+                            "column": 22
+                          },
+                          "text": "a"
+                        },
+                        {
+                          "kind": "FirstLiteralToken",
+                          "pos": {
+                            "offset": 43,
+                            "line": 2,
+                            "column": 24
+                          },
+                          "end": {
+                            "offset": 45,
+                            "line": 2,
+                            "column": 26
+                          },
+                          "text": "1"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "VariableDeclaration",
+                      "pos": {
+                        "offset": 46,
+                        "line": 2,
+                        "column": 27
+                      },
+                      "end": {
+                        "offset": 52,
+                        "line": 2,
+                        "column": 33
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 46,
+                            "line": 2,
+                            "column": 27
+                          },
+                          "end": {
+                            "offset": 48,
+                            "line": 2,
+                            "column": 29
+                          },
+                          "text": "b"
+                        },
+                        {
+                          "kind": "FirstLiteralToken",
+                          "pos": {
+                            "offset": 50,
+                            "line": 2,
+                            "column": 31
+                          },
+                          "end": {
+                            "offset": 52,
+                            "line": 2,
+                            "column": 33
+                          },
+                          "text": "1"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "ExpressionStatement",
+              "pos": {
+                "offset": 53,
+                "line": 2,
+                "column": 34
+              },
+              "end": {
+                "offset": 64,
+                "line": 2,
+                "column": 45
+              },
+              "children": [
+                {
+                  "kind": "BinaryExpression",
+                  "pos": {
+                    "offset": 53,
+                    "line": 2,
+                    "column": 34
+                  },
+                  "end": {
+                    "offset": 63,
+                    "line": 2,
+                    "column": 44
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 53,
+                        "line": 2,
+                        "column": 34
+                      },
+                      "end": {
+                        "offset": 55,
+                        "line": 2,
+                        "column": 36
+                      },
+                      "text": "a"
+                    },
+                    {
+                      "kind": "FirstAssignment",
+                      "pos": {
+                        "offset": 55,
+                        "line": 2,
+                        "column": 36
+                      },
+                      "end": {
+                        "offset": 57,
+                        "line": 2,
+                        "column": 38
+                      },
+                      "text": "="
+                    },
+                    {
+                      "kind": "BinaryExpression",
+                      "pos": {
+                        "offset": 57,
+                        "line": 2,
+                        "column": 38
+                      },
+                      "end": {
+                        "offset": 63,
+                        "line": 2,
+                        "column": 44
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 57,
+                            "line": 2,
+                            "column": 38
+                          },
+                          "end": {
+                            "offset": 59,
+                            "line": 2,
+                            "column": 40
+                          },
+                          "text": "b"
+                        },
+                        {
+                          "kind": "PlusToken",
+                          "pos": {
+                            "offset": 59,
+                            "line": 2,
+                            "column": 40
+                          },
+                          "end": {
+                            "offset": 61,
+                            "line": 2,
+                            "column": 42
+                          },
+                          "text": "+"
+                        },
+                        {
+                          "kind": "FirstLiteralToken",
+                          "pos": {
+                            "offset": 61,
+                            "line": 2,
+                            "column": 42
+                          },
+                          "end": {
+                            "offset": 63,
+                            "line": 2,
+                            "column": 44
+                          },
+                          "text": "2"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "FirstStatement",
+      "pos": {
+        "offset": 66,
+        "line": 2,
+        "column": 47
+      },
+      "end": {
+        "offset": 91,
+        "line": 4,
+        "column": 22
+      },
+      "children": [
+        {
+          "kind": "VariableDeclarationList",
+          "pos": {
+            "offset": 66,
+            "line": 2,
+            "column": 47
+          },
+          "end": {
+            "offset": 90,
+            "line": 4,
+            "column": 21
+          },
+          "children": [
+            {
+              "kind": "VariableDeclaration",
+              "pos": {
+                "offset": 73,
+                "line": 4,
+                "column": 4
+              },
+              "end": {
+                "offset": 81,
+                "line": 4,
+                "column": 12
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 73,
+                    "line": 4,
+                    "column": 4
+                  },
+                  "end": {
+                    "offset": 77,
+                    "line": 4,
+                    "column": 8
+                  },
+                  "text": "foo"
+                },
+                {
+                  "kind": "FirstLiteralToken",
+                  "pos": {
+                    "offset": 79,
+                    "line": 4,
+                    "column": 10
+                  },
+                  "end": {
+                    "offset": 81,
+                    "line": 4,
+                    "column": 12
+                  },
+                  "text": "4"
+                }
+              ]
+            },
+            {
+              "kind": "VariableDeclaration",
+              "pos": {
+                "offset": 82,
+                "line": 4,
+                "column": 13
+              },
+              "end": {
+                "offset": 90,
+                "line": 4,
+                "column": 21
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 82,
+                    "line": 4,
+                    "column": 13
+                  },
+                  "end": {
+                    "offset": 86,
+                    "line": 4,
+                    "column": 17
+                  },
+                  "text": "bar"
+                },
+                {
+                  "kind": "FirstLiteralToken",
+                  "pos": {
+                    "offset": 88,
+                    "line": 4,
+                    "column": 19
+                  },
+                  "end": {
+                    "offset": 90,
+                    "line": 4,
+                    "column": 21
+                  },
+                  "text": "5"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 91,
+        "line": 4,
+        "column": 22
+      },
+      "end": {
+        "offset": 91,
+        "line": 4,
+        "column": 22
+      },
+      "text": ""
+    }
+  ]
+}

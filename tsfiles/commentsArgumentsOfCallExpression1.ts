@@ -1,3 +1,4 @@
+﻿// @target: es2015
 function foo(/*c1*/ x: any) { }
 foo(/*c2*/ 1);
 foo(/*c3*/ function () { });

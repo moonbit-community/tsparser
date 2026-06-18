@@ -1,3 +1,4 @@
+﻿// @target: es5, es2015
 // @module: none
 
 // @filename: 1.ts

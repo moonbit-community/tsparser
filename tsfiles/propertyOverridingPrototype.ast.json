@@ -1,0 +1,230 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 115,
+    "line": 11,
+    "column": 1
+  },
+  "children": [
+    {
+      "kind": "ClassDeclaration",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 55,
+        "line": 5,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 25,
+            "line": 2,
+            "column": 6
+          },
+          "end": {
+            "offset": 30,
+            "line": 2,
+            "column": 11
+          },
+          "text": "Base"
+        },
+        {
+          "kind": "MethodDeclaration",
+          "pos": {
+            "offset": 32,
+            "line": 2,
+            "column": 13
+          },
+          "end": {
+            "offset": 52,
+            "line": 4,
+            "column": 6
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 32,
+                "line": 2,
+                "column": 13
+              },
+              "end": {
+                "offset": 41,
+                "line": 3,
+                "column": 8
+              },
+              "text": "foo"
+            },
+            {
+              "kind": "Block",
+              "pos": {
+                "offset": 43,
+                "line": 3,
+                "column": 10
+              },
+              "end": {
+                "offset": 52,
+                "line": 4,
+                "column": 6
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ClassDeclaration",
+      "pos": {
+        "offset": 55,
+        "line": 5,
+        "column": 2
+      },
+      "end": {
+        "offset": 111,
+        "line": 9,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 64,
+            "line": 7,
+            "column": 6
+          },
+          "end": {
+            "offset": 72,
+            "line": 7,
+            "column": 14
+          },
+          "text": "Derived"
+        },
+        {
+          "kind": "HeritageClause",
+          "pos": {
+            "offset": 72,
+            "line": 7,
+            "column": 14
+          },
+          "end": {
+            "offset": 85,
+            "line": 7,
+            "column": 27
+          },
+          "children": [
+            {
+              "kind": "ExpressionWithTypeArguments",
+              "pos": {
+                "offset": 80,
+                "line": 7,
+                "column": 22
+              },
+              "end": {
+                "offset": 85,
+                "line": 7,
+                "column": 27
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 80,
+                    "line": 7,
+                    "column": 22
+                  },
+                  "end": {
+                    "offset": 85,
+                    "line": 7,
+                    "column": 27
+                  },
+                  "text": "Base"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "PropertyDeclaration",
+          "pos": {
+            "offset": 87,
+            "line": 7,
+            "column": 29
+          },
+          "end": {
+            "offset": 108,
+            "line": 8,
+            "column": 20
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 87,
+                "line": 7,
+                "column": 29
+              },
+              "end": {
+                "offset": 96,
+                "line": 8,
+                "column": 8
+              },
+              "text": "foo"
+            },
+            {
+              "kind": "FunctionType",
+              "pos": {
+                "offset": 97,
+                "line": 8,
+                "column": 9
+              },
+              "end": {
+                "offset": 107,
+                "line": 8,
+                "column": 19
+              },
+              "children": [
+                {
+                  "kind": "TypeLiteral",
+                  "pos": {
+                    "offset": 103,
+                    "line": 8,
+                    "column": 15
+                  },
+                  "end": {
+                    "offset": 107,
+                    "line": 8,
+                    "column": 19
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 111,
+        "line": 9,
+        "column": 2
+      },
+      "end": {
+        "offset": 115,
+        "line": 11,
+        "column": 1
+      },
+      "text": ""
+    }
+  ]
+}

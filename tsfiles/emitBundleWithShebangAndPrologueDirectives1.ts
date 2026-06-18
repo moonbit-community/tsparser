@@ -1,6 +1,6 @@
-// @outFile: outFile.js
+﻿// @outFile: outFile.js
 // @module: amd
-// @target: es5
+// @target: es5, es2015
 
 // @Filename: test.ts
 #!/usr/bin/env gjs

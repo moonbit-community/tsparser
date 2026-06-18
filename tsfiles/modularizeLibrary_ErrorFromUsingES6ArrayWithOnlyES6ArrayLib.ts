@@ -1,5 +1,5 @@
-// @lib: es2015.core
-// @target: es5
+﻿// @lib: es2015.core
+// @target: es5, es2015
 
 // Error missing basic JavaScript objects
 function f(x: number, y: number, z: number) {

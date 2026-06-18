@@ -1,3 +1,4 @@
+﻿// @target: es2015
 declare class C {
     baz(): any;
     foo(n: number): any;

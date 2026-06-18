@@ -1,0 +1,273 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 305,
+    "line": 10,
+    "column": 65
+  },
+  "children": [
+    {
+      "kind": "ClassDeclaration",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 143,
+        "line": 6,
+        "column": 21
+      },
+      "children": [
+        {
+          "kind": "ExportKeyword",
+          "pos": {
+            "offset": 0,
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "offset": 129,
+            "line": 6,
+            "column": 7
+          },
+          "text": "export"
+        },
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 135,
+            "line": 6,
+            "column": 13
+          },
+          "end": {
+            "offset": 139,
+            "line": 6,
+            "column": 17
+          },
+          "text": "Foo"
+        }
+      ]
+    },
+    {
+      "kind": "FunctionDeclaration",
+      "pos": {
+        "offset": 143,
+        "line": 6,
+        "column": 21
+      },
+      "end": {
+        "offset": 239,
+        "line": 9,
+        "column": 36
+      },
+      "children": [
+        {
+          "kind": "ExportKeyword",
+          "pos": {
+            "offset": 143,
+            "line": 6,
+            "column": 21
+          },
+          "end": {
+            "offset": 210,
+            "line": 9,
+            "column": 7
+          },
+          "text": "export"
+        },
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 219,
+            "line": 9,
+            "column": 16
+          },
+          "end": {
+            "offset": 223,
+            "line": 9,
+            "column": 20
+          },
+          "text": "bar"
+        },
+        {
+          "kind": "Parameter",
+          "pos": {
+            "offset": 224,
+            "line": 9,
+            "column": 21
+          },
+          "end": {
+            "offset": 234,
+            "line": 9,
+            "column": 31
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 224,
+                "line": 9,
+                "column": 21
+              },
+              "end": {
+                "offset": 225,
+                "line": 9,
+                "column": 22
+              },
+              "text": "a"
+            },
+            {
+              "kind": "TypeReference",
+              "pos": {
+                "offset": 226,
+                "line": 9,
+                "column": 23
+              },
+              "end": {
+                "offset": 234,
+                "line": 9,
+                "column": 31
+              },
+              "children": [
+                {
+                  "kind": "FirstNode",
+                  "pos": {
+                    "offset": 226,
+                    "line": 9,
+                    "column": 23
+                  },
+                  "end": {
+                    "offset": 234,
+                    "line": 9,
+                    "column": 31
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 226,
+                        "line": 9,
+                        "column": 23
+                      },
+                      "end": {
+                        "offset": 230,
+                        "line": 9,
+                        "column": 27
+                      },
+                      "text": "foo"
+                    },
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 231,
+                        "line": 9,
+                        "column": 28
+                      },
+                      "end": {
+                        "offset": 234,
+                        "line": 9,
+                        "column": 31
+                      },
+                      "text": "Foo"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "Block",
+          "pos": {
+            "offset": 235,
+            "line": 9,
+            "column": 32
+          },
+          "end": {
+            "offset": 239,
+            "line": 9,
+            "column": 36
+          }
+        }
+      ]
+    },
+    {
+      "kind": "ImportEqualsDeclaration",
+      "pos": {
+        "offset": 239,
+        "line": 9,
+        "column": 36
+      },
+      "end": {
+        "offset": 305,
+        "line": 10,
+        "column": 65
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 247,
+            "line": 10,
+            "column": 7
+          },
+          "end": {
+            "offset": 251,
+            "line": 10,
+            "column": 11
+          },
+          "text": "foo"
+        },
+        {
+          "kind": "ExternalModuleReference",
+          "pos": {
+            "offset": 253,
+            "line": 10,
+            "column": 13
+          },
+          "end": {
+            "offset": 304,
+            "line": 10,
+            "column": 64
+          },
+          "children": [
+            {
+              "kind": "StringLiteral",
+              "pos": {
+                "offset": 262,
+                "line": 10,
+                "column": 22
+              },
+              "end": {
+                "offset": 303,
+                "line": 10,
+                "column": 63
+              },
+              "text": "./declFileAliasUseBeforeDeclaration_foo"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 305,
+        "line": 10,
+        "column": 65
+      },
+      "end": {
+        "offset": 305,
+        "line": 10,
+        "column": 65
+      },
+      "text": ""
+    }
+  ]
+}

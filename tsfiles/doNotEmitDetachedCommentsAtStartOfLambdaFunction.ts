@@ -1,3 +1,4 @@
+﻿// @target: es2015
 // @removeComments: true
 () => {
     // Single line comment

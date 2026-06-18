@@ -1,0 +1,276 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 263,
+    "line": 11,
+    "column": 1
+  },
+  "children": [
+    {
+      "kind": "ClassDeclaration",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 136,
+        "line": 6,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "ExportKeyword",
+          "pos": {
+            "offset": 0,
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "offset": 86,
+            "line": 4,
+            "column": 7
+          },
+          "text": "export"
+        },
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 92,
+            "line": 4,
+            "column": 13
+          },
+          "end": {
+            "offset": 100,
+            "line": 4,
+            "column": 21
+          },
+          "text": "Greeter"
+        },
+        {
+          "kind": "MethodDeclaration",
+          "pos": {
+            "offset": 102,
+            "line": 4,
+            "column": 23
+          },
+          "end": {
+            "offset": 133,
+            "line": 5,
+            "column": 30
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 102,
+                "line": 4,
+                "column": 23
+              },
+              "end": {
+                "offset": 112,
+                "line": 5,
+                "column": 9
+              },
+              "text": "greet"
+            },
+            {
+              "kind": "Block",
+              "pos": {
+                "offset": 114,
+                "line": 5,
+                "column": 11
+              },
+              "end": {
+                "offset": 133,
+                "line": 5,
+                "column": 30
+              },
+              "children": [
+                {
+                  "kind": "ReturnStatement",
+                  "pos": {
+                    "offset": 116,
+                    "line": 5,
+                    "column": 13
+                  },
+                  "end": {
+                    "offset": 131,
+                    "line": 5,
+                    "column": 28
+                  },
+                  "children": [
+                    {
+                      "kind": "StringLiteral",
+                      "pos": {
+                        "offset": 123,
+                        "line": 5,
+                        "column": 20
+                      },
+                      "end": {
+                        "offset": 131,
+                        "line": 5,
+                        "column": 28
+                      },
+                      "text": "greet"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ImportEqualsDeclaration",
+      "pos": {
+        "offset": 136,
+        "line": 6,
+        "column": 2
+      },
+      "end": {
+        "offset": 228,
+        "line": 9,
+        "column": 51
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 184,
+            "line": 9,
+            "column": 7
+          },
+          "end": {
+            "offset": 192,
+            "line": 9,
+            "column": 15
+          },
+          "text": "Greeter"
+        },
+        {
+          "kind": "ExternalModuleReference",
+          "pos": {
+            "offset": 194,
+            "line": 9,
+            "column": 17
+          },
+          "end": {
+            "offset": 227,
+            "line": 9,
+            "column": 50
+          },
+          "children": [
+            {
+              "kind": "StringLiteral",
+              "pos": {
+                "offset": 203,
+                "line": 9,
+                "column": 26
+              },
+              "end": {
+                "offset": 226,
+                "line": 9,
+                "column": 49
+              },
+              "text": "./importAsBaseClass_0"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ClassDeclaration",
+      "pos": {
+        "offset": 228,
+        "line": 9,
+        "column": 51
+      },
+      "end": {
+        "offset": 261,
+        "line": 10,
+        "column": 32
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 235,
+            "line": 10,
+            "column": 6
+          },
+          "end": {
+            "offset": 241,
+            "line": 10,
+            "column": 12
+          },
+          "text": "Hello"
+        },
+        {
+          "kind": "HeritageClause",
+          "pos": {
+            "offset": 241,
+            "line": 10,
+            "column": 12
+          },
+          "end": {
+            "offset": 257,
+            "line": 10,
+            "column": 28
+          },
+          "children": [
+            {
+              "kind": "ExpressionWithTypeArguments",
+              "pos": {
+                "offset": 249,
+                "line": 10,
+                "column": 20
+              },
+              "end": {
+                "offset": 257,
+                "line": 10,
+                "column": 28
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 249,
+                    "line": 10,
+                    "column": 20
+                  },
+                  "end": {
+                    "offset": 257,
+                    "line": 10,
+                    "column": 28
+                  },
+                  "text": "Greeter"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 261,
+        "line": 10,
+        "column": 32
+      },
+      "end": {
+        "offset": 263,
+        "line": 11,
+        "column": 1
+      },
+      "text": ""
+    }
+  ]
+}

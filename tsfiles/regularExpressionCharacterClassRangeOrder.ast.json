@@ -1,0 +1,273 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 761,
+    "line": 21,
+    "column": 1
+  },
+  "children": [
+    {
+      "kind": "FirstStatement",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 759,
+        "line": 20,
+        "column": 3
+      },
+      "children": [
+        {
+          "kind": "VariableDeclarationList",
+          "pos": {
+            "offset": 0,
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "offset": 758,
+            "line": 20,
+            "column": 2
+          },
+          "children": [
+            {
+              "kind": "VariableDeclaration",
+              "pos": {
+                "offset": 339,
+                "line": 8,
+                "column": 6
+              },
+              "end": {
+                "offset": 758,
+                "line": 20,
+                "column": 2
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 339,
+                    "line": 8,
+                    "column": 6
+                  },
+                  "end": {
+                    "offset": 347,
+                    "line": 8,
+                    "column": 14
+                  },
+                  "text": "regexes"
+                },
+                {
+                  "kind": "ArrayType",
+                  "pos": {
+                    "offset": 348,
+                    "line": 8,
+                    "column": 15
+                  },
+                  "end": {
+                    "offset": 357,
+                    "line": 8,
+                    "column": 24
+                  },
+                  "children": [
+                    {
+                      "kind": "TypeReference",
+                      "pos": {
+                        "offset": 348,
+                        "line": 8,
+                        "column": 15
+                      },
+                      "end": {
+                        "offset": 355,
+                        "line": 8,
+                        "column": 22
+                      },
+                      "children": [
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 348,
+                            "line": 8,
+                            "column": 15
+                          },
+                          "end": {
+                            "offset": 355,
+                            "line": 8,
+                            "column": 22
+                          },
+                          "text": "RegExp"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "ArrayLiteralExpression",
+                  "pos": {
+                    "offset": 359,
+                    "line": 8,
+                    "column": 26
+                  },
+                  "end": {
+                    "offset": 758,
+                    "line": 20,
+                    "column": 2
+                  },
+                  "children": [
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 361,
+                        "line": 8,
+                        "column": 28
+                      },
+                      "end": {
+                        "offset": 380,
+                        "line": 9,
+                        "column": 18
+                      },
+                      "text": "/[𝘈-𝘡][𝘡-𝘈]/"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 381,
+                        "line": 9,
+                        "column": 19
+                      },
+                      "end": {
+                        "offset": 401,
+                        "line": 10,
+                        "column": 19
+                      },
+                      "text": "/[𝘈-𝘡][𝘡-𝘈]/u"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 402,
+                        "line": 10,
+                        "column": 20
+                      },
+                      "end": {
+                        "offset": 422,
+                        "line": 11,
+                        "column": 19
+                      },
+                      "text": "/[𝘈-𝘡][𝘡-𝘈]/v"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 423,
+                        "line": 11,
+                        "column": 20
+                      },
+                      "end": {
+                        "offset": 472,
+                        "line": 13,
+                        "column": 46
+                      },
+                      "text": "/[\\u{1D608}-\\u{1D621}][\\u{1D621}-\\u{1D608}]/"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 473,
+                        "line": 13,
+                        "column": 47
+                      },
+                      "end": {
+                        "offset": 521,
+                        "line": 14,
+                        "column": 47
+                      },
+                      "text": "/[\\u{1D608}-\\u{1D621}][\\u{1D621}-\\u{1D608}]/u"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 522,
+                        "line": 14,
+                        "column": 48
+                      },
+                      "end": {
+                        "offset": 570,
+                        "line": 15,
+                        "column": 47
+                      },
+                      "text": "/[\\u{1D608}-\\u{1D621}][\\u{1D621}-\\u{1D608}]/v"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 571,
+                        "line": 15,
+                        "column": 48
+                      },
+                      "end": {
+                        "offset": 632,
+                        "line": 17,
+                        "column": 58
+                      },
+                      "text": "/[\\uD835\\uDE08-\\uD835\\uDE21][\\uD835\\uDE21-\\uD835\\uDE08]/"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 633,
+                        "line": 17,
+                        "column": 59
+                      },
+                      "end": {
+                        "offset": 693,
+                        "line": 18,
+                        "column": 59
+                      },
+                      "text": "/[\\uD835\\uDE08-\\uD835\\uDE21][\\uD835\\uDE21-\\uD835\\uDE08]/u"
+                    },
+                    {
+                      "kind": "RegularExpressionLiteral",
+                      "pos": {
+                        "offset": 694,
+                        "line": 18,
+                        "column": 60
+                      },
+                      "end": {
+                        "offset": 754,
+                        "line": 19,
+                        "column": 59
+                      },
+                      "text": "/[\\uD835\\uDE08-\\uD835\\uDE21][\\uD835\\uDE21-\\uD835\\uDE08]/v"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 759,
+        "line": 20,
+        "column": 3
+      },
+      "end": {
+        "offset": 761,
+        "line": 21,
+        "column": 1
+      },
+      "text": ""
+    }
+  ]
+}

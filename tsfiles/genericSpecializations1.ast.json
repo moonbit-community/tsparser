@@ -1,0 +1,942 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 409,
+    "line": 16,
+    "column": 2
+  },
+  "children": [
+    {
+      "kind": "InterfaceDeclaration",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 135,
+        "line": 4,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 29,
+            "line": 2,
+            "column": 10
+          },
+          "end": {
+            "offset": 34,
+            "line": 2,
+            "column": 15
+          },
+          "text": "IFoo"
+        },
+        {
+          "kind": "TypeParameter",
+          "pos": {
+            "offset": 35,
+            "line": 2,
+            "column": 16
+          },
+          "end": {
+            "offset": 36,
+            "line": 2,
+            "column": 17
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 35,
+                "line": 2,
+                "column": 16
+              },
+              "end": {
+                "offset": 36,
+                "line": 2,
+                "column": 17
+              },
+              "text": "T"
+            }
+          ]
+        },
+        {
+          "kind": "MethodSignature",
+          "pos": {
+            "offset": 39,
+            "line": 2,
+            "column": 20
+          },
+          "end": {
+            "offset": 61,
+            "line": 3,
+            "column": 21
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 39,
+                "line": 2,
+                "column": 20
+              },
+              "end": {
+                "offset": 48,
+                "line": 3,
+                "column": 8
+              },
+              "text": "foo"
+            },
+            {
+              "kind": "TypeParameter",
+              "pos": {
+                "offset": 49,
+                "line": 3,
+                "column": 9
+              },
+              "end": {
+                "offset": 50,
+                "line": 3,
+                "column": 10
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 49,
+                    "line": 3,
+                    "column": 9
+                  },
+                  "end": {
+                    "offset": 50,
+                    "line": 3,
+                    "column": 10
+                  },
+                  "text": "T"
+                }
+              ]
+            },
+            {
+              "kind": "Parameter",
+              "pos": {
+                "offset": 52,
+                "line": 3,
+                "column": 12
+              },
+              "end": {
+                "offset": 56,
+                "line": 3,
+                "column": 16
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 52,
+                    "line": 3,
+                    "column": 12
+                  },
+                  "end": {
+                    "offset": 53,
+                    "line": 3,
+                    "column": 13
+                  },
+                  "text": "x"
+                },
+                {
+                  "kind": "TypeReference",
+                  "pos": {
+                    "offset": 54,
+                    "line": 3,
+                    "column": 14
+                  },
+                  "end": {
+                    "offset": 56,
+                    "line": 3,
+                    "column": 16
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 54,
+                        "line": 3,
+                        "column": 14
+                      },
+                      "end": {
+                        "offset": 56,
+                        "line": 3,
+                        "column": 16
+                      },
+                      "text": "T"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "TypeReference",
+              "pos": {
+                "offset": 58,
+                "line": 3,
+                "column": 18
+              },
+              "end": {
+                "offset": 60,
+                "line": 3,
+                "column": 20
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 58,
+                    "line": 3,
+                    "column": 18
+                  },
+                  "end": {
+                    "offset": 60,
+                    "line": 3,
+                    "column": 20
+                  },
+                  "text": "T"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ClassDeclaration",
+      "pos": {
+        "offset": 135,
+        "line": 4,
+        "column": 2
+      },
+      "end": {
+        "offset": 228,
+        "line": 8,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 144,
+            "line": 6,
+            "column": 6
+          },
+          "end": {
+            "offset": 154,
+            "line": 6,
+            "column": 16
+          },
+          "text": "IntFooBad"
+        },
+        {
+          "kind": "HeritageClause",
+          "pos": {
+            "offset": 154,
+            "line": 6,
+            "column": 16
+          },
+          "end": {
+            "offset": 178,
+            "line": 6,
+            "column": 40
+          },
+          "children": [
+            {
+              "kind": "ExpressionWithTypeArguments",
+              "pos": {
+                "offset": 165,
+                "line": 6,
+                "column": 27
+              },
+              "end": {
+                "offset": 178,
+                "line": 6,
+                "column": 40
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 165,
+                    "line": 6,
+                    "column": 27
+                  },
+                  "end": {
+                    "offset": 170,
+                    "line": 6,
+                    "column": 32
+                  },
+                  "text": "IFoo"
+                },
+                {
+                  "kind": "NumberKeyword",
+                  "pos": {
+                    "offset": 171,
+                    "line": 6,
+                    "column": 33
+                  },
+                  "end": {
+                    "offset": 177,
+                    "line": 6,
+                    "column": 39
+                  },
+                  "text": "number"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "MethodDeclaration",
+          "pos": {
+            "offset": 180,
+            "line": 6,
+            "column": 42
+          },
+          "end": {
+            "offset": 225,
+            "line": 7,
+            "column": 44
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 180,
+                "line": 6,
+                "column": 42
+              },
+              "end": {
+                "offset": 189,
+                "line": 7,
+                "column": 8
+              },
+              "text": "foo"
+            },
+            {
+              "kind": "Parameter",
+              "pos": {
+                "offset": 190,
+                "line": 7,
+                "column": 9
+              },
+              "end": {
+                "offset": 199,
+                "line": 7,
+                "column": 18
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 190,
+                    "line": 7,
+                    "column": 9
+                  },
+                  "end": {
+                    "offset": 191,
+                    "line": 7,
+                    "column": 10
+                  },
+                  "text": "x"
+                },
+                {
+                  "kind": "StringKeyword",
+                  "pos": {
+                    "offset": 192,
+                    "line": 7,
+                    "column": 11
+                  },
+                  "end": {
+                    "offset": 199,
+                    "line": 7,
+                    "column": 18
+                  },
+                  "text": "string"
+                }
+              ]
+            },
+            {
+              "kind": "StringKeyword",
+              "pos": {
+                "offset": 201,
+                "line": 7,
+                "column": 20
+              },
+              "end": {
+                "offset": 208,
+                "line": 7,
+                "column": 27
+              },
+              "text": "string"
+            },
+            {
+              "kind": "Block",
+              "pos": {
+                "offset": 208,
+                "line": 7,
+                "column": 27
+              },
+              "end": {
+                "offset": 225,
+                "line": 7,
+                "column": 44
+              },
+              "children": [
+                {
+                  "kind": "ReturnStatement",
+                  "pos": {
+                    "offset": 210,
+                    "line": 7,
+                    "column": 29
+                  },
+                  "end": {
+                    "offset": 223,
+                    "line": 7,
+                    "column": 42
+                  },
+                  "children": [
+                    {
+                      "kind": "NullKeyword",
+                      "pos": {
+                        "offset": 217,
+                        "line": 7,
+                        "column": 36
+                      },
+                      "end": {
+                        "offset": 222,
+                        "line": 7,
+                        "column": 41
+                      },
+                      "text": "null"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ClassDeclaration",
+      "pos": {
+        "offset": 228,
+        "line": 8,
+        "column": 2
+      },
+      "end": {
+        "offset": 322,
+        "line": 12,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 237,
+            "line": 10,
+            "column": 6
+          },
+          "end": {
+            "offset": 248,
+            "line": 10,
+            "column": 17
+          },
+          "text": "StringFoo2"
+        },
+        {
+          "kind": "HeritageClause",
+          "pos": {
+            "offset": 248,
+            "line": 10,
+            "column": 17
+          },
+          "end": {
+            "offset": 272,
+            "line": 10,
+            "column": 41
+          },
+          "children": [
+            {
+              "kind": "ExpressionWithTypeArguments",
+              "pos": {
+                "offset": 259,
+                "line": 10,
+                "column": 28
+              },
+              "end": {
+                "offset": 272,
+                "line": 10,
+                "column": 41
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 259,
+                    "line": 10,
+                    "column": 28
+                  },
+                  "end": {
+                    "offset": 264,
+                    "line": 10,
+                    "column": 33
+                  },
+                  "text": "IFoo"
+                },
+                {
+                  "kind": "StringKeyword",
+                  "pos": {
+                    "offset": 265,
+                    "line": 10,
+                    "column": 34
+                  },
+                  "end": {
+                    "offset": 271,
+                    "line": 10,
+                    "column": 40
+                  },
+                  "text": "string"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "MethodDeclaration",
+          "pos": {
+            "offset": 274,
+            "line": 10,
+            "column": 43
+          },
+          "end": {
+            "offset": 319,
+            "line": 11,
+            "column": 44
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 274,
+                "line": 10,
+                "column": 43
+              },
+              "end": {
+                "offset": 283,
+                "line": 11,
+                "column": 8
+              },
+              "text": "foo"
+            },
+            {
+              "kind": "Parameter",
+              "pos": {
+                "offset": 284,
+                "line": 11,
+                "column": 9
+              },
+              "end": {
+                "offset": 293,
+                "line": 11,
+                "column": 18
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 284,
+                    "line": 11,
+                    "column": 9
+                  },
+                  "end": {
+                    "offset": 285,
+                    "line": 11,
+                    "column": 10
+                  },
+                  "text": "x"
+                },
+                {
+                  "kind": "StringKeyword",
+                  "pos": {
+                    "offset": 286,
+                    "line": 11,
+                    "column": 11
+                  },
+                  "end": {
+                    "offset": 293,
+                    "line": 11,
+                    "column": 18
+                  },
+                  "text": "string"
+                }
+              ]
+            },
+            {
+              "kind": "StringKeyword",
+              "pos": {
+                "offset": 295,
+                "line": 11,
+                "column": 20
+              },
+              "end": {
+                "offset": 302,
+                "line": 11,
+                "column": 27
+              },
+              "text": "string"
+            },
+            {
+              "kind": "Block",
+              "pos": {
+                "offset": 302,
+                "line": 11,
+                "column": 27
+              },
+              "end": {
+                "offset": 319,
+                "line": 11,
+                "column": 44
+              },
+              "children": [
+                {
+                  "kind": "ReturnStatement",
+                  "pos": {
+                    "offset": 304,
+                    "line": 11,
+                    "column": 29
+                  },
+                  "end": {
+                    "offset": 317,
+                    "line": 11,
+                    "column": 42
+                  },
+                  "children": [
+                    {
+                      "kind": "NullKeyword",
+                      "pos": {
+                        "offset": 311,
+                        "line": 11,
+                        "column": 36
+                      },
+                      "end": {
+                        "offset": 316,
+                        "line": 11,
+                        "column": 41
+                      },
+                      "text": "null"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ClassDeclaration",
+      "pos": {
+        "offset": 322,
+        "line": 12,
+        "column": 2
+      },
+      "end": {
+        "offset": 409,
+        "line": 16,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 331,
+            "line": 14,
+            "column": 6
+          },
+          "end": {
+            "offset": 342,
+            "line": 14,
+            "column": 17
+          },
+          "text": "StringFoo3"
+        },
+        {
+          "kind": "HeritageClause",
+          "pos": {
+            "offset": 342,
+            "line": 14,
+            "column": 17
+          },
+          "end": {
+            "offset": 366,
+            "line": 14,
+            "column": 41
+          },
+          "children": [
+            {
+              "kind": "ExpressionWithTypeArguments",
+              "pos": {
+                "offset": 353,
+                "line": 14,
+                "column": 28
+              },
+              "end": {
+                "offset": 366,
+                "line": 14,
+                "column": 41
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 353,
+                    "line": 14,
+                    "column": 28
+                  },
+                  "end": {
+                    "offset": 358,
+                    "line": 14,
+                    "column": 33
+                  },
+                  "text": "IFoo"
+                },
+                {
+                  "kind": "StringKeyword",
+                  "pos": {
+                    "offset": 359,
+                    "line": 14,
+                    "column": 34
+                  },
+                  "end": {
+                    "offset": 365,
+                    "line": 14,
+                    "column": 40
+                  },
+                  "text": "string"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "MethodDeclaration",
+          "pos": {
+            "offset": 368,
+            "line": 14,
+            "column": 43
+          },
+          "end": {
+            "offset": 406,
+            "line": 15,
+            "column": 37
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 368,
+                "line": 14,
+                "column": 43
+              },
+              "end": {
+                "offset": 377,
+                "line": 15,
+                "column": 8
+              },
+              "text": "foo"
+            },
+            {
+              "kind": "TypeParameter",
+              "pos": {
+                "offset": 378,
+                "line": 15,
+                "column": 9
+              },
+              "end": {
+                "offset": 379,
+                "line": 15,
+                "column": 10
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 378,
+                    "line": 15,
+                    "column": 9
+                  },
+                  "end": {
+                    "offset": 379,
+                    "line": 15,
+                    "column": 10
+                  },
+                  "text": "T"
+                }
+              ]
+            },
+            {
+              "kind": "Parameter",
+              "pos": {
+                "offset": 381,
+                "line": 15,
+                "column": 12
+              },
+              "end": {
+                "offset": 385,
+                "line": 15,
+                "column": 16
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 381,
+                    "line": 15,
+                    "column": 12
+                  },
+                  "end": {
+                    "offset": 382,
+                    "line": 15,
+                    "column": 13
+                  },
+                  "text": "x"
+                },
+                {
+                  "kind": "TypeReference",
+                  "pos": {
+                    "offset": 383,
+                    "line": 15,
+                    "column": 14
+                  },
+                  "end": {
+                    "offset": 385,
+                    "line": 15,
+                    "column": 16
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 383,
+                        "line": 15,
+                        "column": 14
+                      },
+                      "end": {
+                        "offset": 385,
+                        "line": 15,
+                        "column": 16
+                      },
+                      "text": "T"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "TypeReference",
+              "pos": {
+                "offset": 387,
+                "line": 15,
+                "column": 18
+              },
+              "end": {
+                "offset": 389,
+                "line": 15,
+                "column": 20
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 387,
+                    "line": 15,
+                    "column": 18
+                  },
+                  "end": {
+                    "offset": 389,
+                    "line": 15,
+                    "column": 20
+                  },
+                  "text": "T"
+                }
+              ]
+            },
+            {
+              "kind": "Block",
+              "pos": {
+                "offset": 389,
+                "line": 15,
+                "column": 20
+              },
+              "end": {
+                "offset": 406,
+                "line": 15,
+                "column": 37
+              },
+              "children": [
+                {
+                  "kind": "ReturnStatement",
+                  "pos": {
+                    "offset": 391,
+                    "line": 15,
+                    "column": 22
+                  },
+                  "end": {
+                    "offset": 404,
+                    "line": 15,
+                    "column": 35
+                  },
+                  "children": [
+                    {
+                      "kind": "NullKeyword",
+                      "pos": {
+                        "offset": 398,
+                        "line": 15,
+                        "column": 29
+                      },
+                      "end": {
+                        "offset": 403,
+                        "line": 15,
+                        "column": 34
+                      },
+                      "text": "null"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 409,
+        "line": 16,
+        "column": 2
+      },
+      "end": {
+        "offset": 409,
+        "line": 16,
+        "column": 2
+      },
+      "text": ""
+    }
+  ]
+}

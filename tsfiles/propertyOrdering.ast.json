@@ -1,0 +1,795 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 510,
+    "line": 24,
+    "column": 1
+  },
+  "children": [
+    {
+      "kind": "ClassDeclaration",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 317,
+        "line": 12,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 25,
+            "line": 2,
+            "column": 6
+          },
+          "end": {
+            "offset": 29,
+            "line": 2,
+            "column": 10
+          },
+          "text": "Foo"
+        },
+        {
+          "kind": "Constructor",
+          "pos": {
+            "offset": 31,
+            "line": 2,
+            "column": 12
+          },
+          "end": {
+            "offset": 67,
+            "line": 3,
+            "column": 35
+          },
+          "children": [
+            {
+              "kind": "Parameter",
+              "pos": {
+                "offset": 49,
+                "line": 3,
+                "column": 17
+              },
+              "end": {
+                "offset": 62,
+                "line": 3,
+                "column": 30
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 49,
+                    "line": 3,
+                    "column": 17
+                  },
+                  "end": {
+                    "offset": 54,
+                    "line": 3,
+                    "column": 22
+                  },
+                  "text": "store"
+                },
+                {
+                  "kind": "StringKeyword",
+                  "pos": {
+                    "offset": 55,
+                    "line": 3,
+                    "column": 23
+                  },
+                  "end": {
+                    "offset": 62,
+                    "line": 3,
+                    "column": 30
+                  },
+                  "text": "string"
+                }
+              ]
+            },
+            {
+              "kind": "Block",
+              "pos": {
+                "offset": 63,
+                "line": 3,
+                "column": 31
+              },
+              "end": {
+                "offset": 67,
+                "line": 3,
+                "column": 35
+              }
+            }
+          ]
+        },
+        {
+          "kind": "MethodDeclaration",
+          "pos": {
+            "offset": 67,
+            "line": 3,
+            "column": 35
+          },
+          "end": {
+            "offset": 165,
+            "line": 6,
+            "column": 8
+          },
+          "children": [
+            {
+              "kind": "PublicKeyword",
+              "pos": {
+                "offset": 67,
+                "line": 3,
+                "column": 35
+              },
+              "end": {
+                "offset": 81,
+                "line": 4,
+                "column": 13
+              },
+              "text": "public"
+            },
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 81,
+                "line": 4,
+                "column": 13
+              },
+              "end": {
+                "offset": 85,
+                "line": 4,
+                "column": 17
+              },
+              "text": "foo"
+            },
+            {
+              "kind": "Block",
+              "pos": {
+                "offset": 87,
+                "line": 4,
+                "column": 19
+              },
+              "end": {
+                "offset": 165,
+                "line": 6,
+                "column": 8
+              },
+              "children": [
+                {
+                  "kind": "ReturnStatement",
+                  "pos": {
+                    "offset": 89,
+                    "line": 4,
+                    "column": 21
+                  },
+                  "end": {
+                    "offset": 129,
+                    "line": 5,
+                    "column": 39
+                  },
+                  "children": [
+                    {
+                      "kind": "PropertyAccessExpression",
+                      "pos": {
+                        "offset": 109,
+                        "line": 5,
+                        "column": 19
+                      },
+                      "end": {
+                        "offset": 128,
+                        "line": 5,
+                        "column": 38
+                      },
+                      "children": [
+                        {
+                          "kind": "PropertyAccessExpression",
+                          "pos": {
+                            "offset": 109,
+                            "line": 5,
+                            "column": 19
+                          },
+                          "end": {
+                            "offset": 121,
+                            "line": 5,
+                            "column": 31
+                          },
+                          "children": [
+                            {
+                              "kind": "ThisKeyword",
+                              "pos": {
+                                "offset": 109,
+                                "line": 5,
+                                "column": 19
+                              },
+                              "end": {
+                                "offset": 114,
+                                "line": 5,
+                                "column": 24
+                              },
+                              "text": "this"
+                            },
+                            {
+                              "kind": "Identifier",
+                              "pos": {
+                                "offset": 115,
+                                "line": 5,
+                                "column": 25
+                              },
+                              "end": {
+                                "offset": 121,
+                                "line": 5,
+                                "column": 31
+                              },
+                              "text": "_store"
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 122,
+                            "line": 5,
+                            "column": 32
+                          },
+                          "end": {
+                            "offset": 128,
+                            "line": 5,
+                            "column": 38
+                          },
+                          "text": "length"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "PropertyDeclaration",
+          "pos": {
+            "offset": 165,
+            "line": 6,
+            "column": 8
+          },
+          "end": {
+            "offset": 195,
+            "line": 7,
+            "column": 29
+          },
+          "children": [
+            {
+              "kind": "PublicKeyword",
+              "pos": {
+                "offset": 165,
+                "line": 6,
+                "column": 8
+              },
+              "end": {
+                "offset": 179,
+                "line": 7,
+                "column": 13
+              },
+              "text": "public"
+            },
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 179,
+                "line": 7,
+                "column": 13
+              },
+              "end": {
+                "offset": 186,
+                "line": 7,
+                "column": 20
+              },
+              "text": "_store"
+            },
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 188,
+                "line": 7,
+                "column": 22
+              },
+              "end": {
+                "offset": 194,
+                "line": 7,
+                "column": 28
+              },
+              "text": "store"
+            }
+          ]
+        },
+        {
+          "kind": "MethodDeclaration",
+          "pos": {
+            "offset": 195,
+            "line": 7,
+            "column": 29
+          },
+          "end": {
+            "offset": 290,
+            "line": 10,
+            "column": 42
+          },
+          "children": [
+            {
+              "kind": "PublicKeyword",
+              "pos": {
+                "offset": 195,
+                "line": 7,
+                "column": 29
+              },
+              "end": {
+                "offset": 261,
+                "line": 10,
+                "column": 13
+              },
+              "text": "public"
+            },
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 261,
+                "line": 10,
+                "column": 13
+              },
+              "end": {
+                "offset": 265,
+                "line": 10,
+                "column": 17
+              },
+              "text": "bar"
+            },
+            {
+              "kind": "Block",
+              "pos": {
+                "offset": 267,
+                "line": 10,
+                "column": 19
+              },
+              "end": {
+                "offset": 290,
+                "line": 10,
+                "column": 42
+              },
+              "children": [
+                {
+                  "kind": "ReturnStatement",
+                  "pos": {
+                    "offset": 269,
+                    "line": 10,
+                    "column": 21
+                  },
+                  "end": {
+                    "offset": 288,
+                    "line": 10,
+                    "column": 40
+                  },
+                  "children": [
+                    {
+                      "kind": "PropertyAccessExpression",
+                      "pos": {
+                        "offset": 276,
+                        "line": 10,
+                        "column": 28
+                      },
+                      "end": {
+                        "offset": 287,
+                        "line": 10,
+                        "column": 39
+                      },
+                      "children": [
+                        {
+                          "kind": "ThisKeyword",
+                          "pos": {
+                            "offset": 276,
+                            "line": 10,
+                            "column": 28
+                          },
+                          "end": {
+                            "offset": 281,
+                            "line": 10,
+                            "column": 33
+                          },
+                          "text": "this"
+                        },
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 282,
+                            "line": 10,
+                            "column": 34
+                          },
+                          "end": {
+                            "offset": 287,
+                            "line": 10,
+                            "column": 39
+                          },
+                          "text": "store"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ClassDeclaration",
+      "pos": {
+        "offset": 317,
+        "line": 12,
+        "column": 2
+      },
+      "end": {
+        "offset": 508,
+        "line": 23,
+        "column": 2
+      },
+      "children": [
+        {
+          "kind": "Identifier",
+          "pos": {
+            "offset": 326,
+            "line": 14,
+            "column": 6
+          },
+          "end": {
+            "offset": 330,
+            "line": 14,
+            "column": 10
+          },
+          "text": "Bar"
+        },
+        {
+          "kind": "MethodDeclaration",
+          "pos": {
+            "offset": 332,
+            "line": 14,
+            "column": 12
+          },
+          "end": {
+            "offset": 434,
+            "line": 19,
+            "column": 8
+          },
+          "children": [
+            {
+              "kind": "PublicKeyword",
+              "pos": {
+                "offset": 332,
+                "line": 14,
+                "column": 12
+              },
+              "end": {
+                "offset": 346,
+                "line": 15,
+                "column": 13
+              },
+              "text": "public"
+            },
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 346,
+                "line": 15,
+                "column": 13
+              },
+              "end": {
+                "offset": 350,
+                "line": 15,
+                "column": 17
+              },
+              "text": "foo"
+            },
+            {
+              "kind": "Block",
+              "pos": {
+                "offset": 352,
+                "line": 15,
+                "column": 19
+              },
+              "end": {
+                "offset": 434,
+                "line": 19,
+                "column": 8
+              },
+              "children": [
+                {
+                  "kind": "ReturnStatement",
+                  "pos": {
+                    "offset": 354,
+                    "line": 15,
+                    "column": 21
+                  },
+                  "end": {
+                    "offset": 396,
+                    "line": 17,
+                    "column": 39
+                  },
+                  "children": [
+                    {
+                      "kind": "PropertyAccessExpression",
+                      "pos": {
+                        "offset": 376,
+                        "line": 17,
+                        "column": 19
+                      },
+                      "end": {
+                        "offset": 395,
+                        "line": 17,
+                        "column": 38
+                      },
+                      "children": [
+                        {
+                          "kind": "PropertyAccessExpression",
+                          "pos": {
+                            "offset": 376,
+                            "line": 17,
+                            "column": 19
+                          },
+                          "end": {
+                            "offset": 388,
+                            "line": 17,
+                            "column": 31
+                          },
+                          "children": [
+                            {
+                              "kind": "ThisKeyword",
+                              "pos": {
+                                "offset": 376,
+                                "line": 17,
+                                "column": 19
+                              },
+                              "end": {
+                                "offset": 381,
+                                "line": 17,
+                                "column": 24
+                              },
+                              "text": "this"
+                            },
+                            {
+                              "kind": "Identifier",
+                              "pos": {
+                                "offset": 382,
+                                "line": 17,
+                                "column": 25
+                              },
+                              "end": {
+                                "offset": 388,
+                                "line": 17,
+                                "column": 31
+                              },
+                              "text": "_store"
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 389,
+                            "line": 17,
+                            "column": 32
+                          },
+                          "end": {
+                            "offset": 395,
+                            "line": 17,
+                            "column": 38
+                          },
+                          "text": "length"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "Constructor",
+          "pos": {
+            "offset": 434,
+            "line": 19,
+            "column": 8
+          },
+          "end": {
+            "offset": 505,
+            "line": 22,
+            "column": 6
+          },
+          "children": [
+            {
+              "kind": "Parameter",
+              "pos": {
+                "offset": 452,
+                "line": 20,
+                "column": 17
+              },
+              "end": {
+                "offset": 465,
+                "line": 20,
+                "column": 30
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 452,
+                    "line": 20,
+                    "column": 17
+                  },
+                  "end": {
+                    "offset": 457,
+                    "line": 20,
+                    "column": 22
+                  },
+                  "text": "store"
+                },
+                {
+                  "kind": "StringKeyword",
+                  "pos": {
+                    "offset": 458,
+                    "line": 20,
+                    "column": 23
+                  },
+                  "end": {
+                    "offset": 465,
+                    "line": 20,
+                    "column": 30
+                  },
+                  "text": "string"
+                }
+              ]
+            },
+            {
+              "kind": "Block",
+              "pos": {
+                "offset": 466,
+                "line": 20,
+                "column": 31
+              },
+              "end": {
+                "offset": 505,
+                "line": 22,
+                "column": 6
+              },
+              "children": [
+                {
+                  "kind": "ExpressionStatement",
+                  "pos": {
+                    "offset": 468,
+                    "line": 20,
+                    "column": 33
+                  },
+                  "end": {
+                    "offset": 498,
+                    "line": 21,
+                    "column": 29
+                  },
+                  "children": [
+                    {
+                      "kind": "BinaryExpression",
+                      "pos": {
+                        "offset": 468,
+                        "line": 20,
+                        "column": 33
+                      },
+                      "end": {
+                        "offset": 497,
+                        "line": 21,
+                        "column": 28
+                      },
+                      "children": [
+                        {
+                          "kind": "PropertyAccessExpression",
+                          "pos": {
+                            "offset": 468,
+                            "line": 20,
+                            "column": 33
+                          },
+                          "end": {
+                            "offset": 489,
+                            "line": 21,
+                            "column": 20
+                          },
+                          "children": [
+                            {
+                              "kind": "ThisKeyword",
+                              "pos": {
+                                "offset": 468,
+                                "line": 20,
+                                "column": 33
+                              },
+                              "end": {
+                                "offset": 482,
+                                "line": 21,
+                                "column": 13
+                              },
+                              "text": "this"
+                            },
+                            {
+                              "kind": "Identifier",
+                              "pos": {
+                                "offset": 483,
+                                "line": 21,
+                                "column": 14
+                              },
+                              "end": {
+                                "offset": 489,
+                                "line": 21,
+                                "column": 20
+                              },
+                              "text": "_store"
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "FirstAssignment",
+                          "pos": {
+                            "offset": 489,
+                            "line": 21,
+                            "column": 20
+                          },
+                          "end": {
+                            "offset": 491,
+                            "line": 21,
+                            "column": 22
+                          },
+                          "text": "="
+                        },
+                        {
+                          "kind": "Identifier",
+                          "pos": {
+                            "offset": 491,
+                            "line": 21,
+                            "column": 22
+                          },
+                          "end": {
+                            "offset": 497,
+                            "line": 21,
+                            "column": 28
+                          },
+                          "text": "store"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 508,
+        "line": 23,
+        "column": 2
+      },
+      "end": {
+        "offset": 510,
+        "line": 24,
+        "column": 1
+      },
+      "text": ""
+    }
+  ]
+}

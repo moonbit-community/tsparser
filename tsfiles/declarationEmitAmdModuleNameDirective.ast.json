@@ -1,0 +1,248 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 258,
+    "line": 10,
+    "column": 10
+  },
+  "children": [
+    {
+      "kind": "FirstStatement",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 141,
+        "line": 6,
+        "column": 22
+      },
+      "children": [
+        {
+          "kind": "ExportKeyword",
+          "pos": {
+            "offset": 0,
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "offset": 126,
+            "line": 6,
+            "column": 7
+          },
+          "text": "export"
+        },
+        {
+          "kind": "VariableDeclarationList",
+          "pos": {
+            "offset": 126,
+            "line": 6,
+            "column": 7
+          },
+          "end": {
+            "offset": 140,
+            "line": 6,
+            "column": 21
+          },
+          "children": [
+            {
+              "kind": "VariableDeclaration",
+              "pos": {
+                "offset": 132,
+                "line": 6,
+                "column": 13
+              },
+              "end": {
+                "offset": 140,
+                "line": 6,
+                "column": 21
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 132,
+                    "line": 6,
+                    "column": 13
+                  },
+                  "end": {
+                    "offset": 136,
+                    "line": 6,
+                    "column": 17
+                  },
+                  "text": "foo"
+                },
+                {
+                  "kind": "FirstLiteralToken",
+                  "pos": {
+                    "offset": 138,
+                    "line": 6,
+                    "column": 19
+                  },
+                  "end": {
+                    "offset": 140,
+                    "line": 6,
+                    "column": 21
+                  },
+                  "text": "1"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "ImportDeclaration",
+      "pos": {
+        "offset": 141,
+        "line": 6,
+        "column": 22
+      },
+      "end": {
+        "offset": 247,
+        "line": 9,
+        "column": 27
+      },
+      "children": [
+        {
+          "kind": "ImportClause",
+          "pos": {
+            "offset": 227,
+            "line": 9,
+            "column": 7
+          },
+          "end": {
+            "offset": 233,
+            "line": 9,
+            "column": 13
+          },
+          "children": [
+            {
+              "kind": "NamedImports",
+              "pos": {
+                "offset": 227,
+                "line": 9,
+                "column": 7
+              },
+              "end": {
+                "offset": 233,
+                "line": 9,
+                "column": 13
+              },
+              "children": [
+                {
+                  "kind": "ImportSpecifier",
+                  "pos": {
+                    "offset": 229,
+                    "line": 9,
+                    "column": 9
+                  },
+                  "end": {
+                    "offset": 232,
+                    "line": 9,
+                    "column": 12
+                  },
+                  "children": [
+                    {
+                      "kind": "Identifier",
+                      "pos": {
+                        "offset": 229,
+                        "line": 9,
+                        "column": 9
+                      },
+                      "end": {
+                        "offset": 232,
+                        "line": 9,
+                        "column": 12
+                      },
+                      "text": "foo"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "StringLiteral",
+          "pos": {
+            "offset": 238,
+            "line": 9,
+            "column": 18
+          },
+          "end": {
+            "offset": 246,
+            "line": 9,
+            "column": 26
+          },
+          "text": "./foo"
+        }
+      ]
+    },
+    {
+      "kind": "ExpressionStatement",
+      "pos": {
+        "offset": 247,
+        "line": 9,
+        "column": 27
+      },
+      "end": {
+        "offset": 258,
+        "line": 10,
+        "column": 10
+      },
+      "children": [
+        {
+          "kind": "VoidExpression",
+          "pos": {
+            "offset": 247,
+            "line": 9,
+            "column": 27
+          },
+          "end": {
+            "offset": 257,
+            "line": 10,
+            "column": 9
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 253,
+                "line": 10,
+                "column": 5
+              },
+              "end": {
+                "offset": 257,
+                "line": 10,
+                "column": 9
+              },
+              "text": "foo"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 258,
+        "line": 10,
+        "column": 10
+      },
+      "end": {
+        "offset": 258,
+        "line": 10,
+        "column": 10
+      },
+      "text": ""
+    }
+  ]
+}

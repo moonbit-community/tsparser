@@ -1,0 +1,377 @@
+{
+  "kind": "SourceFile",
+  "pos": {
+    "offset": 0,
+    "line": 1,
+    "column": 1
+  },
+  "end": {
+    "offset": 290,
+    "line": 13,
+    "column": 1
+  },
+  "children": [
+    {
+      "kind": "Block",
+      "pos": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 140,
+        "line": 8,
+        "column": 3
+      }
+    },
+    {
+      "kind": "ImportDeclaration",
+      "pos": {
+        "offset": 140,
+        "line": 8,
+        "column": 3
+      },
+      "end": {
+        "offset": 218,
+        "line": 11,
+        "column": 55
+      },
+      "children": [
+        {
+          "kind": "ImportClause",
+          "pos": {
+            "offset": 170,
+            "line": 11,
+            "column": 7
+          },
+          "end": {
+            "offset": 176,
+            "line": 11,
+            "column": 13
+          },
+          "children": [
+            {
+              "kind": "Identifier",
+              "pos": {
+                "offset": 170,
+                "line": 11,
+                "column": 7
+              },
+              "end": {
+                "offset": 176,
+                "line": 11,
+                "column": 13
+              },
+              "text": "data1"
+            }
+          ]
+        },
+        {
+          "kind": "StringLiteral",
+          "pos": {
+            "offset": 181,
+            "line": 11,
+            "column": 18
+          },
+          "end": {
+            "offset": 195,
+            "line": 11,
+            "column": 32
+          },
+          "text": "./data.json"
+        },
+        {
+          "kind": "AssertClause",
+          "pos": {
+            "offset": 195,
+            "line": 11,
+            "column": 32
+          },
+          "end": {
+            "offset": 217,
+            "line": 11,
+            "column": 54
+          },
+          "children": [
+            {
+              "kind": "AssertEntry",
+              "pos": {
+                "offset": 202,
+                "line": 11,
+                "column": 39
+              },
+              "end": {
+                "offset": 215,
+                "line": 11,
+                "column": 52
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 202,
+                    "line": 11,
+                    "column": 39
+                  },
+                  "end": {
+                    "offset": 207,
+                    "line": 11,
+                    "column": 44
+                  },
+                  "text": "type"
+                },
+                {
+                  "kind": "StringLiteral",
+                  "pos": {
+                    "offset": 208,
+                    "line": 11,
+                    "column": 45
+                  },
+                  "end": {
+                    "offset": 215,
+                    "line": 11,
+                    "column": 52
+                  },
+                  "text": "json"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "FirstStatement",
+      "pos": {
+        "offset": 218,
+        "line": 11,
+        "column": 55
+      },
+      "end": {
+        "offset": 289,
+        "line": 12,
+        "column": 71
+      },
+      "children": [
+        {
+          "kind": "VariableDeclarationList",
+          "pos": {
+            "offset": 218,
+            "line": 11,
+            "column": 55
+          },
+          "end": {
+            "offset": 288,
+            "line": 12,
+            "column": 70
+          },
+          "children": [
+            {
+              "kind": "VariableDeclaration",
+              "pos": {
+                "offset": 224,
+                "line": 12,
+                "column": 6
+              },
+              "end": {
+                "offset": 288,
+                "line": 12,
+                "column": 70
+              },
+              "children": [
+                {
+                  "kind": "Identifier",
+                  "pos": {
+                    "offset": 224,
+                    "line": 12,
+                    "column": 6
+                  },
+                  "end": {
+                    "offset": 230,
+                    "line": 12,
+                    "column": 12
+                  },
+                  "text": "data2"
+                },
+                {
+                  "kind": "AwaitExpression",
+                  "pos": {
+                    "offset": 232,
+                    "line": 12,
+                    "column": 14
+                  },
+                  "end": {
+                    "offset": 288,
+                    "line": 12,
+                    "column": 70
+                  },
+                  "children": [
+                    {
+                      "kind": "CallExpression",
+                      "pos": {
+                        "offset": 238,
+                        "line": 12,
+                        "column": 20
+                      },
+                      "end": {
+                        "offset": 288,
+                        "line": 12,
+                        "column": 70
+                      },
+                      "children": [
+                        {
+                          "kind": "ImportKeyword",
+                          "pos": {
+                            "offset": 238,
+                            "line": 12,
+                            "column": 20
+                          },
+                          "end": {
+                            "offset": 245,
+                            "line": 12,
+                            "column": 27
+                          },
+                          "text": "import"
+                        },
+                        {
+                          "kind": "StringLiteral",
+                          "pos": {
+                            "offset": 246,
+                            "line": 12,
+                            "column": 28
+                          },
+                          "end": {
+                            "offset": 259,
+                            "line": 12,
+                            "column": 41
+                          },
+                          "text": "./data.json"
+                        },
+                        {
+                          "kind": "ObjectLiteralExpression",
+                          "pos": {
+                            "offset": 260,
+                            "line": 12,
+                            "column": 42
+                          },
+                          "end": {
+                            "offset": 287,
+                            "line": 12,
+                            "column": 69
+                          },
+                          "children": [
+                            {
+                              "kind": "PropertyAssignment",
+                              "pos": {
+                                "offset": 262,
+                                "line": 12,
+                                "column": 44
+                              },
+                              "end": {
+                                "offset": 285,
+                                "line": 12,
+                                "column": 67
+                              },
+                              "children": [
+                                {
+                                  "kind": "Identifier",
+                                  "pos": {
+                                    "offset": 262,
+                                    "line": 12,
+                                    "column": 44
+                                  },
+                                  "end": {
+                                    "offset": 267,
+                                    "line": 12,
+                                    "column": 49
+                                  },
+                                  "text": "with"
+                                },
+                                {
+                                  "kind": "ObjectLiteralExpression",
+                                  "pos": {
+                                    "offset": 268,
+                                    "line": 12,
+                                    "column": 50
+                                  },
+                                  "end": {
+                                    "offset": 285,
+                                    "line": 12,
+                                    "column": 67
+                                  },
+                                  "children": [
+                                    {
+                                      "kind": "PropertyAssignment",
+                                      "pos": {
+                                        "offset": 270,
+                                        "line": 12,
+                                        "column": 52
+                                      },
+                                      "end": {
+                                        "offset": 283,
+                                        "line": 12,
+                                        "column": 65
+                                      },
+                                      "children": [
+                                        {
+                                          "kind": "Identifier",
+                                          "pos": {
+                                            "offset": 270,
+                                            "line": 12,
+                                            "column": 52
+                                          },
+                                          "end": {
+                                            "offset": 275,
+                                            "line": 12,
+                                            "column": 57
+                                          },
+                                          "text": "type"
+                                        },
+                                        {
+                                          "kind": "StringLiteral",
+                                          "pos": {
+                                            "offset": 276,
+                                            "line": 12,
+                                            "column": 58
+                                          },
+                                          "end": {
+                                            "offset": 283,
+                                            "line": 12,
+                                            "column": 65
+                                          },
+                                          "text": "json"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "EndOfFileToken",
+      "pos": {
+        "offset": 289,
+        "line": 12,
+        "column": 71
+      },
+      "end": {
+        "offset": 290,
+        "line": 13,
+        "column": 1
+      },
+      "text": ""
+    }
+  ]
+}

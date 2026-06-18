@@ -1,3 +1,4 @@
+﻿// @target: es2015
 const array = [
     /* element 1 */
     1,

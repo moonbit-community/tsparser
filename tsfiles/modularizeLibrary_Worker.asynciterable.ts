@@ -1,4 +1,4 @@
-// @skipLibCheck: true
+﻿// @skipLibCheck: true
 // @lib: es2018,webworker,webworker.asynciterable
 // @target: es2018
 

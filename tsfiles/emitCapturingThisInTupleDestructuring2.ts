@@ -1,3 +1,4 @@
+﻿// @target: es2015
 var array1: [number, number] = [1, 2];
 
 class B {

@@ -1,3 +1,4 @@
+﻿// @target: es2015
 //@noImplicitAny: true
 declare var x: Entry;
 
