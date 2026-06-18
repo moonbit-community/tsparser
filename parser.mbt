@@ -21180,7 +21180,7 @@ fn binary_file_parse_errors(
 
 ///|
 fn detect_report_unreachable_code(source : StringView) -> Bool {
-  ignore(source)
+  let _ = source
   false
 }
 
