@@ -1,0 +1,23 @@
+{
+  "syntax-kind.tsv": {
+    "*": {
+      "moonbit_implementation": "syntax_kind.mbt; syntax_kind_names.mbt; syntax_kind_markers.mbt",
+      "test_location": "syntax_kind_wbtest.mbt; scripts/audit-moonbit-syntax-kind.mjs",
+      "status": "complete"
+    }
+  },
+  "scanner.tsv": {
+    "*": {
+      "moonbit_implementation": "scanner.mbt; scanner_tables.mbt; scanner_unicode_tables.mbt; scanner_trivia.mbt; scanner_literals.mbt; scanner_regexp.mbt; scanner_regexp_tables.mbt; scanner_regexp_validator.mbt; scanner_jsx_jsdoc.mbt",
+      "test_location": "scanner_wbtest.mbt; scanner_regexp_wbtest.mbt; scanner_token_coverage_wbtest.mbt; scripts/audit-scanner.mjs",
+      "status": "complete"
+    }
+  },
+  "parsing-context.tsv": {
+    "*": {
+      "moonbit_implementation": "parser_state_kinds.mbt; parser_lists.mbt",
+      "test_location": "parser_state_kinds_wbtest.mbt; parser_lists_wbtest.mbt; scripts/audit-parser-core.mjs",
+      "status": "complete"
+    }
+  }
+}

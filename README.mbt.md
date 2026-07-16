@@ -1,3 +1,4 @@
 # moonbit-community/tsparser
 
-A small TypeScript parser written in MoonBit. 
+`tsparser` is a MoonBit batch parser compatible with
+TypeScript 6.0.3.

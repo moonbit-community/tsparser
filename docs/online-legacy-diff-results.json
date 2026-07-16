@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "typescript_version": "6.0.3",
+  "measured_on": "2026-07-16",
+  "runner_class": "github-actions-ubuntu-latest-standard-x64",
+  "scope": "one streaming TypeScript legacy projection followed by one independently supervised tools/diff process group per input",
+  "fixtures": [
+    {
+      "input": "tsfiles/binaryArithmeticControlFlowGraphNotTooLarge.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "expected_ast_bytes": 15622557,
+      "reference_wall_ms": 514,
+      "reference_peak_rss_kib": 182768,
+      "diff_wall_ms": 616,
+      "diff_peak_rss_kib": 28696,
+      "within_budget": true
+    },
+    {
+      "input": "tsfiles/binderBinaryExpressionStress.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "expected_ast_bytes": 2311114339,
+      "reference_wall_ms": 6012,
+      "reference_peak_rss_kib": 226848,
+      "diff_wall_ms": 1814,
+      "diff_peak_rss_kib": 29824,
+      "within_budget": true
+    },
+    {
+      "input": "tsfiles/binderBinaryExpressionStressJs.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "expected_ast_bytes": 2311114416,
+      "reference_wall_ms": 4159,
+      "reference_peak_rss_kib": 232388,
+      "diff_wall_ms": 1649,
+      "diff_peak_rss_kib": 29896,
+      "within_budget": true
+    },
+    {
+      "input": "tsfiles/conditionalTypeDiscriminatingLargeUnionRegularTypeFetchingSpeedReasonable.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "expected_ast_bytes": 9724922,
+      "reference_wall_ms": 532,
+      "reference_peak_rss_kib": 174248,
+      "diff_wall_ms": 602,
+      "diff_peak_rss_kib": 29980,
+      "within_budget": true
+    },
+    {
+      "input": "tsfiles/largeControlFlowGraph.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "expected_ast_bytes": 25146612,
+      "reference_wall_ms": 755,
+      "reference_peak_rss_kib": 228040,
+      "diff_wall_ms": 800,
+      "diff_peak_rss_kib": 38956,
+      "within_budget": true
+    },
+    {
+      "input": "tsfiles/manyConstExports.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "expected_ast_bytes": 10507566,
+      "reference_wall_ms": 520,
+      "reference_peak_rss_kib": 179740,
+      "diff_wall_ms": 636,
+      "diff_peak_rss_kib": 31980,
+      "within_budget": true
+    },
+    {
+      "input": "tsfiles/parsingDeepParenthensizedExpression.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "expected_ast_bytes": 43713895,
+      "reference_wall_ms": 573,
+      "reference_peak_rss_kib": 228208,
+      "diff_wall_ms": 612,
+      "diff_peak_rss_kib": 25728,
+      "within_budget": true
+    },
+    {
+      "input": "tsfiles/resolvingClassDeclarationWhenInBaseTypeResolution.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "expected_ast_bytes": 19181320,
+      "reference_wall_ms": 597,
+      "reference_peak_rss_kib": 172212,
+      "diff_wall_ms": 616,
+      "diff_peak_rss_kib": 29812,
+      "within_budget": true
+    },
+    {
+      "input": "tsfiles/temporal.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "expected_ast_bytes": 4419297,
+      "reference_wall_ms": 436,
+      "reference_peak_rss_kib": 163356,
+      "diff_wall_ms": 555,
+      "diff_peak_rss_kib": 25932,
+      "within_budget": true
+    },
+    {
+      "input": "tsfiles/underscoreTest1.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "expected_ast_bytes": 4519278,
+      "reference_wall_ms": 434,
+      "reference_peak_rss_kib": 157276,
+      "diff_wall_ms": 558,
+      "diff_peak_rss_kib": 25800,
+      "within_budget": true
+    },
+    {
+      "input": "tsfiles/unionSubtypeReductionErrors.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "expected_ast_bytes": 15124632,
+      "reference_wall_ms": 569,
+      "reference_peak_rss_kib": 184012,
+      "diff_wall_ms": 621,
+      "diff_peak_rss_kib": 31896,
+      "within_budget": true
+    }
+  ]
+}

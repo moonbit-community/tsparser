@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "typescript_version": "6.0.3",
+  "measured_on": "2026-07-16",
+  "runner_class": "github-actions-ubuntu-latest-standard-x64",
+  "scope": "one TypeScript full-AST NDJSON reference process with stdout consumed by the operating system",
+  "command": "/usr/bin/time -f ... timeout <budget> node scripts/ts-reference.mjs full-ast <input>",
+  "fixtures": [
+    {
+      "input": "tsfiles/binaryArithmeticControlFlowGraphNotTooLarge.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "measured_wall_ms": 470,
+      "measured_peak_rss_kib": 150800,
+      "exit_code": 0,
+      "within_budget": true
+    },
+    {
+      "input": "tsfiles/binderBinaryExpressionStress.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "measured_wall_ms": 1060,
+      "measured_peak_rss_kib": 402560,
+      "exit_code": 0,
+      "within_budget": true
+    },
+    {
+      "input": "tsfiles/binderBinaryExpressionStressJs.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "measured_wall_ms": 1090,
+      "measured_peak_rss_kib": 402668,
+      "exit_code": 0,
+      "within_budget": true
+    },
+    {
+      "input": "tsfiles/conditionalTypeDiscriminatingLargeUnionRegularTypeFetchingSpeedReasonable.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "measured_wall_ms": 480,
+      "measured_peak_rss_kib": 164548,
+      "exit_code": 0,
+      "within_budget": true
+    },
+    {
+      "input": "tsfiles/largeControlFlowGraph.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "measured_wall_ms": 750,
+      "measured_peak_rss_kib": 181464,
+      "exit_code": 0,
+      "within_budget": true
+    },
+    {
+      "input": "tsfiles/manyConstExports.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "measured_wall_ms": 550,
+      "measured_peak_rss_kib": 169788,
+      "exit_code": 0,
+      "within_budget": true
+    },
+    {
+      "input": "tsfiles/parsingDeepParenthensizedExpression.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "measured_wall_ms": 470,
+      "measured_peak_rss_kib": 197872,
+      "exit_code": 0,
+      "within_budget": true
+    },
+    {
+      "input": "tsfiles/resolvingClassDeclarationWhenInBaseTypeResolution.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "measured_wall_ms": 550,
+      "measured_peak_rss_kib": 167572,
+      "exit_code": 0,
+      "within_budget": true
+    },
+    {
+      "input": "tsfiles/temporal.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "measured_wall_ms": 420,
+      "measured_peak_rss_kib": 148260,
+      "exit_code": 0,
+      "within_budget": true
+    },
+    {
+      "input": "tsfiles/underscoreTest1.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "measured_wall_ms": 410,
+      "measured_peak_rss_kib": 146764,
+      "exit_code": 0,
+      "within_budget": true
+    },
+    {
+      "input": "tsfiles/unionSubtypeReductionErrors.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "measured_wall_ms": 500,
+      "measured_peak_rss_kib": 170080,
+      "exit_code": 0,
+      "within_budget": true
+    }
+  ]
+}

@@ -3,10 +3,23 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test:baseline": "node --test scripts/ts-parse-baseline.test.mjs",
+    "audit": "node scripts/run-audits.mjs",
+    "bootstrap:typescript": "node scripts/bootstrap-typescript-source.mjs --verify",
+    "generate:upstream": "node scripts/generate-upstream-audit.mjs --write",
+    "generate:corpus": "node scripts/generate-corpus-audit.mjs --write",
+    "generate:structured-diagnostics": "node scripts/generate-structured-diagnostics.mjs --write",
+    "generate:coverage": "node scripts/generate-coverage.mjs --write",
+    "measure:reference-pressure": "node scripts/supervise-reference-pressure.mjs --write",
+    "measure:online-legacy": "node scripts/supervise-online-legacy-diff.mjs --write",
+    "measure:stress": "node scripts/run-parser-stress.mjs --write",
+    "diff:full": "moon run tools/diff --target native --release -- --manifest docs/corpus-manifest.jsonl --max-failures 50",
+    "diff:shard": "moon run tools/diff --target native --release -- --manifest docs/corpus-manifest.jsonl",
+    "refresh:upstream-source-manifest": "node scripts/refresh-upstream-source-manifest.mjs --source-dir target/typescript-source-6.0.3 --write",
+    "test:node": "node --test scripts/*.test.mjs",
+    "test:baseline": "npm run test:node && npm run audit",
     "ts-baseline": "node scripts/ts-parse-baseline.mjs"
   },
   "devDependencies": {
-    "typescript": "^6.0.3"
+    "typescript": "6.0.3"
   }
 }

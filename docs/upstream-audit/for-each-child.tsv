@@ -1,0 +1,176 @@
+upstream_symbol	child_order	source_location	moonbit_implementation	test_location	status
+SyntaxKind.QualifiedName	node:node.left -> node:node.right	src/compiler/parser.ts:506	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.TypeParameter	nodes:node.modifiers -> node:node.name -> node:node.constraint -> node:node.default -> node:node.expression	src/compiler/parser.ts:510	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ShorthandPropertyAssignment	nodes:node.modifiers -> node:node.name -> node:node.questionToken -> node:node.exclamationToken -> node:node.equalsToken -> node:node.objectAssignmentInitializer	src/compiler/parser.ts:517	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.SpreadAssignment	node:node.expression	src/compiler/parser.ts:525	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.Parameter	nodes:node.modifiers -> node:node.dotDotDotToken -> node:node.name -> node:node.questionToken -> node:node.type -> node:node.initializer	src/compiler/parser.ts:528	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.PropertyDeclaration	nodes:node.modifiers -> node:node.name -> node:node.questionToken -> node:node.exclamationToken -> node:node.type -> node:node.initializer	src/compiler/parser.ts:536	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.PropertySignature	nodes:node.modifiers -> node:node.name -> node:node.questionToken -> node:node.type -> node:node.initializer	src/compiler/parser.ts:544	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.PropertyAssignment	nodes:node.modifiers -> node:node.name -> node:node.questionToken -> node:node.exclamationToken -> node:node.initializer	src/compiler/parser.ts:551	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.VariableDeclaration	node:node.name -> node:node.exclamationToken -> node:node.type -> node:node.initializer	src/compiler/parser.ts:558	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.BindingElement	node:node.dotDotDotToken -> node:node.propertyName -> node:node.name -> node:node.initializer	src/compiler/parser.ts:564	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.IndexSignature	nodes:node.modifiers -> nodes:node.typeParameters -> nodes:node.parameters -> node:node.type	src/compiler/parser.ts:570	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ConstructorType	nodes:node.modifiers -> nodes:node.typeParameters -> nodes:node.parameters -> node:node.type	src/compiler/parser.ts:576	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.FunctionType	nodes:node.modifiers -> nodes:node.typeParameters -> nodes:node.parameters -> node:node.type	src/compiler/parser.ts:582	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.CallSignature		src/compiler/parser.ts:588	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ConstructSignature		src/compiler/parser.ts:589	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.MethodDeclaration	nodes:node.modifiers -> node:node.asteriskToken -> node:node.name -> node:node.questionToken -> node:node.exclamationToken -> nodes:node.typeParameters -> nodes:node.parameters -> node:node.type -> node:node.body	src/compiler/parser.ts:590	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.MethodSignature	nodes:node.modifiers -> node:node.name -> node:node.questionToken -> nodes:node.typeParameters -> nodes:node.parameters -> node:node.type	src/compiler/parser.ts:601	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.Constructor	nodes:node.modifiers -> node:node.name -> nodes:node.typeParameters -> nodes:node.parameters -> node:node.type -> node:node.body	src/compiler/parser.ts:609	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.GetAccessor	nodes:node.modifiers -> node:node.name -> nodes:node.typeParameters -> nodes:node.parameters -> node:node.type -> node:node.body	src/compiler/parser.ts:617	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.SetAccessor	nodes:node.modifiers -> node:node.name -> nodes:node.typeParameters -> nodes:node.parameters -> node:node.type -> node:node.body	src/compiler/parser.ts:625	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.FunctionDeclaration	nodes:node.modifiers -> node:node.asteriskToken -> node:node.name -> nodes:node.typeParameters -> nodes:node.parameters -> node:node.type -> node:node.body	src/compiler/parser.ts:633	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.FunctionExpression	nodes:node.modifiers -> node:node.asteriskToken -> node:node.name -> nodes:node.typeParameters -> nodes:node.parameters -> node:node.type -> node:node.body	src/compiler/parser.ts:642	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ArrowFunction	nodes:node.modifiers -> nodes:node.typeParameters -> nodes:node.parameters -> node:node.type -> node:node.equalsGreaterThanToken -> node:node.body	src/compiler/parser.ts:651	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ClassStaticBlockDeclaration	nodes:node.modifiers -> node:node.body	src/compiler/parser.ts:659	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.TypeReference	node:node.typeName -> nodes:node.typeArguments	src/compiler/parser.ts:663	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.TypePredicate	node:node.assertsModifier -> node:node.parameterName -> node:node.type	src/compiler/parser.ts:667	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.TypeQuery	node:node.exprName -> nodes:node.typeArguments	src/compiler/parser.ts:672	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.TypeLiteral	nodes:node.members	src/compiler/parser.ts:676	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ArrayType	node:node.elementType	src/compiler/parser.ts:679	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.TupleType	nodes:node.elements	src/compiler/parser.ts:682	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.UnionType		src/compiler/parser.ts:685	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.IntersectionType		src/compiler/parser.ts:686	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ConditionalType	node:node.checkType -> node:node.extendsType -> node:node.trueType -> node:node.falseType	src/compiler/parser.ts:687	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.InferType	node:node.typeParameter	src/compiler/parser.ts:693	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ImportType	node:node.argument -> node:node.attributes -> node:node.qualifier -> nodes:node.typeArguments	src/compiler/parser.ts:696	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ImportTypeAssertionContainer	node:node.assertClause	src/compiler/parser.ts:702	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ParenthesizedType		src/compiler/parser.ts:705	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.TypeOperator		src/compiler/parser.ts:706	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.IndexedAccessType	node:node.objectType -> node:node.indexType	src/compiler/parser.ts:707	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.MappedType	node:node.readonlyToken -> node:node.typeParameter -> node:node.nameType -> node:node.questionToken -> node:node.type -> nodes:node.members	src/compiler/parser.ts:711	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.LiteralType	node:node.literal	src/compiler/parser.ts:719	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.NamedTupleMember	node:node.dotDotDotToken -> node:node.name -> node:node.questionToken -> node:node.type	src/compiler/parser.ts:722	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ObjectBindingPattern		src/compiler/parser.ts:728	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ArrayBindingPattern		src/compiler/parser.ts:729	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ArrayLiteralExpression	nodes:node.elements	src/compiler/parser.ts:730	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ObjectLiteralExpression	nodes:node.properties	src/compiler/parser.ts:733	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.PropertyAccessExpression	node:node.expression -> node:node.questionDotToken -> node:node.name	src/compiler/parser.ts:736	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ElementAccessExpression	node:node.expression -> node:node.questionDotToken -> node:node.argumentExpression	src/compiler/parser.ts:741	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.CallExpression		src/compiler/parser.ts:746	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.NewExpression		src/compiler/parser.ts:747	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.TaggedTemplateExpression	node:node.tag -> node:node.questionDotToken -> nodes:node.typeArguments -> node:node.template	src/compiler/parser.ts:748	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.TypeAssertionExpression	node:node.type -> node:node.expression	src/compiler/parser.ts:754	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ParenthesizedExpression	node:node.expression	src/compiler/parser.ts:758	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.DeleteExpression	node:node.expression	src/compiler/parser.ts:761	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.TypeOfExpression	node:node.expression	src/compiler/parser.ts:764	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.VoidExpression	node:node.expression	src/compiler/parser.ts:767	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.PrefixUnaryExpression	node:node.operand	src/compiler/parser.ts:770	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.YieldExpression	node:node.asteriskToken -> node:node.expression	src/compiler/parser.ts:773	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.AwaitExpression	node:node.expression	src/compiler/parser.ts:777	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.PostfixUnaryExpression	node:node.operand	src/compiler/parser.ts:780	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.BinaryExpression	node:node.left -> node:node.operatorToken -> node:node.right	src/compiler/parser.ts:783	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.AsExpression	node:node.expression -> node:node.type	src/compiler/parser.ts:788	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.NonNullExpression	node:node.expression	src/compiler/parser.ts:792	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.SatisfiesExpression	node:node.expression -> node:node.type	src/compiler/parser.ts:795	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.MetaProperty	node:node.name	src/compiler/parser.ts:798	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ConditionalExpression	node:node.condition -> node:node.questionToken -> node:node.whenTrue -> node:node.colonToken -> node:node.whenFalse	src/compiler/parser.ts:801	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.SpreadElement	node:node.expression	src/compiler/parser.ts:808	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.Block		src/compiler/parser.ts:811	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ModuleBlock		src/compiler/parser.ts:812	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.SourceFile	nodes:node.statements -> node:node.endOfFileToken	src/compiler/parser.ts:813	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.VariableStatement	nodes:node.modifiers -> node:node.declarationList	src/compiler/parser.ts:817	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.VariableDeclarationList	nodes:node.declarations	src/compiler/parser.ts:821	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ExpressionStatement	node:node.expression	src/compiler/parser.ts:824	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.IfStatement	node:node.expression -> node:node.thenStatement -> node:node.elseStatement	src/compiler/parser.ts:827	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.DoStatement	node:node.statement -> node:node.expression	src/compiler/parser.ts:832	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.WhileStatement	node:node.expression -> node:node.statement	src/compiler/parser.ts:836	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ForStatement	node:node.initializer -> node:node.condition -> node:node.incrementor -> node:node.statement	src/compiler/parser.ts:840	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ForInStatement	node:node.initializer -> node:node.expression -> node:node.statement	src/compiler/parser.ts:846	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ForOfStatement	node:node.awaitModifier -> node:node.initializer -> node:node.expression -> node:node.statement	src/compiler/parser.ts:851	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ContinueStatement		src/compiler/parser.ts:857	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.BreakStatement		src/compiler/parser.ts:858	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ReturnStatement	node:node.expression	src/compiler/parser.ts:859	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.WithStatement	node:node.expression -> node:node.statement	src/compiler/parser.ts:862	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.SwitchStatement	node:node.expression -> node:node.caseBlock	src/compiler/parser.ts:866	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.CaseBlock	nodes:node.clauses	src/compiler/parser.ts:870	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.CaseClause	node:node.expression -> nodes:node.statements	src/compiler/parser.ts:873	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.DefaultClause	nodes:node.statements	src/compiler/parser.ts:877	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.LabeledStatement	node:node.label -> node:node.statement	src/compiler/parser.ts:880	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ThrowStatement	node:node.expression	src/compiler/parser.ts:884	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.TryStatement	node:node.tryBlock -> node:node.catchClause -> node:node.finallyBlock	src/compiler/parser.ts:887	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.CatchClause	node:node.variableDeclaration -> node:node.block	src/compiler/parser.ts:892	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.Decorator	node:node.expression	src/compiler/parser.ts:896	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ClassDeclaration		src/compiler/parser.ts:899	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ClassExpression		src/compiler/parser.ts:900	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.InterfaceDeclaration	nodes:node.modifiers -> node:node.name -> nodes:node.typeParameters -> nodes:node.heritageClauses -> nodes:node.members	src/compiler/parser.ts:901	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.TypeAliasDeclaration	nodes:node.modifiers -> node:node.name -> nodes:node.typeParameters -> node:node.type	src/compiler/parser.ts:908	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.EnumDeclaration	nodes:node.modifiers -> node:node.name -> nodes:node.members	src/compiler/parser.ts:914	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.EnumMember	node:node.name -> node:node.initializer	src/compiler/parser.ts:919	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ModuleDeclaration	nodes:node.modifiers -> node:node.name -> node:node.body	src/compiler/parser.ts:923	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ImportEqualsDeclaration	nodes:node.modifiers -> node:node.name -> node:node.moduleReference	src/compiler/parser.ts:928	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ImportDeclaration	nodes:node.modifiers -> node:node.importClause -> node:node.moduleSpecifier -> node:node.attributes	src/compiler/parser.ts:933	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ImportClause	node:node.name -> node:node.namedBindings	src/compiler/parser.ts:939	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ImportAttributes	nodes:node.elements	src/compiler/parser.ts:943	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ImportAttribute	node:node.name -> node:node.value	src/compiler/parser.ts:946	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.NamespaceExportDeclaration	nodes:node.modifiers -> node:node.name	src/compiler/parser.ts:950	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.NamespaceImport	node:node.name	src/compiler/parser.ts:954	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.NamespaceExport	node:node.name	src/compiler/parser.ts:957	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.NamedImports		src/compiler/parser.ts:960	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.NamedExports		src/compiler/parser.ts:961	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ExportDeclaration	nodes:node.modifiers -> node:node.exportClause -> node:node.moduleSpecifier -> node:node.attributes	src/compiler/parser.ts:962	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ImportSpecifier		src/compiler/parser.ts:968	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ExportSpecifier		src/compiler/parser.ts:969	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ExportAssignment	nodes:node.modifiers -> node:node.expression	src/compiler/parser.ts:970	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.TemplateExpression	node:node.head -> nodes:node.templateSpans	src/compiler/parser.ts:974	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.TemplateSpan	node:node.expression -> node:node.literal	src/compiler/parser.ts:978	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.TemplateLiteralType	node:node.head -> nodes:node.templateSpans	src/compiler/parser.ts:982	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.TemplateLiteralTypeSpan	node:node.type -> node:node.literal	src/compiler/parser.ts:986	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ComputedPropertyName	node:node.expression	src/compiler/parser.ts:990	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.HeritageClause	nodes:node.types	src/compiler/parser.ts:993	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ExpressionWithTypeArguments	node:node.expression -> nodes:node.typeArguments	src/compiler/parser.ts:996	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.ExternalModuleReference	node:node.expression	src/compiler/parser.ts:1000	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.MissingDeclaration	nodes:node.modifiers	src/compiler/parser.ts:1003	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.CommaListExpression	nodes:node.elements	src/compiler/parser.ts:1006	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JsxElement	node:node.openingElement -> nodes:node.children -> node:node.closingElement	src/compiler/parser.ts:1009	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JsxFragment	node:node.openingFragment -> nodes:node.children -> node:node.closingFragment	src/compiler/parser.ts:1014	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JsxSelfClosingElement		src/compiler/parser.ts:1019	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JsxOpeningElement		src/compiler/parser.ts:1020	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JsxAttributes	nodes:node.properties	src/compiler/parser.ts:1021	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JsxAttribute	node:node.name -> node:node.initializer	src/compiler/parser.ts:1024	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JsxSpreadAttribute	node:node.expression	src/compiler/parser.ts:1028	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JsxExpression	node:node.dotDotDotToken -> node:node.expression	src/compiler/parser.ts:1031	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JsxClosingElement	node:node.tagName	src/compiler/parser.ts:1035	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JsxNamespacedName	node:node.namespace -> node:node.name	src/compiler/parser.ts:1038	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.OptionalType		src/compiler/parser.ts:1042	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.RestType		src/compiler/parser.ts:1043	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocTypeExpression		src/compiler/parser.ts:1044	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocNonNullableType		src/compiler/parser.ts:1045	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocNullableType		src/compiler/parser.ts:1046	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocOptionalType		src/compiler/parser.ts:1047	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocVariadicType		src/compiler/parser.ts:1048	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocFunctionType	nodes:node.parameters -> node:node.type	src/compiler/parser.ts:1049	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDoc	nodes:node.comment -> nodes:node.tags	src/compiler/parser.ts:1053	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocSeeTag	node:node.tagName -> node:node.name -> nodes:node.comment	src/compiler/parser.ts:1057	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocNameReference	node:node.name	src/compiler/parser.ts:1062	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocMemberName	node:node.left -> node:node.right	src/compiler/parser.ts:1065	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocParameterTag		src/compiler/parser.ts:1069	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocPropertyTag		src/compiler/parser.ts:1070	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocAuthorTag	node:node.tagName -> nodes:node.comment	src/compiler/parser.ts:1071	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocImplementsTag	node:node.tagName -> node:node.class -> nodes:node.comment	src/compiler/parser.ts:1075	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocAugmentsTag	node:node.tagName -> node:node.class -> nodes:node.comment	src/compiler/parser.ts:1080	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocTemplateTag	node:node.tagName -> node:node.constraint -> nodes:node.typeParameters -> nodes:node.comment	src/compiler/parser.ts:1085	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocTypedefTag	node:node.tagName -> node:node.typeExpression -> node:node.fullName -> nodes:node.comment -> node:node.fullName -> node:node.typeExpression -> nodes:node.comment	src/compiler/parser.ts:1091	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocCallbackTag	node:node.tagName -> node:node.fullName -> node:node.typeExpression -> nodes:node.comment	src/compiler/parser.ts:1102	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocReturnTag		src/compiler/parser.ts:1108	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocTypeTag		src/compiler/parser.ts:1109	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocThisTag		src/compiler/parser.ts:1110	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocEnumTag		src/compiler/parser.ts:1111	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocSatisfiesTag		src/compiler/parser.ts:1112	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocThrowsTag		src/compiler/parser.ts:1113	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocOverloadTag		src/compiler/parser.ts:1114	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocSignature	node:node.type	src/compiler/parser.ts:1115	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocLink		src/compiler/parser.ts:1120	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocLinkCode		src/compiler/parser.ts:1121	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocLinkPlain		src/compiler/parser.ts:1122	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocTypeLiteral		src/compiler/parser.ts:1123	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocTag		src/compiler/parser.ts:1126	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocClassTag		src/compiler/parser.ts:1127	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocPublicTag		src/compiler/parser.ts:1128	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocPrivateTag		src/compiler/parser.ts:1129	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocProtectedTag		src/compiler/parser.ts:1130	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocReadonlyTag		src/compiler/parser.ts:1131	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocDeprecatedTag		src/compiler/parser.ts:1132	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocOverrideTag		src/compiler/parser.ts:1133	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.JSDocImportTag		src/compiler/parser.ts:1134	for_each_child.mbt	for_each_child_wbtest.mbt	complete
+SyntaxKind.PartiallyEmittedExpression		src/compiler/parser.ts:1135	for_each_child.mbt	for_each_child_wbtest.mbt	complete

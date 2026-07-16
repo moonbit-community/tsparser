@@ -1,0 +1,2268 @@
+{
+  "schema_version": 1,
+  "projection": "legacy AST and paired legacy parse-diagnostic baselines",
+  "corpus": {
+    "inputs": 6541,
+    "script_kinds": {
+      "TS": 6423,
+      "TSX": 118
+    },
+    "stored_legacy_ast": 6530,
+    "online_stream_legacy_ast": 11,
+    "paired_legacy_errors": 6541,
+    "historical_error_files_not_selected_by_manifest": 1120,
+    "jsdoc_ast_files": 3
+  },
+  "runtime_kind_names": [
+    {
+      "runtime_name": "AccessorKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 38,
+      "baseline_files": 11
+    },
+    {
+      "runtime_name": "AmpersandAmpersandToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 543,
+      "baseline_files": 70
+    },
+    {
+      "runtime_name": "AmpersandEqualsToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 16,
+      "baseline_files": 10
+    },
+    {
+      "runtime_name": "AmpersandToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 19,
+      "baseline_files": 9
+    },
+    {
+      "runtime_name": "AnyKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 4412,
+      "baseline_files": 1208
+    },
+    {
+      "runtime_name": "ArrayBindingPattern",
+      "family": "declarations-and-modules",
+      "node_occurrences": 510,
+      "baseline_files": 128
+    },
+    {
+      "runtime_name": "ArrayLiteralExpression",
+      "family": "expressions-and-names",
+      "node_occurrences": 2809,
+      "baseline_files": 724
+    },
+    {
+      "runtime_name": "ArrayType",
+      "family": "types",
+      "node_occurrences": 1869,
+      "baseline_files": 694
+    },
+    {
+      "runtime_name": "ArrowFunction",
+      "family": "source-and-other",
+      "node_occurrences": 3387,
+      "baseline_files": 952
+    },
+    {
+      "runtime_name": "AsExpression",
+      "family": "expressions-and-names",
+      "node_occurrences": 697,
+      "baseline_files": 271
+    },
+    {
+      "runtime_name": "AssertClause",
+      "family": "statements-and-control",
+      "node_occurrences": 24,
+      "baseline_files": 9
+    },
+    {
+      "runtime_name": "AssertEntry",
+      "family": "source-and-other",
+      "node_occurrences": 18,
+      "baseline_files": 6
+    },
+    {
+      "runtime_name": "AssertsKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 15,
+      "baseline_files": 12
+    },
+    {
+      "runtime_name": "AsteriskAsteriskEqualsToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 6,
+      "baseline_files": 3
+    },
+    {
+      "runtime_name": "AsteriskAsteriskToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 26,
+      "baseline_files": 12
+    },
+    {
+      "runtime_name": "AsteriskEqualsToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 23,
+      "baseline_files": 14
+    },
+    {
+      "runtime_name": "AsteriskToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 217,
+      "baseline_files": 103
+    },
+    {
+      "runtime_name": "AsyncKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 453,
+      "baseline_files": 122
+    },
+    {
+      "runtime_name": "AwaitExpression",
+      "family": "expressions-and-names",
+      "node_occurrences": 372,
+      "baseline_files": 72
+    },
+    {
+      "runtime_name": "AwaitKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 18,
+      "baseline_files": 9
+    },
+    {
+      "runtime_name": "BarBarToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 204,
+      "baseline_files": 73
+    },
+    {
+      "runtime_name": "BarEqualsToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 17,
+      "baseline_files": 11
+    },
+    {
+      "runtime_name": "BarToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 31,
+      "baseline_files": 14
+    },
+    {
+      "runtime_name": "BigIntKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 15,
+      "baseline_files": 12
+    },
+    {
+      "runtime_name": "BigIntLiteral",
+      "family": "lexical-and-literals",
+      "node_occurrences": 240,
+      "baseline_files": 14
+    },
+    {
+      "runtime_name": "BinaryExpression",
+      "family": "expressions-and-names",
+      "node_occurrences": 10844,
+      "baseline_files": 1691
+    },
+    {
+      "runtime_name": "BindingElement",
+      "family": "declarations-and-modules",
+      "node_occurrences": 1972,
+      "baseline_files": 301
+    },
+    {
+      "runtime_name": "Block",
+      "family": "statements-and-control",
+      "node_occurrences": 16156,
+      "baseline_files": 3698
+    },
+    {
+      "runtime_name": "BooleanKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 928,
+      "baseline_files": 404
+    },
+    {
+      "runtime_name": "BreakStatement",
+      "family": "statements-and-control",
+      "node_occurrences": 402,
+      "baseline_files": 96
+    },
+    {
+      "runtime_name": "CallExpression",
+      "family": "expressions-and-names",
+      "node_occurrences": 10097,
+      "baseline_files": 2248
+    },
+    {
+      "runtime_name": "CallSignature",
+      "family": "types",
+      "node_occurrences": 675,
+      "baseline_files": 238
+    },
+    {
+      "runtime_name": "CaretToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 41,
+      "baseline_files": 4
+    },
+    {
+      "runtime_name": "CaseBlock",
+      "family": "statements-and-control",
+      "node_occurrences": 209,
+      "baseline_files": 97
+    },
+    {
+      "runtime_name": "CaseClause",
+      "family": "statements-and-control",
+      "node_occurrences": 1008,
+      "baseline_files": 95
+    },
+    {
+      "runtime_name": "CatchClause",
+      "family": "statements-and-control",
+      "node_occurrences": 142,
+      "baseline_files": 56
+    },
+    {
+      "runtime_name": "ClassDeclaration",
+      "family": "declarations-and-modules",
+      "node_occurrences": 4916,
+      "baseline_files": 2326
+    },
+    {
+      "runtime_name": "ClassExpression",
+      "family": "declarations-and-modules",
+      "node_occurrences": 307,
+      "baseline_files": 91
+    },
+    {
+      "runtime_name": "ClassStaticBlockDeclaration",
+      "family": "declarations-and-modules",
+      "node_occurrences": 10,
+      "baseline_files": 7
+    },
+    {
+      "runtime_name": "ColonToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 273,
+      "baseline_files": 120
+    },
+    {
+      "runtime_name": "CommaToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 825,
+      "baseline_files": 224
+    },
+    {
+      "runtime_name": "ComputedPropertyName",
+      "family": "declarations-and-modules",
+      "node_occurrences": 682,
+      "baseline_files": 161
+    },
+    {
+      "runtime_name": "ConditionalExpression",
+      "family": "types",
+      "node_occurrences": 273,
+      "baseline_files": 120
+    },
+    {
+      "runtime_name": "ConditionalType",
+      "family": "types",
+      "node_occurrences": 788,
+      "baseline_files": 205
+    },
+    {
+      "runtime_name": "ConstKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 119,
+      "baseline_files": 77
+    },
+    {
+      "runtime_name": "ConstructSignature",
+      "family": "types",
+      "node_occurrences": 405,
+      "baseline_files": 132
+    },
+    {
+      "runtime_name": "Constructor",
+      "family": "declarations-and-modules",
+      "node_occurrences": 1311,
+      "baseline_files": 599
+    },
+    {
+      "runtime_name": "ConstructorType",
+      "family": "types",
+      "node_occurrences": 114,
+      "baseline_files": 64
+    },
+    {
+      "runtime_name": "ContinueStatement",
+      "family": "statements-and-control",
+      "node_occurrences": 218,
+      "baseline_files": 44
+    },
+    {
+      "runtime_name": "DeclareKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 3653,
+      "baseline_files": 1562
+    },
+    {
+      "runtime_name": "Decorator",
+      "family": "source-and-other",
+      "node_occurrences": 349,
+      "baseline_files": 70
+    },
+    {
+      "runtime_name": "DefaultClause",
+      "family": "statements-and-control",
+      "node_occurrences": 87,
+      "baseline_files": 44
+    },
+    {
+      "runtime_name": "DefaultKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 129,
+      "baseline_files": 99
+    },
+    {
+      "runtime_name": "DeleteExpression",
+      "family": "expressions-and-names",
+      "node_occurrences": 49,
+      "baseline_files": 9
+    },
+    {
+      "runtime_name": "DoStatement",
+      "family": "statements-and-control",
+      "node_occurrences": 108,
+      "baseline_files": 40
+    },
+    {
+      "runtime_name": "DotDotDotToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 948,
+      "baseline_files": 347
+    },
+    {
+      "runtime_name": "ElementAccessExpression",
+      "family": "expressions-and-names",
+      "node_occurrences": 1776,
+      "baseline_files": 313
+    },
+    {
+      "runtime_name": "EmptyStatement",
+      "family": "statements-and-control",
+      "node_occurrences": 450,
+      "baseline_files": 212
+    },
+    {
+      "runtime_name": "EndOfFileToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 6530,
+      "baseline_files": 6530
+    },
+    {
+      "runtime_name": "EnumDeclaration",
+      "family": "declarations-and-modules",
+      "node_occurrences": 494,
+      "baseline_files": 276
+    },
+    {
+      "runtime_name": "EnumMember",
+      "family": "declarations-and-modules",
+      "node_occurrences": 2239,
+      "baseline_files": 261
+    },
+    {
+      "runtime_name": "EqualsEqualsEqualsToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 1003,
+      "baseline_files": 194
+    },
+    {
+      "runtime_name": "EqualsEqualsToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 491,
+      "baseline_files": 63
+    },
+    {
+      "runtime_name": "EqualsGreaterThanToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 3387,
+      "baseline_files": 952
+    },
+    {
+      "runtime_name": "ExclamationEqualsEqualsToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 138,
+      "baseline_files": 69
+    },
+    {
+      "runtime_name": "ExclamationEqualsToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 30,
+      "baseline_files": 13
+    },
+    {
+      "runtime_name": "ExclamationToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 166,
+      "baseline_files": 73
+    },
+    {
+      "runtime_name": "ExportAssignment",
+      "family": "declarations-and-modules",
+      "node_occurrences": 495,
+      "baseline_files": 384
+    },
+    {
+      "runtime_name": "ExportDeclaration",
+      "family": "declarations-and-modules",
+      "node_occurrences": 569,
+      "baseline_files": 308
+    },
+    {
+      "runtime_name": "ExportKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 6815,
+      "baseline_files": 1923
+    },
+    {
+      "runtime_name": "ExportSpecifier",
+      "family": "declarations-and-modules",
+      "node_occurrences": 390,
+      "baseline_files": 168
+    },
+    {
+      "runtime_name": "ExpressionStatement",
+      "family": "statements-and-control",
+      "node_occurrences": 14570,
+      "baseline_files": 2803
+    },
+    {
+      "runtime_name": "ExpressionWithTypeArguments",
+      "family": "types",
+      "node_occurrences": 1787,
+      "baseline_files": 863
+    },
+    {
+      "runtime_name": "ExternalModuleReference",
+      "family": "declarations-and-modules",
+      "node_occurrences": 421,
+      "baseline_files": 239
+    },
+    {
+      "runtime_name": "FalseKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 427,
+      "baseline_files": 197
+    },
+    {
+      "runtime_name": "FirstAssignment",
+      "family": "source-and-other",
+      "node_occurrences": 4246,
+      "baseline_files": 969
+    },
+    {
+      "runtime_name": "FirstBinaryOperator",
+      "family": "source-and-other",
+      "node_occurrences": 526,
+      "baseline_files": 140
+    },
+    {
+      "runtime_name": "FirstCompoundAssignment",
+      "family": "source-and-other",
+      "node_occurrences": 119,
+      "baseline_files": 34
+    },
+    {
+      "runtime_name": "FirstContextualKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 73,
+      "baseline_files": 29
+    },
+    {
+      "runtime_name": "FirstLiteralToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 13707,
+      "baseline_files": 2453
+    },
+    {
+      "runtime_name": "FirstNode",
+      "family": "source-and-other",
+      "node_occurrences": 1993,
+      "baseline_files": 442
+    },
+    {
+      "runtime_name": "FirstStatement",
+      "family": "statements-and-control",
+      "node_occurrences": 14961,
+      "baseline_files": 4040
+    },
+    {
+      "runtime_name": "FirstTemplateToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 158,
+      "baseline_files": 46
+    },
+    {
+      "runtime_name": "FirstTypeNode",
+      "family": "types",
+      "node_occurrences": 226,
+      "baseline_files": 95
+    },
+    {
+      "runtime_name": "ForInStatement",
+      "family": "statements-and-control",
+      "node_occurrences": 146,
+      "baseline_files": 78
+    },
+    {
+      "runtime_name": "ForOfStatement",
+      "family": "statements-and-control",
+      "node_occurrences": 407,
+      "baseline_files": 113
+    },
+    {
+      "runtime_name": "ForStatement",
+      "family": "statements-and-control",
+      "node_occurrences": 528,
+      "baseline_files": 130
+    },
+    {
+      "runtime_name": "FunctionDeclaration",
+      "family": "declarations-and-modules",
+      "node_occurrences": 6327,
+      "baseline_files": 2322
+    },
+    {
+      "runtime_name": "FunctionExpression",
+      "family": "expressions-and-names",
+      "node_occurrences": 1098,
+      "baseline_files": 340
+    },
+    {
+      "runtime_name": "FunctionType",
+      "family": "types",
+      "node_occurrences": 2466,
+      "baseline_files": 750
+    },
+    {
+      "runtime_name": "GetAccessor",
+      "family": "declarations-and-modules",
+      "node_occurrences": 730,
+      "baseline_files": 207
+    },
+    {
+      "runtime_name": "GreaterThanEqualsToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 8,
+      "baseline_files": 8
+    },
+    {
+      "runtime_name": "GreaterThanGreaterThanEqualsToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 20,
+      "baseline_files": 10
+    },
+    {
+      "runtime_name": "GreaterThanGreaterThanGreaterThanEqualsToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 16,
+      "baseline_files": 8
+    },
+    {
+      "runtime_name": "GreaterThanGreaterThanGreaterThanToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 22,
+      "baseline_files": 5
+    },
+    {
+      "runtime_name": "GreaterThanGreaterThanToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 30,
+      "baseline_files": 8
+    },
+    {
+      "runtime_name": "GreaterThanToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 135,
+      "baseline_files": 70
+    },
+    {
+      "runtime_name": "HeritageClause",
+      "family": "types",
+      "node_occurrences": 1672,
+      "baseline_files": 856
+    },
+    {
+      "runtime_name": "Identifier",
+      "family": "expressions-and-names",
+      "node_occurrences": 174240,
+      "baseline_files": 6434
+    },
+    {
+      "runtime_name": "IfStatement",
+      "family": "statements-and-control",
+      "node_occurrences": 1821,
+      "baseline_files": 404
+    },
+    {
+      "runtime_name": "ImportClause",
+      "family": "declarations-and-modules",
+      "node_occurrences": 1420,
+      "baseline_files": 694
+    },
+    {
+      "runtime_name": "ImportDeclaration",
+      "family": "declarations-and-modules",
+      "node_occurrences": 1520,
+      "baseline_files": 731
+    },
+    {
+      "runtime_name": "ImportEqualsDeclaration",
+      "family": "declarations-and-modules",
+      "node_occurrences": 812,
+      "baseline_files": 402
+    },
+    {
+      "runtime_name": "ImportKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 31,
+      "baseline_files": 22
+    },
+    {
+      "runtime_name": "ImportSpecifier",
+      "family": "declarations-and-modules",
+      "node_occurrences": 1055,
+      "baseline_files": 443
+    },
+    {
+      "runtime_name": "InKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 139,
+      "baseline_files": 28
+    },
+    {
+      "runtime_name": "IndexSignature",
+      "family": "types",
+      "node_occurrences": 532,
+      "baseline_files": 243
+    },
+    {
+      "runtime_name": "IndexedAccessType",
+      "family": "types",
+      "node_occurrences": 967,
+      "baseline_files": 278
+    },
+    {
+      "runtime_name": "InferType",
+      "family": "types",
+      "node_occurrences": 245,
+      "baseline_files": 86
+    },
+    {
+      "runtime_name": "InstanceOfKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 140,
+      "baseline_files": 39
+    },
+    {
+      "runtime_name": "InterfaceDeclaration",
+      "family": "declarations-and-modules",
+      "node_occurrences": 3558,
+      "baseline_files": 1573
+    },
+    {
+      "runtime_name": "IntersectionType",
+      "family": "types",
+      "node_occurrences": 657,
+      "baseline_files": 255
+    },
+    {
+      "runtime_name": "JSDocNonNullableType",
+      "family": "jsdoc",
+      "node_occurrences": 12,
+      "baseline_files": 1
+    },
+    {
+      "runtime_name": "JSDocNullableType",
+      "family": "jsdoc",
+      "node_occurrences": 30,
+      "baseline_files": 2
+    },
+    {
+      "runtime_name": "JSDocUnknownType",
+      "family": "jsdoc",
+      "node_occurrences": 4,
+      "baseline_files": 1
+    },
+    {
+      "runtime_name": "JsxAttribute",
+      "family": "jsx",
+      "node_occurrences": 200,
+      "baseline_files": 60
+    },
+    {
+      "runtime_name": "JsxAttributes",
+      "family": "jsx",
+      "node_occurrences": 362,
+      "baseline_files": 114
+    },
+    {
+      "runtime_name": "JsxClosingElement",
+      "family": "jsx",
+      "node_occurrences": 161,
+      "baseline_files": 63
+    },
+    {
+      "runtime_name": "JsxClosingFragment",
+      "family": "jsx",
+      "node_occurrences": 25,
+      "baseline_files": 14
+    },
+    {
+      "runtime_name": "JsxElement",
+      "family": "jsx",
+      "node_occurrences": 161,
+      "baseline_files": 63
+    },
+    {
+      "runtime_name": "JsxExpression",
+      "family": "jsx",
+      "node_occurrences": 172,
+      "baseline_files": 55
+    },
+    {
+      "runtime_name": "JsxFragment",
+      "family": "jsx",
+      "node_occurrences": 25,
+      "baseline_files": 14
+    },
+    {
+      "runtime_name": "JsxNamespacedName",
+      "family": "jsx",
+      "node_occurrences": 79,
+      "baseline_files": 5
+    },
+    {
+      "runtime_name": "JsxOpeningElement",
+      "family": "jsx",
+      "node_occurrences": 161,
+      "baseline_files": 63
+    },
+    {
+      "runtime_name": "JsxOpeningFragment",
+      "family": "jsx",
+      "node_occurrences": 25,
+      "baseline_files": 14
+    },
+    {
+      "runtime_name": "JsxSelfClosingElement",
+      "family": "jsx",
+      "node_occurrences": 201,
+      "baseline_files": 76
+    },
+    {
+      "runtime_name": "JsxSpreadAttribute",
+      "family": "jsx",
+      "node_occurrences": 30,
+      "baseline_files": 22
+    },
+    {
+      "runtime_name": "JsxText",
+      "family": "jsx",
+      "node_occurrences": 122,
+      "baseline_files": 34
+    },
+    {
+      "runtime_name": "LabeledStatement",
+      "family": "statements-and-control",
+      "node_occurrences": 165,
+      "baseline_files": 51
+    },
+    {
+      "runtime_name": "LastBinaryOperator",
+      "family": "source-and-other",
+      "node_occurrences": 17,
+      "baseline_files": 9
+    },
+    {
+      "runtime_name": "LastStatement",
+      "family": "statements-and-control",
+      "node_occurrences": 6,
+      "baseline_files": 5
+    },
+    {
+      "runtime_name": "LastTemplateToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 286,
+      "baseline_files": 80
+    },
+    {
+      "runtime_name": "LastTypeNode",
+      "family": "types",
+      "node_occurrences": 49,
+      "baseline_files": 35
+    },
+    {
+      "runtime_name": "LessThanEqualsToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 21,
+      "baseline_files": 9
+    },
+    {
+      "runtime_name": "LessThanLessThanEqualsToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 19,
+      "baseline_files": 9
+    },
+    {
+      "runtime_name": "LessThanLessThanToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 45,
+      "baseline_files": 13
+    },
+    {
+      "runtime_name": "LiteralType",
+      "family": "types",
+      "node_occurrences": 3786,
+      "baseline_files": 633
+    },
+    {
+      "runtime_name": "MappedType",
+      "family": "types",
+      "node_occurrences": 429,
+      "baseline_files": 226
+    },
+    {
+      "runtime_name": "MetaProperty",
+      "family": "declarations-and-modules",
+      "node_occurrences": 3,
+      "baseline_files": 3
+    },
+    {
+      "runtime_name": "MethodDeclaration",
+      "family": "declarations-and-modules",
+      "node_occurrences": 3336,
+      "baseline_files": 1079
+    },
+    {
+      "runtime_name": "MethodSignature",
+      "family": "types",
+      "node_occurrences": 1758,
+      "baseline_files": 528
+    },
+    {
+      "runtime_name": "MinusEqualsToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 21,
+      "baseline_files": 13
+    },
+    {
+      "runtime_name": "MinusToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 80,
+      "baseline_files": 33
+    },
+    {
+      "runtime_name": "MissingDeclaration",
+      "family": "declarations-and-modules",
+      "node_occurrences": 7,
+      "baseline_files": 3
+    },
+    {
+      "runtime_name": "ModuleBlock",
+      "family": "declarations-and-modules",
+      "node_occurrences": 2508,
+      "baseline_files": 1119
+    },
+    {
+      "runtime_name": "ModuleDeclaration",
+      "family": "declarations-and-modules",
+      "node_occurrences": 2699,
+      "baseline_files": 1125
+    },
+    {
+      "runtime_name": "NamedExports",
+      "family": "declarations-and-modules",
+      "node_occurrences": 453,
+      "baseline_files": 264
+    },
+    {
+      "runtime_name": "NamedImports",
+      "family": "declarations-and-modules",
+      "node_occurrences": 962,
+      "baseline_files": 448
+    },
+    {
+      "runtime_name": "NamedTupleMember",
+      "family": "source-and-other",
+      "node_occurrences": 106,
+      "baseline_files": 14
+    },
+    {
+      "runtime_name": "NamespaceExport",
+      "family": "declarations-and-modules",
+      "node_occurrences": 7,
+      "baseline_files": 4
+    },
+    {
+      "runtime_name": "NamespaceExportDeclaration",
+      "family": "declarations-and-modules",
+      "node_occurrences": 32,
+      "baseline_files": 27
+    },
+    {
+      "runtime_name": "NamespaceImport",
+      "family": "declarations-and-modules",
+      "node_occurrences": 250,
+      "baseline_files": 205
+    },
+    {
+      "runtime_name": "NeverKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 645,
+      "baseline_files": 191
+    },
+    {
+      "runtime_name": "NewExpression",
+      "family": "expressions-and-names",
+      "node_occurrences": 2261,
+      "baseline_files": 680
+    },
+    {
+      "runtime_name": "NonNullExpression",
+      "family": "expressions-and-names",
+      "node_occurrences": 180,
+      "baseline_files": 71
+    },
+    {
+      "runtime_name": "NullKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 1679,
+      "baseline_files": 553
+    },
+    {
+      "runtime_name": "NumberKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 6312,
+      "baseline_files": 2049
+    },
+    {
+      "runtime_name": "ObjectBindingPattern",
+      "family": "declarations-and-modules",
+      "node_occurrences": 844,
+      "baseline_files": 241
+    },
+    {
+      "runtime_name": "ObjectKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 202,
+      "baseline_files": 90
+    },
+    {
+      "runtime_name": "ObjectLiteralExpression",
+      "family": "expressions-and-names",
+      "node_occurrences": 3989,
+      "baseline_files": 1245
+    },
+    {
+      "runtime_name": "OmittedExpression",
+      "family": "expressions-and-names",
+      "node_occurrences": 145,
+      "baseline_files": 39
+    },
+    {
+      "runtime_name": "OptionalType",
+      "family": "types",
+      "node_occurrences": 37,
+      "baseline_files": 13
+    },
+    {
+      "runtime_name": "OutKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 44,
+      "baseline_files": 10
+    },
+    {
+      "runtime_name": "OverrideKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 4,
+      "baseline_files": 3
+    },
+    {
+      "runtime_name": "Parameter",
+      "family": "declarations-and-modules",
+      "node_occurrences": 16806,
+      "baseline_files": 2885
+    },
+    {
+      "runtime_name": "ParenthesizedExpression",
+      "family": "expressions-and-names",
+      "node_occurrences": 2218,
+      "baseline_files": 466
+    },
+    {
+      "runtime_name": "ParenthesizedType",
+      "family": "types",
+      "node_occurrences": 401,
+      "baseline_files": 179
+    },
+    {
+      "runtime_name": "PercentEqualsToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 11,
+      "baseline_files": 8
+    },
+    {
+      "runtime_name": "PercentToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 17,
+      "baseline_files": 9
+    },
+    {
+      "runtime_name": "PlusToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 1668,
+      "baseline_files": 290
+    },
+    {
+      "runtime_name": "PostfixUnaryExpression",
+      "family": "expressions-and-names",
+      "node_occurrences": 748,
+      "baseline_files": 122
+    },
+    {
+      "runtime_name": "PrefixUnaryExpression",
+      "family": "expressions-and-names",
+      "node_occurrences": 714,
+      "baseline_files": 201
+    },
+    {
+      "runtime_name": "PrivateIdentifier",
+      "family": "expressions-and-names",
+      "node_occurrences": 79,
+      "baseline_files": 17
+    },
+    {
+      "runtime_name": "PrivateKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 1280,
+      "baseline_files": 286
+    },
+    {
+      "runtime_name": "PropertyAccessExpression",
+      "family": "declarations-and-modules",
+      "node_occurrences": 12643,
+      "baseline_files": 2237
+    },
+    {
+      "runtime_name": "PropertyAssignment",
+      "family": "declarations-and-modules",
+      "node_occurrences": 4676,
+      "baseline_files": 960
+    },
+    {
+      "runtime_name": "PropertyDeclaration",
+      "family": "declarations-and-modules",
+      "node_occurrences": 3078,
+      "baseline_files": 941
+    },
+    {
+      "runtime_name": "PropertySignature",
+      "family": "types",
+      "node_occurrences": 6375,
+      "baseline_files": 1463
+    },
+    {
+      "runtime_name": "ProtectedKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 112,
+      "baseline_files": 28
+    },
+    {
+      "runtime_name": "PublicKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 1757,
+      "baseline_files": 578
+    },
+    {
+      "runtime_name": "QuestionDotToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 63,
+      "baseline_files": 26
+    },
+    {
+      "runtime_name": "QuestionQuestionEqualsToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 1,
+      "baseline_files": 1
+    },
+    {
+      "runtime_name": "QuestionQuestionToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 82,
+      "baseline_files": 11
+    },
+    {
+      "runtime_name": "QuestionToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 2364,
+      "baseline_files": 680
+    },
+    {
+      "runtime_name": "ReadonlyKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 295,
+      "baseline_files": 102
+    },
+    {
+      "runtime_name": "RegularExpressionLiteral",
+      "family": "lexical-and-literals",
+      "node_occurrences": 213,
+      "baseline_files": 71
+    },
+    {
+      "runtime_name": "RestType",
+      "family": "types",
+      "node_occurrences": 157,
+      "baseline_files": 37
+    },
+    {
+      "runtime_name": "ReturnStatement",
+      "family": "statements-and-control",
+      "node_occurrences": 5816,
+      "baseline_files": 1640
+    },
+    {
+      "runtime_name": "SatisfiesExpression",
+      "family": "expressions-and-names",
+      "node_occurrences": 28,
+      "baseline_files": 14
+    },
+    {
+      "runtime_name": "SemicolonClassElement",
+      "family": "declarations-and-modules",
+      "node_occurrences": 17,
+      "baseline_files": 12
+    },
+    {
+      "runtime_name": "SetAccessor",
+      "family": "declarations-and-modules",
+      "node_occurrences": 520,
+      "baseline_files": 158
+    },
+    {
+      "runtime_name": "ShorthandPropertyAssignment",
+      "family": "declarations-and-modules",
+      "node_occurrences": 294,
+      "baseline_files": 98
+    },
+    {
+      "runtime_name": "SlashEqualsToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 20,
+      "baseline_files": 12
+    },
+    {
+      "runtime_name": "SlashToken",
+      "family": "lexical-and-literals",
+      "node_occurrences": 33,
+      "baseline_files": 22
+    },
+    {
+      "runtime_name": "SourceFile",
+      "family": "source-and-other",
+      "node_occurrences": 6530,
+      "baseline_files": 6530
+    },
+    {
+      "runtime_name": "SpreadAssignment",
+      "family": "expressions-and-names",
+      "node_occurrences": 171,
+      "baseline_files": 67
+    },
+    {
+      "runtime_name": "SpreadElement",
+      "family": "expressions-and-names",
+      "node_occurrences": 181,
+      "baseline_files": 58
+    },
+    {
+      "runtime_name": "StaticKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 1350,
+      "baseline_files": 289
+    },
+    {
+      "runtime_name": "StringKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 6575,
+      "baseline_files": 2058
+    },
+    {
+      "runtime_name": "StringLiteral",
+      "family": "lexical-and-literals",
+      "node_occurrences": 13719,
+      "baseline_files": 2769
+    },
+    {
+      "runtime_name": "SuperKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 400,
+      "baseline_files": 162
+    },
+    {
+      "runtime_name": "SwitchStatement",
+      "family": "statements-and-control",
+      "node_occurrences": 209,
+      "baseline_files": 97
+    },
+    {
+      "runtime_name": "SymbolKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 99,
+      "baseline_files": 66
+    },
+    {
+      "runtime_name": "TaggedTemplateExpression",
+      "family": "expressions-and-names",
+      "node_occurrences": 152,
+      "baseline_files": 34
+    },
+    {
+      "runtime_name": "TemplateExpression",
+      "family": "expressions-and-names",
+      "node_occurrences": 231,
+      "baseline_files": 57
+    },
+    {
+      "runtime_name": "TemplateHead",
+      "family": "expressions-and-names",
+      "node_occurrences": 286,
+      "baseline_files": 80
+    },
+    {
+      "runtime_name": "TemplateLiteralType",
+      "family": "types",
+      "node_occurrences": 55,
+      "baseline_files": 26
+    },
+    {
+      "runtime_name": "TemplateLiteralTypeSpan",
+      "family": "types",
+      "node_occurrences": 78,
+      "baseline_files": 26
+    },
+    {
+      "runtime_name": "TemplateMiddle",
+      "family": "expressions-and-names",
+      "node_occurrences": 123,
+      "baseline_files": 32
+    },
+    {
+      "runtime_name": "TemplateSpan",
+      "family": "expressions-and-names",
+      "node_occurrences": 331,
+      "baseline_files": 57
+    },
+    {
+      "runtime_name": "ThisKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 1598,
+      "baseline_files": 522
+    },
+    {
+      "runtime_name": "ThisType",
+      "family": "types",
+      "node_occurrences": 283,
+      "baseline_files": 38
+    },
+    {
+      "runtime_name": "ThrowStatement",
+      "family": "statements-and-control",
+      "node_occurrences": 151,
+      "baseline_files": 65
+    },
+    {
+      "runtime_name": "TrueKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 961,
+      "baseline_files": 469
+    },
+    {
+      "runtime_name": "TryStatement",
+      "family": "statements-and-control",
+      "node_occurrences": 163,
+      "baseline_files": 62
+    },
+    {
+      "runtime_name": "TupleType",
+      "family": "types",
+      "node_occurrences": 868,
+      "baseline_files": 218
+    },
+    {
+      "runtime_name": "TypeAliasDeclaration",
+      "family": "types",
+      "node_occurrences": 2678,
+      "baseline_files": 805
+    },
+    {
+      "runtime_name": "TypeAssertionExpression",
+      "family": "types",
+      "node_occurrences": 547,
+      "baseline_files": 176
+    },
+    {
+      "runtime_name": "TypeLiteral",
+      "family": "lexical-and-literals",
+      "node_occurrences": 3289,
+      "baseline_files": 1143
+    },
+    {
+      "runtime_name": "TypeOfExpression",
+      "family": "types",
+      "node_occurrences": 199,
+      "baseline_files": 79
+    },
+    {
+      "runtime_name": "TypeOperator",
+      "family": "types",
+      "node_occurrences": 904,
+      "baseline_files": 309
+    },
+    {
+      "runtime_name": "TypeParameter",
+      "family": "types",
+      "node_occurrences": 7636,
+      "baseline_files": 1506
+    },
+    {
+      "runtime_name": "TypeQuery",
+      "family": "types",
+      "node_occurrences": 624,
+      "baseline_files": 193
+    },
+    {
+      "runtime_name": "TypeReference",
+      "family": "types",
+      "node_occurrences": 28202,
+      "baseline_files": 2665
+    },
+    {
+      "runtime_name": "UndefinedKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 540,
+      "baseline_files": 216
+    },
+    {
+      "runtime_name": "UnionType",
+      "family": "types",
+      "node_occurrences": 2102,
+      "baseline_files": 688
+    },
+    {
+      "runtime_name": "UnknownKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 497,
+      "baseline_files": 204
+    },
+    {
+      "runtime_name": "VariableDeclaration",
+      "family": "declarations-and-modules",
+      "node_occurrences": 16508,
+      "baseline_files": 4105
+    },
+    {
+      "runtime_name": "VariableDeclarationList",
+      "family": "declarations-and-modules",
+      "node_occurrences": 15724,
+      "baseline_files": 4089
+    },
+    {
+      "runtime_name": "VoidExpression",
+      "family": "expressions-and-names",
+      "node_occurrences": 111,
+      "baseline_files": 40
+    },
+    {
+      "runtime_name": "VoidKeyword",
+      "family": "lexical-and-literals",
+      "node_occurrences": 1899,
+      "baseline_files": 745
+    },
+    {
+      "runtime_name": "WhileStatement",
+      "family": "statements-and-control",
+      "node_occurrences": 225,
+      "baseline_files": 96
+    },
+    {
+      "runtime_name": "WithStatement",
+      "family": "statements-and-control",
+      "node_occurrences": 22,
+      "baseline_files": 18
+    },
+    {
+      "runtime_name": "YieldExpression",
+      "family": "expressions-and-names",
+      "node_occurrences": 87,
+      "baseline_files": 44
+    }
+  ],
+  "diagnostic_codes": [
+    {
+      "code": 1002,
+      "occurrences": 15,
+      "baseline_files": 3
+    },
+    {
+      "code": 1003,
+      "occurrences": 46,
+      "baseline_files": 24
+    },
+    {
+      "code": 1005,
+      "occurrences": 1470,
+      "baseline_files": 317
+    },
+    {
+      "code": 1011,
+      "occurrences": 19,
+      "baseline_files": 9
+    },
+    {
+      "code": 1034,
+      "occurrences": 17,
+      "baseline_files": 3
+    },
+    {
+      "code": 1068,
+      "occurrences": 10,
+      "baseline_files": 7
+    },
+    {
+      "code": 1084,
+      "occurrences": 1,
+      "baseline_files": 1
+    },
+    {
+      "code": 1109,
+      "occurrences": 118,
+      "baseline_files": 58
+    },
+    {
+      "code": 1110,
+      "occurrences": 43,
+      "baseline_files": 24
+    },
+    {
+      "code": 1121,
+      "occurrences": 57,
+      "baseline_files": 6
+    },
+    {
+      "code": 1124,
+      "occurrences": 8,
+      "baseline_files": 1
+    },
+    {
+      "code": 1125,
+      "occurrences": 33,
+      "baseline_files": 3
+    },
+    {
+      "code": 1126,
+      "occurrences": 1,
+      "baseline_files": 1
+    },
+    {
+      "code": 1127,
+      "occurrences": 12,
+      "baseline_files": 10
+    },
+    {
+      "code": 1128,
+      "occurrences": 143,
+      "baseline_files": 64
+    },
+    {
+      "code": 1131,
+      "occurrences": 8,
+      "baseline_files": 3
+    },
+    {
+      "code": 1134,
+      "occurrences": 8,
+      "baseline_files": 3
+    },
+    {
+      "code": 1135,
+      "occurrences": 3,
+      "baseline_files": 3
+    },
+    {
+      "code": 1136,
+      "occurrences": 5,
+      "baseline_files": 4
+    },
+    {
+      "code": 1138,
+      "occurrences": 2,
+      "baseline_files": 2
+    },
+    {
+      "code": 1139,
+      "occurrences": 1,
+      "baseline_files": 1
+    },
+    {
+      "code": 1142,
+      "occurrences": 1,
+      "baseline_files": 1
+    },
+    {
+      "code": 1144,
+      "occurrences": 5,
+      "baseline_files": 2
+    },
+    {
+      "code": 1145,
+      "occurrences": 1,
+      "baseline_files": 1
+    },
+    {
+      "code": 1146,
+      "occurrences": 2,
+      "baseline_files": 2
+    },
+    {
+      "code": 1160,
+      "occurrences": 2,
+      "baseline_files": 2
+    },
+    {
+      "code": 1161,
+      "occurrences": 25,
+      "baseline_files": 10
+    },
+    {
+      "code": 1177,
+      "occurrences": 1,
+      "baseline_files": 1
+    },
+    {
+      "code": 1178,
+      "occurrences": 1,
+      "baseline_files": 1
+    },
+    {
+      "code": 1180,
+      "occurrences": 4,
+      "baseline_files": 1
+    },
+    {
+      "code": 1181,
+      "occurrences": 3,
+      "baseline_files": 3
+    },
+    {
+      "code": 1185,
+      "occurrences": 16,
+      "baseline_files": 6
+    },
+    {
+      "code": 1198,
+      "occurrences": 4,
+      "baseline_files": 1
+    },
+    {
+      "code": 1209,
+      "occurrences": 1,
+      "baseline_files": 1
+    },
+    {
+      "code": 1228,
+      "occurrences": 6,
+      "baseline_files": 5
+    },
+    {
+      "code": 1260,
+      "occurrences": 1,
+      "baseline_files": 1
+    },
+    {
+      "code": 1351,
+      "occurrences": 15,
+      "baseline_files": 3
+    },
+    {
+      "code": 1352,
+      "occurrences": 3,
+      "baseline_files": 2
+    },
+    {
+      "code": 1353,
+      "occurrences": 3,
+      "baseline_files": 2
+    },
+    {
+      "code": 1359,
+      "occurrences": 7,
+      "baseline_files": 3
+    },
+    {
+      "code": 1385,
+      "occurrences": 8,
+      "baseline_files": 1
+    },
+    {
+      "code": 1386,
+      "occurrences": 8,
+      "baseline_files": 1
+    },
+    {
+      "code": 1387,
+      "occurrences": 8,
+      "baseline_files": 1
+    },
+    {
+      "code": 1388,
+      "occurrences": 8,
+      "baseline_files": 1
+    },
+    {
+      "code": 1389,
+      "occurrences": 4,
+      "baseline_files": 2
+    },
+    {
+      "code": 1390,
+      "occurrences": 5,
+      "baseline_files": 1
+    },
+    {
+      "code": 1434,
+      "occurrences": 46,
+      "baseline_files": 26
+    },
+    {
+      "code": 1435,
+      "occurrences": 24,
+      "baseline_files": 6
+    },
+    {
+      "code": 1437,
+      "occurrences": 6,
+      "baseline_files": 4
+    },
+    {
+      "code": 1438,
+      "occurrences": 2,
+      "baseline_files": 2
+    },
+    {
+      "code": 1440,
+      "occurrences": 1,
+      "baseline_files": 1
+    },
+    {
+      "code": 1477,
+      "occurrences": 2,
+      "baseline_files": 2
+    },
+    {
+      "code": 1478,
+      "occurrences": 6,
+      "baseline_files": 2
+    },
+    {
+      "code": 1487,
+      "occurrences": 86,
+      "baseline_files": 1
+    },
+    {
+      "code": 1488,
+      "occurrences": 8,
+      "baseline_files": 1
+    },
+    {
+      "code": 1489,
+      "occurrences": 15,
+      "baseline_files": 2
+    },
+    {
+      "code": 1490,
+      "occurrences": 9,
+      "baseline_files": 9
+    },
+    {
+      "code": 2427,
+      "occurrences": 3,
+      "baseline_files": 2
+    },
+    {
+      "code": 2457,
+      "occurrences": 2,
+      "baseline_files": 1
+    },
+    {
+      "code": 2458,
+      "occurrences": 1,
+      "baseline_files": 1
+    },
+    {
+      "code": 2754,
+      "occurrences": 3,
+      "baseline_files": 3
+    },
+    {
+      "code": 2809,
+      "occurrences": 2,
+      "baseline_files": 1
+    },
+    {
+      "code": 2819,
+      "occurrences": 3,
+      "baseline_files": 2
+    },
+    {
+      "code": 6188,
+      "occurrences": 28,
+      "baseline_files": 2
+    },
+    {
+      "code": 6189,
+      "occurrences": 1,
+      "baseline_files": 1
+    },
+    {
+      "code": 17008,
+      "occurrences": 2,
+      "baseline_files": 1
+    },
+    {
+      "code": 18026,
+      "occurrences": 13,
+      "baseline_files": 8
+    }
+  ],
+  "feature_families": {
+    "declarations-and-modules": {
+      "runtime_names": 40,
+      "node_occurrences": 111105
+    },
+    "expressions-and-names": {
+      "runtime_names": 27,
+      "node_occurrences": 214017
+    },
+    "jsdoc": {
+      "runtime_names": 3,
+      "node_occurrences": 46
+    },
+    "jsx": {
+      "runtime_names": 13,
+      "node_occurrences": 1724
+    },
+    "lexical-and-literals": {
+      "runtime_names": 83,
+      "node_occurrences": 94876
+    },
+    "source-and-other": {
+      "runtime_names": 10,
+      "node_occurrences": 17291
+    },
+    "statements-and-control": {
+      "runtime_names": 24,
+      "node_occurrences": 57994
+    },
+    "types": {
+      "runtime_names": 34,
+      "node_occurrences": 69844
+    }
+  },
+  "uncovered": {
+    "runtime_kind_names": [
+      "AmpersandAmpersandEqualsToken",
+      "AsKeyword",
+      "AssertKeyword",
+      "AtToken",
+      "BacktickToken",
+      "BarBarEqualsToken",
+      "Bundle",
+      "CaseKeyword",
+      "CatchKeyword",
+      "ClassKeyword",
+      "CloseBraceToken",
+      "CloseBracketToken",
+      "CloseParenToken",
+      "CommaListExpression",
+      "ConstructorKeyword",
+      "ContinueKeyword",
+      "DebuggerKeyword",
+      "DeleteKeyword",
+      "DoKeyword",
+      "DotToken",
+      "ElseKeyword",
+      "EnumKeyword",
+      "ExtendsKeyword",
+      "FinallyKeyword",
+      "FirstFutureReservedWord",
+      "FirstJSDocNode",
+      "FirstJSDocTagNode",
+      "FirstKeyword",
+      "FirstPunctuation",
+      "FirstToken",
+      "FirstTriviaToken",
+      "ForKeyword",
+      "FromKeyword",
+      "FunctionKeyword",
+      "GetKeyword",
+      "GlobalKeyword",
+      "HashToken",
+      "IfKeyword",
+      "ImportTypeAssertionContainer",
+      "InferKeyword",
+      "InterfaceKeyword",
+      "IntrinsicKeyword",
+      "IsKeyword",
+      "JSDocAllType",
+      "JSDocAugmentsTag",
+      "JSDocAuthorTag",
+      "JSDocCallbackTag",
+      "JSDocClassTag",
+      "JSDocComment",
+      "JSDocCommentTextToken",
+      "JSDocDeprecatedTag",
+      "JSDocEnumTag",
+      "JSDocFunctionType",
+      "JSDocImplementsTag",
+      "JSDocLink",
+      "JSDocLinkCode",
+      "JSDocLinkPlain",
+      "JSDocMemberName",
+      "JSDocNameReference",
+      "JSDocNamepathType",
+      "JSDocOptionalType",
+      "JSDocOverloadTag",
+      "JSDocOverrideTag",
+      "JSDocParameterTag",
+      "JSDocPrivateTag",
+      "JSDocPropertyTag",
+      "JSDocProtectedTag",
+      "JSDocPublicTag",
+      "JSDocReadonlyTag",
+      "JSDocReturnTag",
+      "JSDocSatisfiesTag",
+      "JSDocSeeTag",
+      "JSDocSignature",
+      "JSDocTemplateTag",
+      "JSDocText",
+      "JSDocThisTag",
+      "JSDocThrowsTag",
+      "JSDocTypeLiteral",
+      "JSDocTypeTag",
+      "JSDocTypedefTag",
+      "JSDocVariadicType",
+      "JsxTextAllWhiteSpaces",
+      "KeyOfKeyword",
+      "LastContextualKeyword",
+      "LastFutureReservedWord",
+      "LastJSDocTagNode",
+      "LastReservedWord",
+      "LastTriviaToken",
+      "LessThanSlashToken",
+      "LetKeyword",
+      "MinusMinusToken",
+      "ModuleKeyword",
+      "MultiLineCommentTrivia",
+      "NamespaceKeyword",
+      "NewKeyword",
+      "NewLineTrivia",
+      "NonTextFileMarkerTrivia",
+      "NotEmittedStatement",
+      "NotEmittedTypeElement",
+      "OfKeyword",
+      "OpenBracketToken",
+      "OpenParenToken",
+      "PackageKeyword",
+      "PartiallyEmittedExpression",
+      "PlusPlusToken",
+      "RequireKeyword",
+      "ReturnKeyword",
+      "SatisfiesKeyword",
+      "SemicolonToken",
+      "SetKeyword",
+      "ShebangTrivia",
+      "SwitchKeyword",
+      "SyntaxList",
+      "SyntheticExpression",
+      "SyntheticReferenceExpression",
+      "ThrowKeyword",
+      "TildeToken",
+      "TryKeyword",
+      "TypeKeyword",
+      "TypeOfKeyword",
+      "UniqueKeyword",
+      "UsingKeyword",
+      "VarKeyword",
+      "WhileKeyword",
+      "WhitespaceTrivia"
+    ],
+    "required_diagnostic_catalog_entries": [
+      {
+        "symbol": "Diagnostics.The_parser_expected_to_find_a_1_to_match_the_0_token_here",
+        "code": 1007
+      },
+      {
+        "symbol": "Diagnostics.Asterisk_Slash_expected",
+        "code": 1010
+      },
+      {
+        "symbol": "Diagnostics.Unexpected_token",
+        "code": 1012
+      },
+      {
+        "symbol": "Diagnostics.Unexpected_token_A_type_parameter_name_was_expected_without_curly_braces",
+        "code": 1069
+      },
+      {
+        "symbol": "Diagnostics.Statement_expected",
+        "code": 1129
+      },
+      {
+        "symbol": "Diagnostics.case_or_default_expected",
+        "code": 1130
+      },
+      {
+        "symbol": "Diagnostics.Enum_member_expected",
+        "code": 1132
+      },
+      {
+        "symbol": "Diagnostics.Expression_or_comma_expected",
+        "code": 1137
+      },
+      {
+        "symbol": "Diagnostics.Type_argument_expected",
+        "code": 1140
+      },
+      {
+        "symbol": "Diagnostics.Unexpected_token_expected",
+        "code": 1179
+      },
+      {
+        "symbol": "Diagnostics.Unterminated_Unicode_escape_sequence",
+        "code": 1199
+      },
+      {
+        "symbol": "Diagnostics._0_tag_already_specified",
+        "code": 1223
+      },
+      {
+        "symbol": "Diagnostics.String_literal_with_double_quotes_expected",
+        "code": 1327
+      },
+      {
+        "symbol": "Diagnostics.Property_value_can_only_be_string_literal_numeric_literal_true_false_null_object_literal_or_array_literal",
+        "code": 1328
+      },
+      {
+        "symbol": "Diagnostics.An_enum_member_name_must_be_followed_by_a_or",
+        "code": 1357
+      },
+      {
+        "symbol": "Diagnostics.Did_you_mean_0",
+        "code": 1369
+      },
+      {
+        "symbol": "Diagnostics.Unexpected_token_Did_you_mean_or_rbrace",
+        "code": 1381
+      },
+      {
+        "symbol": "Diagnostics.Unexpected_token_Did_you_mean_or_gt",
+        "code": 1382
+      },
+      {
+        "symbol": "Diagnostics.Neither_decorators_nor_modifiers_may_be_applied_to_this_parameters",
+        "code": 1433
+      },
+      {
+        "symbol": "Diagnostics.Decorators_must_precede_the_name_and_all_keywords_of_property_declarations",
+        "code": 1436
+      },
+      {
+        "symbol": "Diagnostics.Type_alias_must_be_given_a_name",
+        "code": 1439
+      },
+      {
+        "symbol": "Diagnostics.Cannot_start_a_function_call_in_a_type_annotation",
+        "code": 1441
+      },
+      {
+        "symbol": "Diagnostics.Expected_for_property_initializer",
+        "code": 1442
+      },
+      {
+        "symbol": "Diagnostics.Module_declaration_names_may_only_use_or_quoted_strings",
+        "code": 1443
+      },
+      {
+        "symbol": "Diagnostics.resolution_mode_should_be_either_require_or_import",
+        "code": 1453
+      },
+      {
+        "symbol": "Diagnostics.catch_or_finally_expected",
+        "code": 1472
+      },
+      {
+        "symbol": "Diagnostics.Unknown_regular_expression_flag",
+        "code": 1499
+      },
+      {
+        "symbol": "Diagnostics.Duplicate_regular_expression_flag",
+        "code": 1500
+      },
+      {
+        "symbol": "Diagnostics.This_regular_expression_flag_is_only_available_when_targeting_0_or_later",
+        "code": 1501
+      },
+      {
+        "symbol": "Diagnostics.The_Unicode_u_flag_and_the_Unicode_Sets_v_flag_cannot_be_set_simultaneously",
+        "code": 1502
+      },
+      {
+        "symbol": "Diagnostics.Named_capturing_groups_are_only_available_when_targeting_ES2018_or_later",
+        "code": 1503
+      },
+      {
+        "symbol": "Diagnostics.Subpattern_flags_must_be_present_when_there_is_a_minus_sign",
+        "code": 1504
+      },
+      {
+        "symbol": "Diagnostics.Incomplete_quantifier_Digit_expected",
+        "code": 1505
+      },
+      {
+        "symbol": "Diagnostics.Numbers_out_of_order_in_quantifier",
+        "code": 1506
+      },
+      {
+        "symbol": "Diagnostics.There_is_nothing_available_for_repetition",
+        "code": 1507
+      },
+      {
+        "symbol": "Diagnostics.Unexpected_0_Did_you_mean_to_escape_it_with_backslash",
+        "code": 1508
+      },
+      {
+        "symbol": "Diagnostics.This_regular_expression_flag_cannot_be_toggled_within_a_subpattern",
+        "code": 1509
+      },
+      {
+        "symbol": "Diagnostics.k_must_be_followed_by_a_capturing_group_name_enclosed_in_angle_brackets",
+        "code": 1510
+      },
+      {
+        "symbol": "Diagnostics.q_is_only_available_inside_character_class",
+        "code": 1511
+      },
+      {
+        "symbol": "Diagnostics.c_must_be_followed_by_an_ASCII_letter",
+        "code": 1512
+      },
+      {
+        "symbol": "Diagnostics.Undetermined_character_escape",
+        "code": 1513
+      },
+      {
+        "symbol": "Diagnostics.Expected_a_capturing_group_name",
+        "code": 1514
+      },
+      {
+        "symbol": "Diagnostics.Named_capturing_groups_with_the_same_name_must_be_mutually_exclusive_to_each_other",
+        "code": 1515
+      },
+      {
+        "symbol": "Diagnostics.A_character_class_range_must_not_be_bounded_by_another_character_class",
+        "code": 1516
+      },
+      {
+        "symbol": "Diagnostics.Range_out_of_order_in_character_class",
+        "code": 1517
+      },
+      {
+        "symbol": "Diagnostics.Anything_that_would_possibly_match_more_than_a_single_character_is_invalid_inside_a_negated_character_class",
+        "code": 1518
+      },
+      {
+        "symbol": "Diagnostics.Operators_must_not_be_mixed_within_a_character_class_Wrap_it_in_a_nested_class_instead",
+        "code": 1519
+      },
+      {
+        "symbol": "Diagnostics.Expected_a_class_set_operand",
+        "code": 1520
+      },
+      {
+        "symbol": "Diagnostics.q_must_be_followed_by_string_alternatives_enclosed_in_braces",
+        "code": 1521
+      },
+      {
+        "symbol": "Diagnostics.A_character_class_must_not_contain_a_reserved_double_punctuator_Did_you_mean_to_escape_it_with_backslash",
+        "code": 1522
+      },
+      {
+        "symbol": "Diagnostics.Expected_a_Unicode_property_name",
+        "code": 1523
+      },
+      {
+        "symbol": "Diagnostics.Unknown_Unicode_property_name",
+        "code": 1524
+      },
+      {
+        "symbol": "Diagnostics.Expected_a_Unicode_property_value",
+        "code": 1525
+      },
+      {
+        "symbol": "Diagnostics.Unknown_Unicode_property_value",
+        "code": 1526
+      },
+      {
+        "symbol": "Diagnostics.Expected_a_Unicode_property_name_or_value",
+        "code": 1527
+      },
+      {
+        "symbol": "Diagnostics.Any_Unicode_property_that_would_possibly_match_more_than_a_single_character_is_only_available_when_the_Unicode_Sets_v_flag_is_set",
+        "code": 1528
+      },
+      {
+        "symbol": "Diagnostics.Unknown_Unicode_property_name_or_value",
+        "code": 1529
+      },
+      {
+        "symbol": "Diagnostics.Unicode_property_value_expressions_are_only_available_when_the_Unicode_u_flag_or_the_Unicode_Sets_v_flag_is_set",
+        "code": 1530
+      },
+      {
+        "symbol": "Diagnostics._0_must_be_followed_by_a_Unicode_property_value_expression_enclosed_in_braces",
+        "code": 1531
+      },
+      {
+        "symbol": "Diagnostics.There_is_no_capturing_group_named_0_in_this_regular_expression",
+        "code": 1532
+      },
+      {
+        "symbol": "Diagnostics.This_backreference_refers_to_a_group_that_does_not_exist_There_are_only_0_capturing_groups_in_this_regular_expression",
+        "code": 1533
+      },
+      {
+        "symbol": "Diagnostics.This_backreference_refers_to_a_group_that_does_not_exist_There_are_no_capturing_groups_in_this_regular_expression",
+        "code": 1534
+      },
+      {
+        "symbol": "Diagnostics.This_character_cannot_be_escaped_in_a_regular_expression",
+        "code": 1535
+      },
+      {
+        "symbol": "Diagnostics.Octal_escape_sequences_and_backreferences_are_not_allowed_in_a_character_class_If_this_was_intended_as_an_escape_sequence_use_the_syntax_0_instead",
+        "code": 1536
+      },
+      {
+        "symbol": "Diagnostics.Decimal_escape_sequences_and_backreferences_are_not_allowed_in_a_character_class",
+        "code": 1537
+      },
+      {
+        "symbol": "Diagnostics.Unicode_escape_sequences_are_only_available_when_the_Unicode_u_flag_or_the_Unicode_Sets_v_flag_is_set",
+        "code": 1538
+      },
+      {
+        "symbol": "Diagnostics.JSX_expressions_must_have_one_parent_element",
+        "code": 2657
+      },
+      {
+        "symbol": "Diagnostics.The_0_modifier_can_only_be_used_in_TypeScript_files",
+        "code": 8009
+      },
+      {
+        "symbol": "Diagnostics.A_JSDoc_typedef_comment_may_not_contain_multiple_type_tags",
+        "code": 8033
+      },
+      {
+        "symbol": "Diagnostics.The_tag_was_first_specified_here",
+        "code": 8034
+      },
+      {
+        "symbol": "Diagnostics.A_JSDoc_template_tag_may_not_follow_a_typedef_callback_or_overload_tag",
+        "code": 8039
+      },
+      {
+        "symbol": "Diagnostics.Expected_corresponding_JSX_closing_tag_for_0",
+        "code": 17002
+      },
+      {
+        "symbol": "Diagnostics.An_unary_expression_with_the_0_operator_is_not_allowed_in_the_left_hand_side_of_an_exponentiation_expression_Consider_enclosing_the_expression_in_parentheses",
+        "code": 17006
+      },
+      {
+        "symbol": "Diagnostics.A_type_assertion_expression_is_not_allowed_in_the_left_hand_side_of_an_exponentiation_expression_Consider_enclosing_the_expression_in_parentheses",
+        "code": 17007
+      },
+      {
+        "symbol": "Diagnostics.JSX_fragment_has_no_corresponding_closing_tag",
+        "code": 17014
+      },
+      {
+        "symbol": "Diagnostics.Expected_corresponding_closing_tag_for_JSX_fragment",
+        "code": 17015
+      },
+      {
+        "symbol": "Diagnostics.Unicode_escape_sequence_cannot_appear_here",
+        "code": 17021
+      },
+      {
+        "symbol": "Diagnostics.Private_identifiers_cannot_be_used_as_parameters",
+        "code": 18009
+      },
+      {
+        "symbol": "Diagnostics.Private_identifiers_are_not_allowed_outside_class_bodies",
+        "code": 18016
+      },
+      {
+        "symbol": "Diagnostics.Private_identifiers_are_not_allowed_in_variable_declarations",
+        "code": 18029
+      },
+      {
+        "symbol": "Diagnostics.An_optional_chain_cannot_contain_private_identifiers",
+        "code": 18030
+      }
+    ],
+    "script_kinds": [
+      "JS",
+      "JSX",
+      "JSON"
+    ],
+    "projection_dimensions": [
+      "numeric kind",
+      "raw pos/end",
+      "node-specific fields",
+      "NodeFlags/TransformFlags/TokenFlags",
+      "NodeArray metadata",
+      "named child edges",
+      "parent links",
+      "SourceFile metadata",
+      "structured diagnostic chains and related information"
+    ]
+  },
+  "stress_budgets": {
+    "runner_class": "github-actions-ubuntu-latest-standard-x64",
+    "fixtures": 11
+  }
+}
