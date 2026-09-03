@@ -2,48 +2,138 @@ name: check
 
 on:
   push:
-    branches:
-      - master
-      - main   
+    branches: [master, main]
   pull_request:
+  schedule:
+    - cron: "17 3 * * 1"
+
+env:
+  TYPESCRIPT_VERSION: "6.0.3"
+  TYPESCRIPT_GIT_HEAD: "050880ce59e30b356b686bd3144efe24f875ebc8"
 
 jobs:
-  check:
-    strategy:    
-      fail-fast: false
+  baseline:
     runs-on: ubuntu-latest
-    continue-on-error: false
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: 'recursive'
-
-      - name: install
+          submodules: recursive
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install pinned Node dependencies
+        run: npm ci
+      - name: Assert exact TypeScript package provenance
+        run: |
+          node -e 'const p=require("./node_modules/typescript/package.json"); if(p.version!==process.env.TYPESCRIPT_VERSION||p.gitHead!==process.env.TYPESCRIPT_GIT_HEAD) process.exit(1)'
+      - name: Install MoonBit
         run: |
           curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
-          echo "$HOME/.moon/bin" >> $GITHUB_PATH
-
-      - name: moon version
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - name: Verify read-only upstream bootstrap and Node audits
         run: |
-          moon version --all
+          npm run bootstrap:typescript
+          npm run test:baseline
 
-      - name: moon update
+  moon:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Install MoonBit
         run: |
-          moon update
-
-      - name: moon check
-        run: moon check --deny-warn
-
-      - name: moon info
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - name: Prove clean checkout has no target dependency
         run: |
+          rm -rf target _build
+          moon check --target all --deny-warn
+          moon test --target all
+      - name: Verify canonical and all-target interfaces
+        run: |
+          moon info
+          git diff --exit-code -- pkg.generated.mbti
           moon info --target all
-          git diff --exit-code
-
-      - name: format diff
+          git diff --exit-code -- pkg.generated.mbti
+      - name: Format and inspect generated changes
         run: |
           moon fmt
           git diff --exit-code
 
-      - name: moon test
+  native-diff:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install MoonBit
         run: |
-          moon test --target all
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - name: Run deterministic native differential shard
+        run: npm run diff:shard -- --shard-index ${{ matrix.shard }} --shard-count 8 --max-failures 20
+
+  native-diff-summary:
+    runs-on: ubuntu-latest
+    needs: native-diff
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install MoonBit
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - name: Prove every manifest input belongs to exactly one shard
+        run: moon run tools/diff --target native --release -- --manifest docs/corpus-manifest.jsonl --shard-count 8 --verify-shards
+
+  online-legacy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Install MoonBit
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - name: Compare 11 streamed legacy ASTs under timeout and RSS supervision
+        run: npm run audit -- online-legacy
+
+  stress-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install MoonBit
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - name: Run stable native release smoke budgets
+        run: npm run audit -- stress-smoke
+
+  scheduled-metrics:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Install MoonBit
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - run: npm run audit -- coverage
+      - run: npm run audit -- stress

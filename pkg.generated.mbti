@@ -6,940 +6,699 @@ import {
 }
 
 // Values
-pub fn create_source_file(String, ParseOptions) -> SourceFile
+pub fn compute_token_start(SourceText, Int, stop_after_line_break? : Bool, stop_at_comments? : Bool, in_jsdoc? : Bool) -> FullStartAndTokenStart
 
-pub fn default_parse_options(String, script_kind? : ScriptKind, jsdoc_parsing_mode? : JsDocParsingMode) -> ParseOptions
+pub fn could_start_trivia(SourceText, Int) -> Bool
 
-pub fn default_parse_options_without_jsdoc(String, script_kind? : ScriptKind) -> ParseOptions
+pub fn create_source_file(String, String, language_version? : ScriptTarget, script_kind? : ScriptKind, set_parent_nodes? : Bool, jsdoc_parsing_mode? : JSDocParsingMode, implied_node_format? : ResolutionMode, external_module_indicator_policy? : (Node) -> ExternalModuleIndicator?) -> Node
 
-pub fn parse_isolated_entity_name(String, ParseOptions) -> (Array[ParseError], String?)
+pub fn[T] for_each_child(Node, (Node) -> T?, list_callback? : (NodeArray) -> T?) -> T?
 
-pub fn parse_isolated_jsdoc_comment(String, ParseOptions) -> (Array[ParseError], CommentRange?)
+pub fn[T] for_each_child_recursively(Node, (Node, Node) -> TraversalControl[T], list_callback? : (NodeArray, Node) -> TraversalControl[T]) -> T?
 
-pub fn parse_isolated_type_expression(String, ParseOptions) -> (Array[ParseError], TypeNode?)
+pub fn format_string_from_diagnostic_arguments(String, ReadOnlyArray[DiagnosticArgument]) -> String
 
-pub fn parse_json_text(String, name? : String) -> SourceFile
+pub fn get_leading_comment_ranges(SourceText, Int) -> ReadOnlyArray[CommentRange]?
 
-pub fn parse_program(String, name? : String) -> (ArrayView[ParseError], Program)
+pub fn get_shebang(SourceText) -> String?
 
-pub fn parse_program_with_jsx(String, Bool, name? : String) -> (ArrayView[ParseError], Program)
+pub fn get_trailing_comment_ranges(SourceText, Int) -> ReadOnlyArray[CommentRange]?
 
-pub fn parse_source(String, ParseOptions) -> (ArrayView[ParseError], Program)
+pub fn is_declaration_file_name(String) -> Bool
+
+pub fn is_external_module(Node) -> Bool
+
+pub fn is_line_break(Int) -> Bool
+
+pub fn is_white_space_like(Int) -> Bool
+
+pub fn is_white_space_single_line(Int) -> Bool
+
+pub fn parse_isolated_entity_name(String, language_version? : ScriptTarget) -> Node?
+
+pub fn parse_isolated_jsdoc_comment(String, start? : Int, length? : Int) -> JsDocParseResult?
+
+pub fn parse_json_text(String, String) -> Node
+
+pub fn skip_trivia(SourceText, Int, stop_after_line_break? : Bool, stop_at_comments? : Bool, in_jsdoc? : Bool) -> Int
+
+pub fn utf16_char_size(Int) -> Int
+
+pub fn utf16_encode_as_string(Int) -> String
 
 // Errors
-pub(all) suberror LexError {
-  InvalidChar(pos~ : Position, UInt16)
-  UnterminatedString(pos~ : Position)
-  UnexpectedEndOfText(pos~ : Position)
-  UnterminatedComment(pos~ : Position)
-  InvalidNumber(pos~ : Position, String)
-} derive(Eq, @debug.Debug)
-
-pub(all) suberror ParseError {
-  LexErr(LexError)
-  SpeculativeArrowFailure
-  Diagnostic(filename~ : String, line~ : Int, column~ : Int, error_code~ : Int, error_msg~ : String)
-} derive(Eq, @debug.Debug)
-pub impl Show for ParseError
 
 // Types and methods
-pub enum AccessModifier {
-  Public
-  Private
-  Protected
-} derive(@debug.Debug)
-
-pub enum ArrayElement {
-  Expr(Expr)
-  Spread(Expr)
-  Hole
-} derive(@debug.Debug)
-
-pub struct ArrayPattern {
-  elems : Array[ArrayPatternElem]
-} derive(@debug.Debug)
-
-pub enum ArrayPatternElem {
-  Elem(BindingElement)
-  Rest(BindingPattern)
-  Hole
-} derive(@debug.Debug)
-
-pub struct ArrowFunction {
-  type_params : Array[TypeParam]
-  params : Array[Param]
-  return_type : TypeNode?
-  body : FunctionBody
-} derive(@debug.Debug)
-
-pub struct AsExpr {
-  expr : Expr
-  type_ann : TypeNode
-} derive(@debug.Debug)
-
-pub struct AssignExpr {
-  op : AssignOp
-  target : Expr
-  value : Expr
-} derive(@debug.Debug)
-
-pub enum AssignOp {
-  Assign
-  AddAssign
-  SubAssign
-  MulAssign
-  DivAssign
-  ModAssign
-  PowAssign
-  LogicalAndAssign
-  LogicalOrAssign
-  NullishAssign
-  BitAndAssign
-  BitOrAssign
-  BitXorAssign
-  ShlAssign
-  ShrAssign
-  UShrAssign
-} derive(@debug.Debug)
-
-pub struct BinaryExpr {
-  op : BinaryOp
-  left : Expr
-  right : Expr
-} derive(@debug.Debug)
-
-pub enum BinaryOp {
-  Add
-  Sub
-  Mul
-  Div
-  Mod
-  Eq
-  Neq
-  StrictEq
-  StrictNeq
-  Lt
-  Lte
-  Gt
-  Gte
-  Instanceof
-  In
-  And
-  Or
-  Nullish
-  BitAnd
-  BitOr
-  BitXor
-  Shl
-  Shr
-  UShr
-  Comma
-  Pow
-} derive(@debug.Debug)
-
-pub struct BindingElement {
-  pattern : BindingPattern
-  default_value : Expr?
-  span : Span
-} derive(@debug.Debug)
-
-pub struct BindingPattern {
-  kind : BindingPatternKind
-  span : Span
-} derive(@debug.Debug)
-
-pub enum BindingPatternKind {
-  Ident(String)
-  Object(ObjectPattern)
-  Array(ArrayPattern)
-} derive(@debug.Debug)
-
-pub struct Block {
-  stmts : Array[Stmt]
-  span : Span
-} derive(@debug.Debug)
-
-pub struct CallExpr {
-  callee : Expr
-  args : Array[Expr]
-  optional : Bool
-} derive(@debug.Debug)
-
-pub struct CatchClause {
-  param : CatchParam?
-  body : Block
-} derive(@debug.Debug)
-
-pub struct CatchParam {
-  name : String
-  type_ann : TypeNode?
-  span : Span
-} derive(@debug.Debug)
-
-pub struct ClassDecl {
+pub struct AmdDependency {
   name : String?
-  decorators : Array[Expr]
-  type_params : Array[TypeParam]
-  extends : Expr?
-  implements : Array[TypeNode]
-  members : Array[ClassMember]
-  span : Span
-} derive(@debug.Debug)
+  path : String
+} derive(Eq, @debug.Debug)
+pub fn AmdDependency::name(Self) -> String?
+pub fn AmdDependency::path(Self) -> String
 
-pub struct ClassMember {
-  kind : ClassMemberKind
-  decorators : Array[Expr]
-  is_static : Bool
-  access : AccessModifier?
-  is_readonly : Bool
-  span : Span
-} derive(@debug.Debug)
-
-pub enum ClassMemberKind {
-  StaticBlock(Block)
-  Constructor(Array[Param], Block)
-  Method(MemberName, Array[Param], TypeNode?, Block)
-  Getter(MemberName, TypeNode?, Block)
-  Setter(MemberName, Param, Block)
-  Field(MemberName, TypeNode?, Expr?)
-} derive(@debug.Debug)
+pub struct CheckJsDirective {
+  enabled : Bool
+  pos : Int
+  end : Int
+} derive(Eq, @debug.Debug)
+pub fn CheckJsDirective::enabled(Self) -> Bool
+pub fn CheckJsDirective::end(Self) -> Int
+pub fn CheckJsDirective::pos(Self) -> Int
 
 pub struct CommentDirective {
-  kind : CommentDirectiveKind
-  span : Span
-  text : String
-} derive(@debug.Debug)
+  range : TextRange
+  directive_type : CommentDirectiveType
+} derive(Eq, @debug.Debug)
+pub fn CommentDirective::directive_type(Self) -> CommentDirectiveType
+pub fn CommentDirective::range(Self) -> TextRange
 
-pub enum CommentDirectiveKind {
-  TsIgnore
-  TsExpectError
-  TsNoCheck
-  TsCheck
-} derive(@debug.Debug)
-
-pub enum CommentKind {
-  Line
-  Block
-  JsDoc
-} derive(@debug.Debug)
+pub enum CommentDirectiveType {
+  ExpectError
+  Ignore
+} derive(Eq, @debug.Debug)
+pub fn CommentDirectiveType::from_int(Int) -> Self?
+pub fn CommentDirectiveType::to_int(Self) -> Int
 
 pub struct CommentRange {
-  kind : CommentKind
-  span : Span
-  text : String
-} derive(@debug.Debug)
-
-pub struct ConditionalExpr {
-  condition : Expr
-  consequent : Expr
-  alternate : Expr
-} derive(@debug.Debug)
-
-pub struct ConstructorType {
-  type_params : Array[TypeParam]
-  params : Array[Param]
-  return_type : TypeNode
-  is_abstract : Bool
-} derive(@debug.Debug)
-
-pub struct DoWhileStmt {
-  body : Stmt
-  condition : Expr
-} derive(@debug.Debug)
-
-pub struct EnumDecl {
-  name : String
-  members : Array[EnumMember]
-  is_const : Bool
-  span : Span
-} derive(@debug.Debug)
-
-pub struct EnumMember {
-  name : String
-  init : Expr?
-  span : Span
-} derive(@debug.Debug)
-
-pub enum ExportDecl {
-  Named(ExportNamed)
-  Default(ExportDefault)
-  Declaration(Stmt)
-  Assign(Expr)
-} derive(@debug.Debug)
-
-pub enum ExportDefault {
-  Expr(Expr)
-  Function(FunctionDecl)
-  Class(ClassDecl)
-} derive(@debug.Debug)
-
-pub struct ExportNamed {
-  is_type_only : Bool
-  specs : Array[ExportSpec]
-  module_specifier : Expr?
-} derive(@debug.Debug)
-
-pub struct ExportSpec {
-  is_type_only : Bool
-  name : String
-  as_name : String?
-  span : Span
-} derive(@debug.Debug)
-
-pub struct Expr {
-  kind : ExprKind
-  span : Span
-} derive(@debug.Debug)
-
-pub enum ExprKind {
-  Ident(String)
-  PrivateIdent(String)
-  Number(String)
-  String(String)
-  Bool(Bool)
-  Null
-  Undefined
-  This
-  Array(Array[ArrayElement])
-  Object(ObjectLiteral)
-  Function(FunctionDecl)
-  Class(ClassDecl)
-  Arrow(ArrowFunction)
-  New(NewExpr)
-  TypeAssert(TypeAssert)
-  As(AsExpr)
-  Satisfies(SatisfiesExpr)
-  JSXElement(JSXElement)
-  JSXFragment(JSXFragment)
-  Template(TemplateLiteral)
-  Unary(UnaryExpr)
-  Update(UpdateExpr)
-  NonNull(Expr)
-  Binary(BinaryExpr)
-  Conditional(ConditionalExpr)
-  Assign(AssignExpr)
-  Call(CallExpr)
-  Member(MemberExpr)
-} derive(@debug.Debug)
-
-pub enum ForInLeft {
-  Var(VarDecl)
-  Expr(Expr)
-} derive(@debug.Debug)
-
-pub struct ForInStmt {
-  left : ForInLeft
-  right : Expr
-  body : Stmt
-} derive(@debug.Debug)
-
-pub enum ForInit {
-  Var(VarDecl)
-  Expr(Expr)
-} derive(@debug.Debug)
-
-pub struct ForOfStmt {
-  left : ForInLeft
-  right : Expr
-  body : Stmt
-} derive(@debug.Debug)
-
-pub struct ForStmt {
-  init : ForInit?
-  condition : Expr?
-  update : Expr?
-  body : Stmt
-} derive(@debug.Debug)
-
-pub enum FunctionBody {
-  Block(Block)
-  Expr(Expr)
-} derive(@debug.Debug)
-
-pub struct FunctionDecl {
-  name : String?
-  type_params : Array[TypeParam]
-  params : Array[Param]
-  return_type : TypeNode?
-  body : Block
-} derive(@debug.Debug)
-
-pub struct ImportAssignDecl {
-  name : String
-  value : Expr
-  span : Span
-} derive(@debug.Debug)
-
-pub struct ImportAttribute {
-  name : String
-  value : Expr
-  span : Span
-} derive(@debug.Debug)
-
-pub struct ImportAttributes {
-  fields : Array[ImportAttribute]
-  span : Span
-} derive(@debug.Debug)
-
-pub struct ImportDecl {
-  is_type_only : Bool
-  default_name : String?
-  ns_name : String?
-  named : Array[ImportSpec]
-  module_specifier : Expr
-  span : Span
-} derive(@debug.Debug)
-
-pub struct ImportSpec {
-  is_type_only : Bool
-  name : String
-  as_name : String?
-  span : Span
-} derive(@debug.Debug)
-
-pub struct ImportType {
-  argument : String
-  attributes : ImportAttributes?
-  qualifier : String?
-  type_args : Array[TypeNode]
-  is_typeof : Bool
-} derive(@debug.Debug)
-
-pub struct InferType {
-  type_param : TypeParam
-} derive(@debug.Debug)
-
-pub struct InterfaceDecl {
-  name : String
-  type_params : Array[TypeParam]
-  extends : Array[TypeNode]
-  members : Array[InterfaceMember]
-  span : Span
-} derive(@debug.Debug)
-
-pub struct InterfaceMember {
-  name : TypeMemberName
-  optional : Bool
-  type_ann : TypeNode
-  span : Span
-} derive(@debug.Debug)
-
-pub enum JSXAttr {
-  Attribute(JSXAttribute)
-  Spread(JSXExprContainer)
-} derive(@debug.Debug)
-
-pub enum JSXAttrValue {
-  String(String)
-  Expr(JSXExprContainer)
-  Element(Expr)
-} derive(@debug.Debug)
-
-pub struct JSXAttribute {
-  name : String
-  value : JSXAttrValue?
-  span : Span
-} derive(@debug.Debug)
-
-pub enum JSXChild {
-  Text(String)
-  Expr(JSXExprContainer)
-  Element(Expr)
-} derive(@debug.Debug)
-
-pub struct JSXElement {
-  name : String
-  type_args : Array[TypeNode]
-  attrs : Array[JSXAttr]
-  children : Array[JSXChild]
-  self_closing : Bool
-  closing_name : String?
-  opening_span : Span
-  closing_span : Span?
-} derive(@debug.Debug)
-
-pub struct JSXExprContainer {
-  expr : Expr
-  span : Span
-} derive(@debug.Debug)
-
-pub struct JSXFragment {
-  children : Array[JSXChild]
-  opening_span : Span
-  closing_span : Span
-} derive(@debug.Debug)
-
-pub enum JsDocParsingMode {
-  ParseAll
-  ParseNone
+  kind : SyntaxKind
+  pos : Int
+  end : Int
+  has_trailing_new_line : Bool
 } derive(Eq, @debug.Debug)
+pub fn CommentRange::end(Self) -> Int
+pub fn CommentRange::has_trailing_new_line(Self) -> Bool
+pub fn CommentRange::kind(Self) -> SyntaxKind
+pub fn CommentRange::pos(Self) -> Int
 
-pub enum Keyword {
-  Let
-  Const
-  Var
-  Function
-  Return
-  If
-  Else
-  While
-  For
-  Do
-  Switch
-  Case
-  Type
-  Typeof
-  Interface
-  Enum
-  True
-  False
-  Null
-  Undefined
-  This
-  Delete
-  Void
-  Await
-  Yield
-  New
-  Class
-  Extends
-  Implements
-  Export
-  Import
-  From
-  As
-  Default
-  Abstract
-  Public
-  Private
-  Protected
-  Readonly
-  Static
-  Get
-  Set
-  Break
-  Continue
-  Try
-  Catch
-  Finally
-  Throw
-} derive(Eq, @debug.Debug)
+pub struct Diagnostic {
+  location : DiagnosticLocation
+  start : Int?
+  length : Int?
+  message_text : DiagnosticMessageText
+  category : DiagnosticCategory
+  code : Int
+  reports_unnecessary : Bool?
+  reports_deprecated : Bool?
+  related_information : ReadOnlyArray[Diagnostic]?
+}
+pub fn Diagnostic::category(Self) -> DiagnosticCategory
+pub fn Diagnostic::code(Self) -> Int
+pub fn Diagnostic::file(Self) -> Node?
+pub fn Diagnostic::file_name(Self) -> String?
+pub fn Diagnostic::is_attached(Self) -> Bool
+pub fn Diagnostic::is_detached(Self) -> Bool
+pub fn Diagnostic::length(Self) -> Int?
+pub fn Diagnostic::message_text(Self) -> DiagnosticMessageText
+pub fn Diagnostic::related_information(Self) -> ReadOnlyArray[Self]?
+pub fn Diagnostic::reports_deprecated(Self) -> Bool?
+pub fn Diagnostic::reports_unnecessary(Self) -> Bool?
+pub fn Diagnostic::start(Self) -> Int?
 
-pub struct LabeledStmt {
-  label : String
-  stmt : Stmt
-} derive(@debug.Debug)
+pub enum DiagnosticArgument {
+  DiagnosticString(String)
+  DiagnosticNumber(Int)
+}
+pub fn DiagnosticArgument::number(Int) -> Self
+pub fn DiagnosticArgument::text(String) -> Self
 
-pub struct MappedType {
-  readonly_modifier : MappedTypeModifier?
-  type_param_name : String
-  source_type : TypeNode
-  name_type : TypeNode?
-  optional_modifier : MappedTypeModifier?
-  value_type : TypeNode?
-} derive(@debug.Debug)
+pub struct DiagnosticCategory(Int) derive(Compare, Eq, @debug.Debug)
+pub fn DiagnosticCategory::error() -> Self
+pub fn DiagnosticCategory::message() -> Self
+pub fn DiagnosticCategory::suggestion() -> Self
+pub fn DiagnosticCategory::to_int(Self) -> Int
+pub fn DiagnosticCategory::warning() -> Self
 
-pub enum MappedTypeModifier {
-  Add
-  Remove
-} derive(@debug.Debug)
+pub enum DiagnosticLocation {
+  NoDiagnosticLocation
+  DetachedDiagnosticLocation(String)
+  AttachedDiagnosticLocation(Node)
+}
 
-pub struct MemberExpr {
-  object : Expr
-  property : MemberProp
-  computed : Bool
-  optional : Bool
-} derive(@debug.Debug)
-
-pub enum MemberName {
-  Ident(String)
-  String(String)
-  Number(String)
-  Computed(String)
-  Private(String)
-} derive(@debug.Debug)
-
-pub enum MemberProp {
-  Ident(String)
-  Private(String)
-  Expr(Expr)
-} derive(@debug.Debug)
-
-pub struct NamespaceDecl {
-  name : String
-  body : Block
-  span : Span
-} derive(@debug.Debug)
-
-pub struct NewExpr {
-  callee : Expr
-  args : Array[Expr]
-} derive(@debug.Debug)
-
-pub struct ObjectLiteral {
-  props : Array[ObjectProp]
-} derive(@debug.Debug)
-
-pub struct ObjectPattern {
-  props : Array[ObjectPatternProp]
-} derive(@debug.Debug)
-
-pub enum ObjectPatternProp {
-  Property(ObjectPatternProperty)
-  Rest(BindingPattern)
-} derive(@debug.Debug)
-
-pub struct ObjectPatternProperty {
+pub struct DiagnosticMessage {
+  upstream_symbol : String
   key : String
-  binding : BindingElement
-  shorthand : Bool
-  span : Span
-} derive(@debug.Debug)
+  category : DiagnosticCategory
+  code : Int
+  message : String
+  placeholder_count : Int
+  reports_unnecessary : Bool?
+  reports_deprecated : Bool?
+}
+pub fn DiagnosticMessage::category(Self) -> DiagnosticCategory
+pub fn DiagnosticMessage::code(Self) -> Int
+pub fn DiagnosticMessage::key(Self) -> String
+pub fn DiagnosticMessage::message(Self) -> String
+pub fn DiagnosticMessage::placeholder_count(Self) -> Int
+pub fn DiagnosticMessage::reports_deprecated(Self) -> Bool?
+pub fn DiagnosticMessage::reports_unnecessary(Self) -> Bool?
+pub fn DiagnosticMessage::upstream_symbol(Self) -> String
 
-pub enum ObjectProp {
-  Property(ObjectPropEntry)
-  Spread(Expr)
-} derive(@debug.Debug)
+pub struct DiagnosticMessageChain {
+  message_text : String
+  category : DiagnosticCategory
+  code : Int
+  next : ReadOnlyArray[DiagnosticMessageChain]?
+}
+pub fn DiagnosticMessageChain::category(Self) -> DiagnosticCategory
+pub fn DiagnosticMessageChain::code(Self) -> Int
+pub fn DiagnosticMessageChain::message_text(Self) -> String
+pub fn DiagnosticMessageChain::next(Self) -> ReadOnlyArray[Self]?
 
-pub struct ObjectPropEntry {
-  name : String
-  value : Expr
-  shorthand : Bool
-  span : Span
-} derive(@debug.Debug)
+pub enum DiagnosticMessageText {
+  DiagnosticTextValue(String)
+  DiagnosticChainValue(DiagnosticMessageChain)
+}
+pub fn DiagnosticMessageText::flatten(Self, String, indent? : Int) -> String
 
-pub struct Param {
-  pattern : BindingPattern
-  optional : Bool
-  type_ann : TypeNode?
-  default_value : Expr?
-  is_rest : Bool
-  span : Span
-} derive(@debug.Debug)
-
-pub struct ParenthesizedType {
-  inner : TypeNode
-} derive(@debug.Debug)
-
-pub struct ParseOptions {
-  file_name : String
-  script_kind : ScriptKind
-  language_target : String?
-  jsx_mode : Bool
-  strict_mode : Bool
-  module_kind : String?
-  jsdoc_parsing_mode : JsDocParsingMode
-  allow_js : Bool
-  has_multi_target_directive : Bool
-  report_unreachable_code : Bool
-  isolated_modules : Bool
-  allow_synthetic_default_imports : Bool
-  verbatim_module_syntax : Bool
-  erasable_syntax_only : Bool
-  experimental_decorators : Bool
-} derive(@debug.Debug)
-
-pub struct Position {
-  offset : Int
-  line : Int
-  column : Int
-} derive(Eq, @debug.Debug)
-
-pub struct Program {
-  stmts : Array[Stmt]
-} derive(@debug.Debug)
-
-pub struct SatisfiesExpr {
-  expr : Expr
-  type_ann : TypeNode
-} derive(@debug.Debug)
-
-pub enum ScriptKind {
+pub enum Extension {
   Ts
   Tsx
+  Dts
   Js
   Jsx
-  Dts
   Json
+  TsBuildInfo
+  Mjs
+  Mts
+  Dmts
+  Cjs
+  Cts
+  Dcts
 } derive(Eq, @debug.Debug)
+pub fn Extension::all() -> ReadOnlyArray[Self]
+pub fn Extension::text(Self) -> String
 
-pub struct SourceFile {
+pub enum ExternalModuleIndicator {
+  IndicatorNode(Node)
+  IndicatorTrue
+}
+pub fn ExternalModuleIndicator::forced() -> Self
+pub fn ExternalModuleIndicator::from_node(Node) -> Self
+
+pub struct FileReference {
   file_name : String
-  script_kind : ScriptKind
-  is_declaration_file : Bool
-  stmts : Array[Stmt]
-  parse_errors : Array[ParseError]
-  comment_directives : Array[CommentDirective]
-  comments : Array[CommentRange]
-  strict_mode : Bool
-  module_kind : String?
-  language_target : String?
-  jsx_mode : Bool
-  jsdoc_parsing_mode : JsDocParsingMode
-  external_module_indicator : Bool
-  identifiers : Array[String]
-} derive(@debug.Debug)
-
-pub struct Span {
-  start : Position
-  end : Position
+  pos : Int
+  end : Int
+  resolution_mode : ResolutionMode?
+  preserve : Bool?
 } derive(Eq, @debug.Debug)
-pub fn Span::merge(Self, Self) -> Self
+pub fn FileReference::end(Self) -> Int
+pub fn FileReference::file_name(Self) -> String
+pub fn FileReference::pos(Self) -> Int
+pub fn FileReference::preserve(Self) -> Bool?
+pub fn FileReference::resolution_mode(Self) -> ResolutionMode?
 
-pub struct Stmt {
-  kind : StmtKind
-  span : Span
-} derive(@debug.Debug)
-
-pub enum StmtKind {
-  ImportDecl(ImportDecl)
-  ImportAssign(ImportAssignDecl)
-  ExportDecl(ExportDecl)
-  VarDecl(VarDecl)
-  FunctionDecl(FunctionDecl)
-  ClassDecl(ClassDecl)
-  NamespaceDecl(NamespaceDecl)
-  TypeAliasDecl(TypeAliasDecl)
-  InterfaceDecl(InterfaceDecl)
-  EnumDecl(EnumDecl)
-  Return(Expr?)
-  If(Expr, Stmt, Stmt?)
-  While(Expr, Stmt)
-  For(ForStmt)
-  ForIn(ForInStmt)
-  ForOf(ForOfStmt)
-  DoWhile(DoWhileStmt)
-  Switch(SwitchStmt)
-  Break(String?)
-  Continue(String?)
-  Throw(Expr)
-  With(WithStmt)
-  Debugger
-  Try(TryStmt)
-  Labeled(LabeledStmt)
-  ExprStmt(Expr)
-  Block(Block)
-  Empty
-} derive(@debug.Debug)
-
-pub struct SwitchCase {
-  case_expr : Expr?
-  consequent : Array[Stmt]
-} derive(@debug.Debug)
-
-pub struct SwitchStmt {
-  discriminant : Expr
-  cases : Array[SwitchCase]
-} derive(@debug.Debug)
-
-pub struct TemplateLiteral {
-  quasis : Array[String]
-  exprs : Array[Expr]
-} derive(@debug.Debug)
-
-pub struct TemplateLiteralType {
-  quasis : Array[String]
-  types : Array[TypeNode]
-} derive(@debug.Debug)
-
-pub struct Token {
-  kind : TokenKind
-  span : Span
+pub struct FullStartAndTokenStart {
+  full_start : Int
+  token_start : Int
 } derive(Eq, @debug.Debug)
+pub fn FullStartAndTokenStart::full_start(Self) -> Int
+pub fn FullStartAndTokenStart::token_start(Self) -> Int
 
-pub enum TokenKind {
-  Ident(String)
-  PrivateIdent(String)
-  Number(String)
-  String(String)
-  Keyword(Keyword)
-  LParen
-  RParen
-  LBrace
-  RBrace
-  LBracket
-  RBracket
-  Comma
-  Semicolon
-  Colon
-  Dot
-  At
-  Question
-  QuestionDot
-  Nullish
-  Arrow
-  Plus
-  PlusPlus
-  PlusEq
-  Minus
-  MinusMinus
-  MinusEq
-  Star
-  StarStar
-  StarEq
-  Slash
-  SlashEq
-  Percent
-  PercentEq
-  Ellipsis
-  TemplateStart
-  TemplateChunk(String)
-  TemplateExprStart
-  TemplateEnd
-  Eq
-  EqEq
-  EqEqEq
-  NotEq
-  NotEqEq
-  Lt
-  Lte
-  Gt
-  Gte
-  AndAnd
-  OrOr
-  Ampersand
-  Pipe
-  Caret
-  Bang
-  Tilde
-  ConflictMarkerTrivia
-  Eof
+pub struct JSDocParsingMode(Int) derive(Compare, Eq, @debug.Debug)
+pub fn JSDocParsingMode::parse_all() -> Self
+pub fn JSDocParsingMode::parse_for_type_errors() -> Self
+pub fn JSDocParsingMode::parse_for_type_info() -> Self
+pub fn JSDocParsingMode::parse_none() -> Self
+pub fn JSDocParsingMode::to_int(Self) -> Int
+
+pub struct JsDocParseResult {
+  jsdoc : Node
+  diagnostics : ReadOnlyArray[Diagnostic]
+}
+pub fn JsDocParseResult::diagnostics(Self) -> ReadOnlyArray[Diagnostic]
+pub fn JsDocParseResult::jsdoc(Self) -> Node
+
+pub struct LanguageVariant(Int) derive(Compare, Eq, @debug.Debug)
+pub fn LanguageVariant::from_script_kind(ScriptKind) -> Self
+pub fn LanguageVariant::jsx() -> Self
+pub fn LanguageVariant::standard() -> Self
+pub fn LanguageVariant::to_int(Self) -> Int
+
+pub struct LineAndCharacter {
+  line : Int
+  character : Int
 } derive(Eq, @debug.Debug)
+pub fn LineAndCharacter::character(Self) -> Int
+pub fn LineAndCharacter::line(Self) -> Int
+pub fn LineAndCharacter::new(Int, Int) -> Self
 
-pub struct TryStmt {
-  block : Block
-  handler : CatchClause?
-  finalizer : Block?
-} derive(@debug.Debug)
+pub struct LineMap {
+  text_length : Int
+  starts : ReadOnlyArray[Int]
+} derive(Eq, @debug.Debug)
+pub fn LineMap::line_and_character_of_position(Self, Int) -> LineAndCharacter
+pub fn LineMap::line_count(Self) -> Int
+pub fn LineMap::line_of_position(Self, Int, lower_bound? : Int) -> Int
+pub fn LineMap::lines_between_positions(Self, Int, Int) -> Int
+pub fn LineMap::new(SourceText) -> Self
+pub fn LineMap::position_of_line_and_character(Self, Int, Int, allow_edits? : Bool) -> Int
+pub fn LineMap::starts(Self) -> ReadOnlyArray[Int]
+pub fn LineMap::text_length(Self) -> Int
 
-pub struct TypeAliasDecl {
+pub struct ModifierFlags(UInt) derive(Eq, @debug.Debug)
+pub fn ModifierFlags::abstract_flag() -> Self
+pub fn ModifierFlags::accessibility_modifier() -> Self
+pub fn ModifierFlags::accessor() -> Self
+pub fn ModifierFlags::all() -> Self
+pub fn ModifierFlags::ambient() -> Self
+pub fn ModifierFlags::async_flag() -> Self
+pub fn ModifierFlags::bits(Self) -> UInt
+pub fn ModifierFlags::const_flag() -> Self
+pub fn ModifierFlags::contains(Self, Self) -> Bool
+pub fn ModifierFlags::decorator() -> Self
+pub fn ModifierFlags::default_flag() -> Self
+pub fn ModifierFlags::deprecated() -> Self
+pub fn ModifierFlags::export_default() -> Self
+pub fn ModifierFlags::export_flag() -> Self
+pub fn ModifierFlags::from_bits(UInt) -> Self
+pub fn ModifierFlags::has_computed_flags() -> Self
+pub fn ModifierFlags::has_computed_jsdoc_modifiers() -> Self
+pub fn ModifierFlags::in_flag() -> Self
+pub fn ModifierFlags::intersect(Self, Self) -> Self
+pub fn ModifierFlags::jsdoc_cache_only_modifiers() -> Self
+pub fn ModifierFlags::jsdoc_only_modifiers() -> Self
+pub fn ModifierFlags::jsdoc_override() -> Self
+pub fn ModifierFlags::jsdoc_private() -> Self
+pub fn ModifierFlags::jsdoc_protected() -> Self
+pub fn ModifierFlags::jsdoc_public() -> Self
+pub fn ModifierFlags::jsdoc_readonly() -> Self
+pub fn ModifierFlags::modifier() -> Self
+pub fn ModifierFlags::non_cache_only_modifiers() -> Self
+pub fn ModifierFlags::non_public_accessibility_modifier() -> Self
+pub fn ModifierFlags::none() -> Self
+pub fn ModifierFlags::out_flag() -> Self
+pub fn ModifierFlags::override_flag() -> Self
+pub fn ModifierFlags::parameter_property_modifier() -> Self
+pub fn ModifierFlags::private_flag() -> Self
+pub fn ModifierFlags::protected_flag() -> Self
+pub fn ModifierFlags::public_flag() -> Self
+pub fn ModifierFlags::readonly_flag() -> Self
+pub fn ModifierFlags::static_flag() -> Self
+pub fn ModifierFlags::syntactic_modifiers() -> Self
+pub fn ModifierFlags::syntactic_only_modifiers() -> Self
+pub fn ModifierFlags::syntactic_or_jsdoc_modifiers() -> Self
+pub fn ModifierFlags::typescript_modifier() -> Self
+pub fn ModifierFlags::union(Self, Self) -> Self
+
+pub struct Node {
+  kind : SyntaxKind
+  mut pos : Int
+  mut end : Int
+  mut flags : NodeFlags
+  mut transform_flags : TransformFlags
+  mut parent : Node?
+  mut jsdoc : NodeArray?
+  mut payload : NodePayload
+}
+pub fn Node::child_count(Self) -> Int
+pub fn Node::children(Self) -> NodeArray?
+pub fn Node::end(Self) -> Int
+pub fn Node::field(Self, String) -> NodeFieldValue?
+pub fn Node::fields(Self) -> ReadOnlyArray[NodeField]
+pub fn Node::first_child(Self) -> Self?
+pub fn Node::first_token(Self) -> Self?
+pub fn Node::flags(Self) -> NodeFlags
+pub fn Node::full_start(Self) -> Int
+pub fn Node::full_text(Self, source_file? : Self) -> String
+pub fn Node::full_width(Self) -> Int
+pub fn Node::jsdoc(Self) -> NodeArray?
+pub fn Node::kind(Self) -> SyntaxKind
+pub fn Node::last_child(Self) -> Self?
+pub fn Node::last_token(Self) -> Self?
+pub fn Node::leading_trivia_width(Self, source_file? : Self) -> Int
+pub fn Node::line_and_character_of_position(Self, Int) -> LineAndCharacter
+pub fn Node::line_starts(Self) -> ReadOnlyArray[Int]
+pub fn Node::parent(Self) -> Self?
+pub fn Node::pos(Self) -> Int
+pub fn Node::position_of_line_and_character(Self, Int, Int, allow_edits? : Bool) -> Int
+pub fn Node::same_identity(Self, Self) -> Bool
+pub fn Node::source_file(Self) -> Self?
+pub fn Node::start(Self, source_file? : Self, include_jsdoc_comment? : Bool) -> Int
+pub fn Node::text(Self, source_file? : Self) -> String
+pub fn Node::transform_flags(Self) -> TransformFlags
+pub fn Node::width(Self, source_file? : Self) -> Int
+
+pub struct NodeArray {
+  elements : ReadOnlyArray[Node]
+  mut pos : Int
+  mut end : Int
+  mut has_trailing_comma : Bool
+  mut transform_flags : TransformFlags
+}
+pub fn NodeArray::elements(Self) -> ReadOnlyArray[Node]
+pub fn NodeArray::end(Self) -> Int
+pub fn NodeArray::get(Self, Int) -> Node?
+pub fn NodeArray::has_trailing_comma(Self) -> Bool
+pub fn NodeArray::length(Self) -> Int
+pub fn NodeArray::pos(Self) -> Int
+pub fn NodeArray::same_identity(Self, Self) -> Bool
+pub fn NodeArray::transform_flags(Self) -> TransformFlags
+
+pub struct NodeField {
   name : String
-  type_params : Array[TypeParam]
-  value : TypeNode
-  span : Span
-} derive(@debug.Debug)
+  value : NodeFieldValue
+}
+pub fn NodeField::name(Self) -> String
+pub fn NodeField::value(Self) -> NodeFieldValue
 
-pub struct TypeAssert {
-  expr : Expr
-  type_ann : TypeNode
-} derive(@debug.Debug)
-
-pub enum TypeKind {
-  Ident(String)
-  TypeQuery(String)
-  ImportType(ImportType)
-  Literal(TypeLiteral)
-  Tuple(Array[TypeNode])
-  Object(Array[TypeMember])
-  MappedType(MappedType)
-  TemplateLiteral(TemplateLiteralType)
-  InferType(InferType)
-  Constructor(ConstructorType)
-  Parenthesized(ParenthesizedType)
-  Union(Array[TypeNode])
-  Intersection(Array[TypeNode])
-  Conditional(TypeNode, TypeNode, TypeNode, TypeNode)
-  TypeOperator(String, TypeNode)
-  TypePredicate(String, TypeNode)
-  Array(TypeNode)
-  IndexAccess(TypeNode, TypeNode)
-  Generic(TypeNode, Array[TypeNode])
-  Function(Array[Param], TypeNode)
-  GenericFunction(Array[TypeParam], Array[Param], TypeNode)
-} derive(@debug.Debug)
-
-pub enum TypeLiteral {
-  String(String)
-  Number(String)
-  Bool(Bool)
-  Null
+pub enum NodeFieldValue {
   Undefined
-} derive(@debug.Debug)
+  NodeRef(Node?)
+  NodeList(NodeArray?)
+  Text(String?)
+  Boolean(Bool?)
+  Integer(Int?)
+  Unsigned(UInt?)
+  Kind(SyntaxKind?)
+  TokenFlagSet(TokenFlags)
+  NodeFlagSet(NodeFlags)
+  TransformFlagSet(TransformFlags)
+  ExternalModuleIndicatorValue(ExternalModuleIndicator?)
+  TextList(ReadOnlyArray[String]?)
+  IntegerList(ReadOnlyArray[Int]?)
+  DiagnosticList(ReadOnlyArray[Diagnostic]?)
+  CommentDirectiveList(ReadOnlyArray[CommentDirective]?)
+  PragmaMapValue(ReadOnlyArray[PragmaEntry]?)
+  CheckJsDirectiveValue(CheckJsDirective?)
+  FileReferenceList(ReadOnlyArray[FileReference]?)
+  AmdDependencyList(ReadOnlyArray[AmdDependency]?)
+}
 
-pub struct TypeMember {
-  name : TypeMemberName
-  optional : Bool
-  type_ann : TypeNode
-  span : Span
-} derive(@debug.Debug)
+pub struct NodeFlags(UInt) derive(Eq, @debug.Debug)
+pub fn NodeFlags::ambient() -> Self
+pub fn NodeFlags::await_context() -> Self
+pub fn NodeFlags::await_using() -> Self
+pub fn NodeFlags::bits(Self) -> UInt
+pub fn NodeFlags::block_scoped() -> Self
+pub fn NodeFlags::const_flag() -> Self
+pub fn NodeFlags::constant() -> Self
+pub fn NodeFlags::contains(Self, Self) -> Bool
+pub fn NodeFlags::contains_this() -> Self
+pub fn NodeFlags::context_flags() -> Self
+pub fn NodeFlags::decorator_context() -> Self
+pub fn NodeFlags::deprecated() -> Self
+pub fn NodeFlags::disallow_conditional_types_context() -> Self
+pub fn NodeFlags::disallow_in_context() -> Self
+pub fn NodeFlags::export_context() -> Self
+pub fn NodeFlags::from_bits(UInt) -> Self
+pub fn NodeFlags::global_augmentation() -> Self
+pub fn NodeFlags::has_aggregated_child_data() -> Self
+pub fn NodeFlags::has_async_functions() -> Self
+pub fn NodeFlags::has_explicit_return() -> Self
+pub fn NodeFlags::has_implicit_return() -> Self
+pub fn NodeFlags::identifier_has_extended_unicode_escape() -> Self
+pub fn NodeFlags::identifier_is_in_jsdoc_namespace() -> Self
+pub fn NodeFlags::in_with_statement() -> Self
+pub fn NodeFlags::intersect(Self, Self) -> Self
+pub fn NodeFlags::javascript_file() -> Self
+pub fn NodeFlags::jsdoc() -> Self
+pub fn NodeFlags::json_file() -> Self
+pub fn NodeFlags::let_flag() -> Self
+pub fn NodeFlags::namespace_flag() -> Self
+pub fn NodeFlags::nested_namespace() -> Self
+pub fn NodeFlags::none() -> Self
+pub fn NodeFlags::optional_chain() -> Self
+pub fn NodeFlags::permanently_set_incremental_flags() -> Self
+pub fn NodeFlags::possibly_contains_dynamic_import() -> Self
+pub fn NodeFlags::possibly_contains_import_meta() -> Self
+pub fn NodeFlags::reachability_and_emit_flags() -> Self
+pub fn NodeFlags::reachability_check_flags() -> Self
+pub fn NodeFlags::synthesized() -> Self
+pub fn NodeFlags::this_node_has_error() -> Self
+pub fn NodeFlags::this_node_or_any_sub_nodes_has_error() -> Self
+pub fn NodeFlags::type_cached() -> Self
+pub fn NodeFlags::type_excludes_flags() -> Self
+pub fn NodeFlags::union(Self, Self) -> Self
+pub fn NodeFlags::unreachable_flag() -> Self
+pub fn NodeFlags::using_flag() -> Self
+pub fn NodeFlags::without(Self, Self) -> Self
+pub fn NodeFlags::yield_context() -> Self
 
-pub enum TypeMemberName {
-  Named(MemberName)
-  Call
-  Construct
-} derive(@debug.Debug)
+pub enum NodePayload {
+  Empty
+  Children(NodeArray)
+  Fields(ReadOnlyArray[NodeField])
+}
 
-pub struct TypeNode {
-  kind : TypeKind
-  span : Span
-} derive(@debug.Debug)
-
-pub struct TypeParam {
+pub struct PragmaArgument {
   name : String
-  variance : TypeParamVariance?
-  constraint : TypeNode?
-  default_type : TypeNode?
-  span : Span
-} derive(@debug.Debug)
-
-pub enum TypeParamVariance {
-  In
-  Out
-} derive(@debug.Debug)
-
-pub struct UnaryExpr {
-  op : UnaryOp
-  expr : Expr
-} derive(@debug.Debug)
-
-pub enum UnaryOp {
-  Plus
-  Minus
-  Not
-  BitNot
-  Typeof
-  Delete
-  Void
-  Await
-  Yield
-  YieldStar
-} derive(@debug.Debug)
-
-pub struct UpdateExpr {
-  op : UpdateOp
-  prefix : Bool
-  expr : Expr
-} derive(@debug.Debug)
-
-pub enum UpdateOp {
-  Increment
-  Decrement
-} derive(@debug.Debug)
-
-pub struct VarDecl {
-  kind : VarKind
-  decls : Array[VarDeclarator]
-} derive(@debug.Debug)
-
-pub struct VarDeclarator {
-  pattern : BindingPattern
-  type_ann : TypeNode?
-  init : Expr?
-  span : Span
-} derive(@debug.Debug)
-
-pub enum VarKind {
-  Let
-  Const
-  Var
-  Using
-  AwaitUsing
+  value : String
+  pos : Int?
+  end : Int?
 } derive(Eq, @debug.Debug)
+pub fn PragmaArgument::end(Self) -> Int?
+pub fn PragmaArgument::name(Self) -> String
+pub fn PragmaArgument::pos(Self) -> Int?
+pub fn PragmaArgument::value(Self) -> String
 
-pub struct WithStmt {
-  object : Expr
-  body : Stmt
-} derive(@debug.Debug)
+pub struct PragmaEntry {
+  name : String
+  occurrences : ReadOnlyArray[PragmaOccurrence]
+} derive(Eq, @debug.Debug)
+pub fn PragmaEntry::name(Self) -> String
+pub fn PragmaEntry::occurrences(Self) -> ReadOnlyArray[PragmaOccurrence]
+
+pub struct PragmaKindFlags(UInt) derive(Eq, @debug.Debug)
+pub fn PragmaKindFlags::all() -> Self
+pub fn PragmaKindFlags::bits(Self) -> UInt
+pub fn PragmaKindFlags::contains(Self, Self) -> Bool
+pub fn PragmaKindFlags::default_flags() -> Self
+pub fn PragmaKindFlags::from_bits(UInt) -> Self
+pub fn PragmaKindFlags::multi_line() -> Self
+pub fn PragmaKindFlags::none() -> Self
+pub fn PragmaKindFlags::single_line() -> Self
+pub fn PragmaKindFlags::triple_slash_xml() -> Self
+
+pub struct PragmaOccurrence {
+  arguments : ReadOnlyArray[PragmaArgument]
+  range : CommentRange
+} derive(Eq, @debug.Debug)
+pub fn PragmaOccurrence::arguments(Self) -> ReadOnlyArray[PragmaArgument]
+pub fn PragmaOccurrence::range(Self) -> CommentRange
+
+pub struct RegularExpressionFlags(UInt) derive(Eq, @debug.Debug)
+pub fn RegularExpressionFlags::any_unicode_mode() -> Self
+pub fn RegularExpressionFlags::bits(Self) -> UInt
+pub fn RegularExpressionFlags::contains(Self, Self) -> Bool
+pub fn RegularExpressionFlags::dot_all() -> Self
+pub fn RegularExpressionFlags::from_bits(UInt) -> Self
+pub fn RegularExpressionFlags::global() -> Self
+pub fn RegularExpressionFlags::has_indices() -> Self
+pub fn RegularExpressionFlags::ignore_case() -> Self
+pub fn RegularExpressionFlags::modifiers() -> Self
+pub fn RegularExpressionFlags::multiline() -> Self
+pub fn RegularExpressionFlags::none() -> Self
+pub fn RegularExpressionFlags::sticky() -> Self
+pub fn RegularExpressionFlags::unicode() -> Self
+pub fn RegularExpressionFlags::unicode_sets() -> Self
+pub fn RegularExpressionFlags::union(Self, Self) -> Self
+
+pub struct ResolutionMode(Int) derive(Compare, Eq, @debug.Debug)
+pub fn ResolutionMode::common_js() -> Self
+pub fn ResolutionMode::es_next() -> Self
+pub fn ResolutionMode::from_int(Int) -> Self?
+pub fn ResolutionMode::to_int(Self) -> Int
+
+pub struct ScriptKind(Int) derive(Compare, Eq, @debug.Debug)
+pub fn ScriptKind::deferred() -> Self
+pub fn ScriptKind::external_file() -> Self
+pub fn ScriptKind::from_file_name(String) -> Self
+pub fn ScriptKind::from_int(Int) -> Self?
+pub fn ScriptKind::infer_or_ts(String) -> Self
+pub fn ScriptKind::js() -> Self
+pub fn ScriptKind::json() -> Self
+pub fn ScriptKind::jsx() -> Self
+pub fn ScriptKind::runtime_name(Self) -> String
+pub fn ScriptKind::to_int(Self) -> Int
+pub fn ScriptKind::ts() -> Self
+pub fn ScriptKind::tsx() -> Self
+pub fn ScriptKind::unknown() -> Self
+
+pub struct ScriptTarget(Int) derive(Compare, Eq, @debug.Debug)
+pub fn ScriptTarget::es2015() -> Self
+pub fn ScriptTarget::es2016() -> Self
+pub fn ScriptTarget::es2017() -> Self
+pub fn ScriptTarget::es2018() -> Self
+pub fn ScriptTarget::es2019() -> Self
+pub fn ScriptTarget::es2020() -> Self
+pub fn ScriptTarget::es2021() -> Self
+pub fn ScriptTarget::es2022() -> Self
+pub fn ScriptTarget::es2023() -> Self
+pub fn ScriptTarget::es2024() -> Self
+pub fn ScriptTarget::es2025() -> Self
+pub fn ScriptTarget::es3() -> Self
+pub fn ScriptTarget::es5() -> Self
+pub fn ScriptTarget::es_next() -> Self
+pub fn ScriptTarget::from_int(Int) -> Self?
+pub fn ScriptTarget::json() -> Self
+pub fn ScriptTarget::latest() -> Self
+pub fn ScriptTarget::latest_standard() -> Self
+pub fn ScriptTarget::runtime_name(Self) -> String
+pub fn ScriptTarget::to_int(Self) -> Int
+
+pub struct SourceText {
+  text : String
+} derive(Eq, @debug.Debug)
+pub fn SourceText::code_point_at(Self, Int) -> Int
+pub fn SourceText::code_unit_at(Self, Int) -> Int
+pub fn SourceText::length(Self) -> Int
+pub fn SourceText::new(String) -> Self
+pub fn SourceText::original(Self) -> String
+pub fn SourceText::range(Self, Int, end? : Int) -> SourceTextRange
+pub fn SourceText::substring(Self, Int, end? : Int) -> String
+
+pub struct SourceTextRange {
+  source : SourceText
+  start : Int
+  end : Int
+} derive(Eq, @debug.Debug)
+pub fn SourceTextRange::end(Self) -> Int
+pub fn SourceTextRange::length(Self) -> Int
+pub fn SourceTextRange::materialize(Self) -> String
+pub fn SourceTextRange::new(SourceText, Int, Int) -> Self
+pub fn SourceTextRange::source(Self) -> SourceText
+pub fn SourceTextRange::start(Self) -> Int
+
+pub struct SyntaxKind(Int) derive(Compare, Eq, @debug.Debug)
+pub fn SyntaxKind::classification_markers(Self) -> ReadOnlyArray[String]
+pub fn SyntaxKind::count() -> Int
+pub fn SyntaxKind::declaration_names(Self) -> ReadOnlyArray[String]
+pub fn SyntaxKind::from_int(Int) -> Self?
+pub fn SyntaxKind::is_parser_constructable(Self) -> Bool
+pub fn SyntaxKind::runtime_name(Self) -> String
+pub fn SyntaxKind::to_int(Self) -> Int
+
+pub struct TextRange {
+  pos : Int
+  end : Int
+} derive(Eq, @debug.Debug)
+pub fn TextRange::clipped(Self, Int) -> Self
+pub fn TextRange::contains_position(Self, Int) -> Bool
+pub fn TextRange::contains_range(Self, Self) -> Bool
+pub fn TextRange::end(Self) -> Int
+pub fn TextRange::intersection(Self, Self) -> Self?
+pub fn TextRange::is_empty(Self) -> Bool
+pub fn TextRange::is_synthesized(Self) -> Bool
+pub fn TextRange::move_end(Self, Int) -> Self
+pub fn TextRange::move_pos(Self, Int) -> Self
+pub fn TextRange::new(Int, end? : Int) -> Self
+pub fn TextRange::overlaps(Self, Self) -> Bool
+pub fn TextRange::pos(Self) -> Int
+pub fn TextRange::synthesized() -> Self
+pub fn TextRange::width(Self) -> Int
+
+pub struct TokenFlags(UInt) derive(Eq, @debug.Debug)
+pub fn TokenFlags::binary_or_octal_specifier() -> Self
+pub fn TokenFlags::binary_specifier() -> Self
+pub fn TokenFlags::bits(Self) -> UInt
+pub fn TokenFlags::contains(Self, Self) -> Bool
+pub fn TokenFlags::contains_invalid_escape() -> Self
+pub fn TokenFlags::contains_invalid_separator() -> Self
+pub fn TokenFlags::contains_leading_zero() -> Self
+pub fn TokenFlags::contains_separator() -> Self
+pub fn TokenFlags::extended_unicode_escape() -> Self
+pub fn TokenFlags::from_bits(UInt) -> Self
+pub fn TokenFlags::hex_escape() -> Self
+pub fn TokenFlags::hex_specifier() -> Self
+pub fn TokenFlags::intersect(Self, Self) -> Self
+pub fn TokenFlags::is_invalid() -> Self
+pub fn TokenFlags::none() -> Self
+pub fn TokenFlags::numeric_literal_flags() -> Self
+pub fn TokenFlags::octal() -> Self
+pub fn TokenFlags::octal_specifier() -> Self
+pub fn TokenFlags::preceding_jsdoc_comment() -> Self
+pub fn TokenFlags::preceding_jsdoc_leading_asterisks() -> Self
+pub fn TokenFlags::preceding_line_break() -> Self
+pub fn TokenFlags::scientific() -> Self
+pub fn TokenFlags::string_literal_flags() -> Self
+pub fn TokenFlags::template_literal_like_flags() -> Self
+pub fn TokenFlags::unicode_escape() -> Self
+pub fn TokenFlags::union(Self, Self) -> Self
+pub fn TokenFlags::unterminated() -> Self
+pub fn TokenFlags::with_specifier() -> Self
+pub fn TokenFlags::without(Self, Self) -> Self
+
+pub struct TransformFlags(UInt) derive(Eq, @debug.Debug)
+pub fn TransformFlags::array_literal_or_call_or_new_excludes() -> Self
+pub fn TransformFlags::arrow_function_excludes() -> Self
+pub fn TransformFlags::assert_destructuring_assignment() -> Self
+pub fn TransformFlags::assert_es2015() -> Self
+pub fn TransformFlags::assert_es2016() -> Self
+pub fn TransformFlags::assert_es2017() -> Self
+pub fn TransformFlags::assert_es2018() -> Self
+pub fn TransformFlags::assert_es2019() -> Self
+pub fn TransformFlags::assert_es2020() -> Self
+pub fn TransformFlags::assert_es2021() -> Self
+pub fn TransformFlags::assert_es2022() -> Self
+pub fn TransformFlags::assert_es_next() -> Self
+pub fn TransformFlags::assert_generator() -> Self
+pub fn TransformFlags::assert_jsx() -> Self
+pub fn TransformFlags::assert_typescript() -> Self
+pub fn TransformFlags::binding_pattern_excludes() -> Self
+pub fn TransformFlags::bits(Self) -> UInt
+pub fn TransformFlags::catch_clause_excludes() -> Self
+pub fn TransformFlags::class_excludes() -> Self
+pub fn TransformFlags::constructor_excludes() -> Self
+pub fn TransformFlags::contains(Self, Self) -> Bool
+pub fn TransformFlags::contains_await() -> Self
+pub fn TransformFlags::contains_binding_pattern() -> Self
+pub fn TransformFlags::contains_block_scoped_binding() -> Self
+pub fn TransformFlags::contains_class_fields() -> Self
+pub fn TransformFlags::contains_computed_property_name() -> Self
+pub fn TransformFlags::contains_decorators() -> Self
+pub fn TransformFlags::contains_destructuring_assignment() -> Self
+pub fn TransformFlags::contains_dynamic_import() -> Self
+pub fn TransformFlags::contains_es2015() -> Self
+pub fn TransformFlags::contains_es2016() -> Self
+pub fn TransformFlags::contains_es2017() -> Self
+pub fn TransformFlags::contains_es2018() -> Self
+pub fn TransformFlags::contains_es2019() -> Self
+pub fn TransformFlags::contains_es2020() -> Self
+pub fn TransformFlags::contains_es2021() -> Self
+pub fn TransformFlags::contains_es2022() -> Self
+pub fn TransformFlags::contains_es_next() -> Self
+pub fn TransformFlags::contains_generator() -> Self
+pub fn TransformFlags::contains_hoisted_declaration_or_completion() -> Self
+pub fn TransformFlags::contains_jsx() -> Self
+pub fn TransformFlags::contains_lexical_super() -> Self
+pub fn TransformFlags::contains_lexical_this() -> Self
+pub fn TransformFlags::contains_lexical_this_or_super() -> Self
+pub fn TransformFlags::contains_object_rest_or_spread() -> Self
+pub fn TransformFlags::contains_possible_top_level_await() -> Self
+pub fn TransformFlags::contains_private_identifier_in_expression() -> Self
+pub fn TransformFlags::contains_rest_or_spread() -> Self
+pub fn TransformFlags::contains_typescript() -> Self
+pub fn TransformFlags::contains_typescript_class_syntax() -> Self
+pub fn TransformFlags::contains_update_expression_for_identifier() -> Self
+pub fn TransformFlags::contains_yield() -> Self
+pub fn TransformFlags::from_bits(UInt) -> Self
+pub fn TransformFlags::function_excludes() -> Self
+pub fn TransformFlags::has_computed_flags() -> Self
+pub fn TransformFlags::intersect(Self, Self) -> Self
+pub fn TransformFlags::method_or_accessor_excludes() -> Self
+pub fn TransformFlags::module_excludes() -> Self
+pub fn TransformFlags::node_excludes() -> Self
+pub fn TransformFlags::none() -> Self
+pub fn TransformFlags::object_literal_excludes() -> Self
+pub fn TransformFlags::outer_expression_excludes() -> Self
+pub fn TransformFlags::parameter_excludes() -> Self
+pub fn TransformFlags::property_access_excludes() -> Self
+pub fn TransformFlags::property_excludes() -> Self
+pub fn TransformFlags::property_name_propagating_flags() -> Self
+pub fn TransformFlags::type_excludes() -> Self
+pub fn TransformFlags::union(Self, Self) -> Self
+pub fn TransformFlags::variable_declaration_list_excludes() -> Self
+pub fn TransformFlags::without(Self, Self) -> Self
+
+pub enum TraversalControl[T] {
+  TraversalContinue
+  TraversalSkip
+  TraversalStop(T)
+}
+pub fn[T] TraversalControl::proceed() -> Self[T]
+pub fn[T] TraversalControl::skip() -> Self[T]
+pub fn[T] TraversalControl::stop(T) -> Self[T]
 
 // Type aliases
 

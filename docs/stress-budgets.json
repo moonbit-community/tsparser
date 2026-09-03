@@ -1,0 +1,257 @@
+{
+  "schema_version": 2,
+  "runner_class": "github-actions-ubuntu-latest-standard-x64",
+  "supervision_scope": "independent Linux process groups sampled from /proc at 5-10ms intervals",
+  "parser_protocol": {
+    "target": "native",
+    "profile": "release",
+    "warmup_runs": 2,
+    "repeat_runs": 5,
+    "statistic": "median_wall_ms",
+    "sample_interval_ms": 5
+  },
+  "benchmarks": [
+    {
+      "id": "small",
+      "extension": ".ts",
+      "generator": "statements",
+      "units": 100,
+      "iterations_per_process": 50,
+      "timeout_ms": 5000,
+      "max_median_wall_ms": 1000,
+      "max_peak_rss_kib": 262144
+    },
+    {
+      "id": "medium",
+      "extension": ".ts",
+      "generator": "statements",
+      "units": 2000,
+      "iterations_per_process": 8,
+      "timeout_ms": 5000,
+      "max_median_wall_ms": 1500,
+      "max_peak_rss_kib": 262144
+    },
+    {
+      "id": "large",
+      "extension": ".ts",
+      "generator": "statements",
+      "units": 10000,
+      "iterations_per_process": 2,
+      "timeout_ms": 8000,
+      "max_median_wall_ms": 3000,
+      "max_peak_rss_kib": 393216
+    },
+    {
+      "id": "deep_parentheses",
+      "extension": ".ts",
+      "generator": "deep_parentheses",
+      "units": 3000,
+      "iterations_per_process": 3,
+      "timeout_ms": 5000,
+      "max_median_wall_ms": 1500,
+      "max_peak_rss_kib": 262144
+    },
+    {
+      "id": "deep_type",
+      "extension": ".ts",
+      "generator": "deep_type",
+      "units": 1500,
+      "iterations_per_process": 3,
+      "timeout_ms": 5000,
+      "max_median_wall_ms": 1500,
+      "max_peak_rss_kib": 262144
+    },
+    {
+      "id": "deep_jsx",
+      "extension": ".tsx",
+      "generator": "deep_jsx",
+      "units": 600,
+      "iterations_per_process": 3,
+      "timeout_ms": 5000,
+      "max_median_wall_ms": 1500,
+      "max_peak_rss_kib": 262144
+    },
+    {
+      "id": "long_binary",
+      "extension": ".ts",
+      "generator": "long_binary",
+      "units": 30000,
+      "iterations_per_process": 3,
+      "timeout_ms": 8000,
+      "max_median_wall_ms": 3000,
+      "max_peak_rss_kib": 393216
+    },
+    {
+      "id": "long_list",
+      "extension": ".ts",
+      "generator": "long_list",
+      "units": 30000,
+      "iterations_per_process": 3,
+      "timeout_ms": 8000,
+      "max_median_wall_ms": 3000,
+      "max_peak_rss_kib": 393216
+    },
+    {
+      "id": "regexp_v",
+      "extension": ".ts",
+      "generator": "regexp_v",
+      "units": 3000,
+      "iterations_per_process": 3,
+      "timeout_ms": 8000,
+      "max_median_wall_ms": 3000,
+      "max_peak_rss_kib": 393216
+    },
+    {
+      "id": "jsx",
+      "extension": ".tsx",
+      "generator": "jsx_siblings",
+      "units": 5000,
+      "iterations_per_process": 3,
+      "timeout_ms": 8000,
+      "max_median_wall_ms": 3000,
+      "max_peak_rss_kib": 393216
+    },
+    {
+      "id": "jsdoc",
+      "extension": ".js",
+      "generator": "jsdoc",
+      "units": 3000,
+      "iterations_per_process": 3,
+      "timeout_ms": 8000,
+      "max_median_wall_ms": 3000,
+      "max_peak_rss_kib": 393216
+    }
+  ],
+  "complexity": [
+    {
+      "id": "scanner",
+      "extension": ".ts",
+      "generator": "statements",
+      "n": 1000,
+      "iterations_per_process": 8,
+      "traverse": false,
+      "timeout_ms": 5000,
+      "max_peak_rss_kib": 262144,
+      "max_t2_over_t1": 3.5,
+      "max_t4_over_t2": 3.5
+    },
+    {
+      "id": "list",
+      "extension": ".ts",
+      "generator": "long_list",
+      "n": 4000,
+      "iterations_per_process": 8,
+      "traverse": false,
+      "timeout_ms": 5000,
+      "max_peak_rss_kib": 262144,
+      "max_t2_over_t1": 3.5,
+      "max_t4_over_t2": 3.5
+    },
+    {
+      "id": "child_traversal",
+      "extension": ".ts",
+      "generator": "statements",
+      "n": 1000,
+      "iterations_per_process": 8,
+      "traverse": true,
+      "timeout_ms": 5000,
+      "max_peak_rss_kib": 262144,
+      "max_t2_over_t1": 3.5,
+      "max_t4_over_t2": 3.5
+    }
+  ],
+  "corpus_memory": {
+    "warmup_files": 500,
+    "progress_every": 100,
+    "repeat_runs": 1,
+    "timeout_ms": 30000,
+    "max_peak_rss_kib": 524288,
+    "max_post_warmup_growth_kib": 262144,
+    "max_slope_kib_per_1000_files": 65536
+  },
+  "calibration": {
+    "command": "/usr/bin/time -f peak_rss_kib=%M timeout 30s node scripts/measure-pressure-fixture.mjs tsfiles/<fixture>",
+    "typescript_version": "6.0.3",
+    "measured_on": "2026-07-16",
+    "note": "Budgets are executable upper limits, not measured expectations; each allows at least 3x the observed TypeScript-process peak RSS and over 70x wall-time headroom."
+  },
+  "fixtures": [
+    {
+      "input": "tsfiles/binaryArithmeticControlFlowGraphNotTooLarge.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "baseline_wall_ms": 360,
+      "baseline_peak_rss_kib": 140472
+    },
+    {
+      "input": "tsfiles/binderBinaryExpressionStress.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "baseline_wall_ms": 350,
+      "baseline_peak_rss_kib": 138012
+    },
+    {
+      "input": "tsfiles/binderBinaryExpressionStressJs.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "baseline_wall_ms": 350,
+      "baseline_peak_rss_kib": 139892
+    },
+    {
+      "input": "tsfiles/conditionalTypeDiscriminatingLargeUnionRegularTypeFetchingSpeedReasonable.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "baseline_wall_ms": 350,
+      "baseline_peak_rss_kib": 135972
+    },
+    {
+      "input": "tsfiles/largeControlFlowGraph.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "baseline_wall_ms": 380,
+      "baseline_peak_rss_kib": 155420
+    },
+    {
+      "input": "tsfiles/manyConstExports.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "baseline_wall_ms": 350,
+      "baseline_peak_rss_kib": 151296
+    },
+    {
+      "input": "tsfiles/parsingDeepParenthensizedExpression.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "baseline_wall_ms": 410,
+      "baseline_peak_rss_kib": 164664
+    },
+    {
+      "input": "tsfiles/resolvingClassDeclarationWhenInBaseTypeResolution.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "baseline_wall_ms": 410,
+      "baseline_peak_rss_kib": 153888
+    },
+    {
+      "input": "tsfiles/temporal.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "baseline_wall_ms": 360,
+      "baseline_peak_rss_kib": 134760
+    },
+    {
+      "input": "tsfiles/underscoreTest1.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "baseline_wall_ms": 370,
+      "baseline_peak_rss_kib": 134800
+    },
+    {
+      "input": "tsfiles/unionSubtypeReductionErrors.ts",
+      "timeout_ms": 30000,
+      "max_peak_rss_kib": 524288,
+      "baseline_wall_ms": 350,
+      "baseline_peak_rss_kib": 145264
+    }
+  ]
+}

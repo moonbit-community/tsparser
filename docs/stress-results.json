@@ -1,0 +1,321 @@
+{
+  "schema_version": 1,
+  "measured_on": "2026-07-16",
+  "runner_class": "github-actions-ubuntu-latest-standard-x64",
+  "protocol": {
+    "target": "native",
+    "profile": "release",
+    "warmup_runs": 2,
+    "repeat_runs": 5,
+    "statistic": "median_wall_ms",
+    "sample_interval_ms": 5
+  },
+  "benchmarks": [
+    {
+      "id": "small",
+      "units": 100,
+      "wall_ms": [
+        17.32,
+        16.596,
+        17.544,
+        17.442,
+        17.277
+      ],
+      "peak_rss_kib": [
+        3208,
+        3244,
+        3220,
+        3220,
+        3220
+      ],
+      "median_wall_ms": 17.32,
+      "max_peak_rss_kib": 3244,
+      "within_budget": true
+    },
+    {
+      "id": "medium",
+      "units": 2000,
+      "wall_ms": [
+        51.791,
+        52.442,
+        49.806,
+        54.579,
+        50.078
+      ],
+      "peak_rss_kib": [
+        7336,
+        7364,
+        7320,
+        7420,
+        7336
+      ],
+      "median_wall_ms": 51.791,
+      "max_peak_rss_kib": 7420,
+      "within_budget": true
+    },
+    {
+      "id": "large",
+      "units": 10000,
+      "wall_ms": [
+        69.981,
+        69.756,
+        68.536,
+        74.358,
+        75.639
+      ],
+      "peak_rss_kib": [
+        15612,
+        15536,
+        15552,
+        15512,
+        15608
+      ],
+      "median_wall_ms": 69.981,
+      "max_peak_rss_kib": 15612,
+      "within_budget": true
+    },
+    {
+      "id": "deep_parentheses",
+      "units": 3000,
+      "wall_ms": [
+        7.044,
+        7.49,
+        7.509,
+        6.663,
+        7.016
+      ],
+      "peak_rss_kib": [
+        5828,
+        5876,
+        5732,
+        6096,
+        5876
+      ],
+      "median_wall_ms": 7.044,
+      "max_peak_rss_kib": 6096,
+      "within_budget": true
+    },
+    {
+      "id": "deep_type",
+      "units": 1500,
+      "wall_ms": [
+        3.579,
+        3.753,
+        3.716,
+        3.214,
+        3.062
+      ],
+      "peak_rss_kib": [
+        420,
+        416,
+        420,
+        420,
+        416
+      ],
+      "median_wall_ms": 3.579,
+      "max_peak_rss_kib": 420,
+      "within_budget": true
+    },
+    {
+      "id": "deep_jsx",
+      "units": 600,
+      "wall_ms": [
+        8.633,
+        7.895,
+        7.548,
+        7.458,
+        7.819
+      ],
+      "peak_rss_kib": [
+        3264,
+        3308,
+        3236,
+        3212,
+        3264
+      ],
+      "median_wall_ms": 7.819,
+      "max_peak_rss_kib": 3308,
+      "within_budget": true
+    },
+    {
+      "id": "long_binary",
+      "units": 30000,
+      "wall_ms": [
+        117.248,
+        112.92,
+        121.162,
+        111.993,
+        117.306
+      ],
+      "peak_rss_kib": [
+        17576,
+        17584,
+        17576,
+        17556,
+        17556
+      ],
+      "median_wall_ms": 117.248,
+      "max_peak_rss_kib": 17584,
+      "within_budget": true
+    },
+    {
+      "id": "long_list",
+      "units": 30000,
+      "wall_ms": [
+        70.975,
+        68.615,
+        72.909,
+        68.453,
+        68.798
+      ],
+      "peak_rss_kib": [
+        11460,
+        11404,
+        11516,
+        11400,
+        11440
+      ],
+      "median_wall_ms": 68.798,
+      "max_peak_rss_kib": 11516,
+      "within_budget": true
+    },
+    {
+      "id": "regexp_v",
+      "units": 3000,
+      "wall_ms": [
+        34.81,
+        28.781,
+        29.171,
+        30.957,
+        28.14
+      ],
+      "peak_rss_kib": [
+        7336,
+        7368,
+        7344,
+        7320,
+        7364
+      ],
+      "median_wall_ms": 29.171,
+      "max_peak_rss_kib": 7368,
+      "within_budget": true
+    },
+    {
+      "id": "jsx",
+      "units": 5000,
+      "wall_ms": [
+        49.413,
+        49.702,
+        50.273,
+        49.03,
+        51.668
+      ],
+      "peak_rss_kib": [
+        11432,
+        11428,
+        11412,
+        11396,
+        11420
+      ],
+      "median_wall_ms": 49.702,
+      "max_peak_rss_kib": 11432,
+      "within_budget": true
+    },
+    {
+      "id": "jsdoc",
+      "units": 3000,
+      "wall_ms": [
+        491.958,
+        490.463,
+        486.646,
+        490.406,
+        490.645
+      ],
+      "peak_rss_kib": [
+        29828,
+        29848,
+        29888,
+        29888,
+        29924
+      ],
+      "median_wall_ms": 490.463,
+      "max_peak_rss_kib": 29924,
+      "within_budget": true
+    }
+  ],
+  "complexity": [
+    {
+      "id": "scanner",
+      "n": 1000,
+      "median_wall_ms": [
+        26.719,
+        50.125,
+        108.693
+      ],
+      "max_peak_rss_kib": [
+        5344,
+        7416,
+        9380
+      ],
+      "t2_over_t1": 1.876,
+      "t4_over_t2": 2.168,
+      "within_budget": true
+    },
+    {
+      "id": "list",
+      "n": 4000,
+      "median_wall_ms": [
+        24.395,
+        47.494,
+        95.882
+      ],
+      "max_peak_rss_kib": [
+        5344,
+        5344,
+        7364
+      ],
+      "t2_over_t1": 1.947,
+      "t4_over_t2": 2.019,
+      "within_budget": true
+    },
+    {
+      "id": "child_traversal",
+      "n": 1000,
+      "median_wall_ms": [
+        31.669,
+        64.805,
+        135.642
+      ],
+      "max_peak_rss_kib": [
+        5316,
+        7392,
+        9468
+      ],
+      "t2_over_t1": 2.046,
+      "t4_over_t2": 2.093,
+      "within_budget": true
+    }
+  ],
+  "corpus_memory": [
+    {
+      "parents": false,
+      "wall_ms": 841.054,
+      "peak_rss_kib": 44180,
+      "warmup_rss_kib": 42132,
+      "post_warmup_growth_kib": 2048,
+      "slope_kib_per_1000_files": 297.832,
+      "progress_samples": 61,
+      "within_budget": true
+    },
+    {
+      "parents": true,
+      "wall_ms": 1034.806,
+      "peak_rss_kib": 207348,
+      "warmup_rss_kib": 42136,
+      "post_warmup_growth_kib": 161116,
+      "slope_kib_per_1000_files": 26876.393,
+      "progress_samples": 61,
+      "within_budget": true
+    }
+  ]
+}
