@@ -14,6 +14,17 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+      - name: Require publishable MoonBit sources
+        shell: bash
+        run: |
+          if ! git ls-files '*.mbt' | grep -q .; then
+            echo 'Missing MoonBit implementation sources; restore the parser before publishing.' >&2
+            exit 1
+          fi
+          if ! git ls-files 'moon.pkg' '**/moon.pkg' | grep -q .; then
+            echo 'Missing MoonBit package manifests; generated interfaces alone are not publishable.' >&2
+            exit 1
+          fi
       - uses: actions/setup-node@v4
         with:
           node-version: 22
