@@ -8,10 +8,10 @@ import {
 
 readme = "README.mbt.md"
 
-repository = ""
+repository = "https://github.com/moonbit-community/tsparser"
 
 license = "Apache-2.0"
 
 keywords = [ ]
 
-description = ""
+description = "A small TypeScript parser written in MoonBit."
