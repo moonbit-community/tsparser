@@ -3,7 +3,7 @@ name = "moonbit-community/tsparser"
 version = "0.1.0"
 
 import {
-  "moonbitlang/x@0.4.40",
+  "moonbitlang/x@0.5.6",
 }
 
 readme = "README.mbt.md"
